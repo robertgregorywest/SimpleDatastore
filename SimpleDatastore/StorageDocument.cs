@@ -25,7 +25,7 @@ namespace SimpleDatastore
             {
                 using (XmlWriter writer = XmlWriter.Create(storageDocument))
                 {
-                    writer.WriteStartElement(Constants.DataItemName);
+                    writer.WriteStartElement(Constants.DataElementName);
                     writer.WriteEndElement();
                     writer.Flush();
                 }

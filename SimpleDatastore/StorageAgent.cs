@@ -76,7 +76,6 @@ namespace SimpleDatastore
             return null;
         }
 
-
         /// <summary>
         /// Get an instance of the supplied class from an XPathNavigator
         /// </summary>

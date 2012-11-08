@@ -8,13 +8,8 @@ namespace UnitTests
 {
     static class TestDocuments
     {
-        private static string _singleTestObject =
-string.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
-<data>
-  <dataItem>
-    <id>{0}</id>
-  </dataItem>
-</data>", TestObjectIdentifier.ToString());
+        private static string _singleTestObject = string.Format(@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><id>{0}</id></dataItem></data>", TestObjectIdentifier.ToString());
+        private static string _emptyDocument = @"<?xml version=""1.0"" encoding=""utf-8""?><data></data>";
 
         public static Guid TestObjectIdentifier
         {
@@ -24,12 +19,22 @@ string.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
             }
         }
 
-        public static XmlDocument SingleTestObject
+        public static XmlDocument SingleTestObjectDocument
         {
             get
             {
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(_singleTestObject);
+                return doc;
+            }
+        }
+
+        public static XmlDocument EmptyDocument
+        {
+            get
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(_emptyDocument);
                 return doc;
             }
         }
