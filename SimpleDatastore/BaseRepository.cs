@@ -45,7 +45,7 @@ namespace SimpleDatastore
                 }
             }
 
-            T instance = _helper.GetObject(id);
+            T instance = Helper.GetObject(id);
 
             if (_configuration.EnableCaching)
             {
@@ -76,7 +76,7 @@ namespace SimpleDatastore
                 }
             }
 
-            IList<T> list = _helper.GetCollection();
+            IList<T> list = Helper.GetCollection();
 
             if (_configuration.EnableCaching)
             {
@@ -93,7 +93,7 @@ namespace SimpleDatastore
                 instance.Id = Guid.NewGuid();
             }
 
-            bool success = _helper.SaveObject(instance);
+            bool success = Helper.SaveObject(instance);
             if (success && _configuration.EnableCaching)
             {
                 _configuration.Cache.PurgeCacheItems(typeof(T).ToString());
@@ -104,7 +104,7 @@ namespace SimpleDatastore
 
         public bool Delete(Guid id)
         {
-            bool success = _helper.DeleteObject(id);
+            bool success = Helper.DeleteObject(id);
             if (success && _configuration.EnableCaching)
             {
                 _configuration.Cache.PurgeCacheItems(typeof(T).ToString());
