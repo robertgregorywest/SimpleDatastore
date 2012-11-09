@@ -13,13 +13,13 @@ namespace UnitTests
     public class StorageAgentTests
     {
         private IConfiguration _config;
-        private IStorageDocument<TestObject> _storage;
+        private IStorageDocument<FakeObject> _storage;
 
         [TestInitialize]
         public void Setup()
         {
             _config = MockRepository.GenerateStub<IConfiguration>();
-            _storage = MockRepository.GenerateStub<IStorageDocument<TestObject>>();
+            _storage = MockRepository.GenerateStub<IStorageDocument<FakeObject>>();
 
             _config.Stub(c => c.DependencyResolver).Return(new FakeDependencyResolver());
         }
@@ -27,53 +27,51 @@ namespace UnitTests
         [TestMethod]
         public void GetObject_expect_correct_object()
         {
-            _storage.Stub(s => s.Get()).Return(TestDocuments.SingleTestObjectDocument);
+            _storage.Stub(s => s.Get()).Return(FakeDocuments.SingleFakeObjectDocument);
 
-            var agent = new StorageAgent<TestObject>(_config, _storage);
+            var agent = new StorageAgent<FakeObject>(_config, _storage);
 
-            var result = agent.GetObject(TestDocuments.TestObjectIdentifier);
+            var result = agent.GetObject(FakeObject.FakeObjectIdentifier);
 
-            Assert.AreEqual(result.Id, TestDocuments.TestObjectIdentifier);
+            Assert.AreEqual(result, FakeObject.Instance);
         }
 
         [TestMethod]
         public void GetCollection_expect_correct_collection()
         {
-            _storage.Stub(s => s.Get()).Return(TestDocuments.SingleTestObjectDocument);
+            _storage.Stub(s => s.Get()).Return(FakeDocuments.SingleFakeObjectDocument);
 
-            var agent = new StorageAgent<TestObject>(_config, _storage);
+            var agent = new StorageAgent<FakeObject>(_config, _storage);
 
             var result = agent.GetCollection();
 
-            Assert.AreEqual(result.First().Id, TestDocuments.TestObjectIdentifier);
+            Assert.AreEqual(result.First(), FakeObject.Instance);
         }
 
         [TestMethod]
         public void SaveObject_should_save_document()
         {
-            _storage.Stub(s => s.Get()).Return(TestDocuments.EmptyDocument);
+            _storage.Stub(s => s.Get()).Return(FakeDocuments.EmptyDocument);
 
-            var agent = new StorageAgent<TestObject>(_config, _storage);
+            var agent = new StorageAgent<FakeObject>(_config, _storage);
 
-            var testObject = new TestObject() { Id = TestDocuments.TestObjectIdentifier };
-
-            var result = agent.SaveObject(testObject);
+            var result = agent.SaveObject(FakeObject.Instance);
 
             Assert.IsTrue(result);
-            _storage.AssertWasCalled(x => x.Save(Arg<XmlDocument>.Matches(y => y.InnerText.Equals(TestDocuments.SingleTestObjectDocument.InnerText))));
+            _storage.AssertWasCalled(x => x.Save(Arg<XmlDocument>.Matches(y => y.InnerText.Equals(FakeDocuments.SingleFakeObjectDocument.InnerText))));
         }
 
         [TestMethod]
         public void DeleteObject_should_save_empty_document()
         {
-            _storage.Stub(s => s.Get()).Return(TestDocuments.SingleTestObjectDocument);
+            _storage.Stub(s => s.Get()).Return(FakeDocuments.SingleFakeObjectDocument);
 
-            var agent = new StorageAgent<TestObject>(_config, _storage);
+            var agent = new StorageAgent<FakeObject>(_config, _storage);
 
-            var result = agent.DeleteObject(TestDocuments.TestObjectIdentifier);
+            var result = agent.DeleteObject(FakeObject.FakeObjectIdentifier);
 
             Assert.IsTrue(result);
-            _storage.AssertWasCalled(x => x.Save(Arg<XmlDocument>.Matches(y => y.InnerText.Equals(TestDocuments.EmptyDocument.InnerText))));
+            _storage.AssertWasCalled(x => x.Save(Arg<XmlDocument>.Matches(y => y.InnerText.Equals(FakeDocuments.EmptyDocument.InnerText))));
         }
     }
 }

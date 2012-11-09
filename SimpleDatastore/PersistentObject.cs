@@ -9,7 +9,7 @@ namespace SimpleDatastore
     [DataContract]
     public abstract class PersistentObject : IEquatable<PersistentObject>, IComparable<PersistentObject>
     {
-        public const string Identifier = "id";
+        internal const string Identifier = "id";
 
         private Guid _Id = Guid.Empty;
         [DataMember(Name = Identifier, IsRequired = true)]

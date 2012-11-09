@@ -50,11 +50,12 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CollectionMapperTests.cs" />
     <Compile Include="FakeDependencyResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StorageAgentTests.cs" />
-    <Compile Include="TestDocuments.cs" />
-    <Compile Include="TestObject.cs" />
+    <Compile Include="FakeDocuments.cs" />
+    <Compile Include="FakeObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

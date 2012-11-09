@@ -8,11 +8,11 @@ namespace SimpleDatastore
 {
     internal class CollectionMapper<T> where T : PersistentObject
     {
-        private readonly IDependencyResolver _dependencyResolver;
+        private readonly IRepository<T> _repository;
 
-        public CollectionMapper(IDependencyResolver dependencyResolver)
+        public CollectionMapper(IRepository<T> repository)
         {
-            _dependencyResolver = dependencyResolver;
+            _repository = repository;
         }
 
         public IList<T> Map(string[] persistentObjectIds)
@@ -21,8 +21,7 @@ namespace SimpleDatastore
 
             foreach (var persistentObjectId in persistentObjectIds)
             {
-                var repository = _dependencyResolver.GetService<BaseRepository<T>>();
-                var persistentObject = repository.Load(persistentObjectId.ToGuid());
+                var persistentObject = _repository.Load(persistentObjectId.ToGuid());
                 if (persistentObject != null)
                 {
                     list.Add(persistentObject);
