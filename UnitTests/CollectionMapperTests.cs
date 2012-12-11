@@ -15,9 +15,9 @@ namespace UnitTests
         public void Map_should_return_list()
         {
             var repository = MockRepository.GenerateStub<IRepository<FakeObject>>();
-            var ids = new string[] { FakeObject.FakeObjectIdentifier.ToString() };
+            var ids = new string[] { FakeObject.InstanceIdentifier.ToString() };
 
-            repository.Stub(r => r.Load(FakeObject.FakeObjectIdentifier)).Return(FakeObject.Instance);
+            repository.Stub(r => r.Load(FakeObject.InstanceIdentifier)).Return(FakeObject.Instance);
 
             var mapper = new CollectionMapper<FakeObject>(repository);
 

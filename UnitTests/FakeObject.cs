@@ -8,11 +8,16 @@ namespace UnitTests
 {
     public class FakeObject : PersistentObject
     {
-        public static Guid FakeObjectIdentifier
+        public const string IDENTIFIER_VALUE = "675b689d-db4e-43ed-94dd-591f73a0fc74";
+        public const string ROOT_CACHE_KEY = "UnitTests.FakeObject";
+        public const string CACHE_KEY = "UnitTests.FakeObject.675b689d-db4e-43ed-94dd-591f73a0fc74";
+        
+
+        public static Guid InstanceIdentifier
         {
             get
             {
-                return new Guid("675b689d-db4e-43ed-94dd-591f73a0fc74");
+                return new Guid(IDENTIFIER_VALUE);
             }
         }
 
@@ -20,7 +25,7 @@ namespace UnitTests
         {
             get
             {
-                return new FakeObject() { Id = FakeObjectIdentifier };
+                return new FakeObject() { Id = InstanceIdentifier };
             }
         }
     }

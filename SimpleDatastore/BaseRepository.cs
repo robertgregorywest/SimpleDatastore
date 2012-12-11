@@ -11,8 +11,8 @@ namespace SimpleDatastore
     {
         private readonly IConfiguration _configuration;
 
-        private StorageAgent<T> _helper;
-        internal StorageAgent<T> Helper
+        private IStorageAgent<T> _helper;
+        internal IStorageAgent<T> Helper
         {
             get
             {
@@ -97,7 +97,6 @@ namespace SimpleDatastore
             if (success && _configuration.EnableCaching)
             {
                 _configuration.Cache.PurgeCacheItems(typeof(T).ToString());
-                _configuration.Cache.PurgeCacheItems(string.Format("{0}.{1}", typeof(T).ToString(), instance.Id.ToString()));
             }
             return success;
         }
@@ -108,7 +107,6 @@ namespace SimpleDatastore
             if (success && _configuration.EnableCaching)
             {
                 _configuration.Cache.PurgeCacheItems(typeof(T).ToString());
-                _configuration.Cache.PurgeCacheItems(string.Format("{0}.{1}", typeof(T).ToString(), id.ToString()));
             }
             return success;
         }

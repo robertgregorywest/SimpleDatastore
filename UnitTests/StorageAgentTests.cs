@@ -24,6 +24,13 @@ namespace UnitTests
             _config.Stub(c => c.DependencyResolver).Return(new FakeDependencyResolver());
         }
 
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _config = null;
+            _storage = null;
+        }
+
         [TestMethod]
         public void GetObject_expect_correct_object()
         {
@@ -31,7 +38,7 @@ namespace UnitTests
 
             var agent = new StorageAgent<FakeObject>(_config, _storage);
 
-            var result = agent.GetObject(FakeObject.FakeObjectIdentifier);
+            var result = agent.GetObject(FakeObject.InstanceIdentifier);
 
             Assert.AreEqual(result, FakeObject.Instance);
         }
@@ -68,7 +75,7 @@ namespace UnitTests
 
             var agent = new StorageAgent<FakeObject>(_config, _storage);
 
-            var result = agent.DeleteObject(FakeObject.FakeObjectIdentifier);
+            var result = agent.DeleteObject(FakeObject.InstanceIdentifier);
 
             Assert.IsTrue(result);
             _storage.AssertWasCalled(x => x.Save(Arg<XmlDocument>.Matches(y => y.InnerText.Equals(FakeDocuments.EmptyDocument.InnerText))));
