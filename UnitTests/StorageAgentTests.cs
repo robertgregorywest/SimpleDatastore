@@ -65,7 +65,7 @@ namespace UnitTests
             var result = agent.SaveObject(FakeObject.Instance);
 
             Assert.IsTrue(result);
-            _storage.AssertWasCalled(x => x.Save(Arg<XmlDocument>.Matches(y => y.InnerText.Equals(FakeDocuments.SingleFakeObjectDocument.InnerText))));
+            _storage.AssertWasCalled(s => s.Save(Arg<XmlDocument>.Matches(d => d.InnerText.Equals(FakeDocuments.SingleFakeObjectDocument.InnerText))));
         }
 
         [TestMethod]

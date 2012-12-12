@@ -144,7 +144,7 @@ namespace SimpleDatastore
         {
             bool success = false;
 
-            PropertyInfo[] properties = typeof(T).GetProperties();
+            var properties = typeof(T).GetProperties().OrderBy(p => p.Name);
 
             // variable to hold object identifer
             Guid instanceId = Guid.Empty;

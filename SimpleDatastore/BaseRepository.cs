@@ -57,12 +57,12 @@ namespace SimpleDatastore
 
         public IList<T> LoadList()
         {
-            List<T> list = LoadListUnSorted().ToList();
+            List<T> list = LoadListUnsorted().ToList();
             list.Sort();
             return list;
         }
 
-        public IList<T> LoadListUnSorted()
+        public IList<T> LoadListUnsorted()
         {
             string cacheKey = string.Empty;
 

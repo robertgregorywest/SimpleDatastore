@@ -18,12 +18,10 @@ namespace SimpleDatastore
 
         public XmlDocument Get()
         {
-            string storageDocument = DocumentPath;
-
             // Create document if it does not exist
-            if (!File.Exists(storageDocument))
+            if (!File.Exists(DocumentPath))
             {
-                using (XmlWriter writer = XmlWriter.Create(storageDocument))
+                using (XmlWriter writer = XmlWriter.Create(DocumentPath))
                 {
                     writer.WriteStartElement(Constants.DataElementName);
                     writer.WriteEndElement();
@@ -32,11 +30,11 @@ namespace SimpleDatastore
             }
 
             XmlDocument doc = new XmlDocument();
-            doc.Load(storageDocument);
+            doc.Load(DocumentPath);
             return doc;
         }
 
-        public void Save(System.Xml.XmlDocument document)
+        public void Save(XmlDocument document)
         {
             document.Save(DocumentPath);
         }

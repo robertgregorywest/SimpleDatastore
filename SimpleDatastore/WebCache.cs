@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections;
-using System.Web.Caching;
 using System.Web;
+using System.Web.Caching;
 
 namespace SimpleDatastore
 {
@@ -12,7 +12,7 @@ namespace SimpleDatastore
     {
         private Cache Cache
         {
-            get { return HttpContext.Current.Cache; }
+            get { return HttpRuntime.Cache; }
         }
 
         public object Get(string key)
