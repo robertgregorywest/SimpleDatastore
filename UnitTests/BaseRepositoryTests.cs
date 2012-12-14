@@ -231,7 +231,7 @@ namespace UnitTests
             _config.EnableCaching = false;
 
             var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.SaveObject(null)).Return(true).IgnoreArguments();
+            helper.Stub(h => h.SaveObject(null));
 
             var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
 
@@ -248,7 +248,7 @@ namespace UnitTests
             _config.EnableCaching = false;
 
             var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.SaveObject(null)).Return(true).IgnoreArguments();
+            helper.Stub(h => h.SaveObject(null));
 
             var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
 
@@ -266,7 +266,7 @@ namespace UnitTests
             _config.EnableCaching = true;
 
             var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.SaveObject(null)).Return(true).IgnoreArguments();
+            helper.Stub(h => h.SaveObject(null));
 
             var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
 
@@ -281,7 +281,7 @@ namespace UnitTests
             _config.EnableCaching = false;
 
             var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.DeleteObject(FakeObject.InstanceIdentifier)).Return(true);
+            helper.Stub(h => h.DeleteObject(FakeObject.InstanceIdentifier));
 
             var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
 
@@ -300,7 +300,7 @@ namespace UnitTests
             _config.EnableCaching = true;
 
             var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.DeleteObject(FakeObject.InstanceIdentifier)).Return(true);
+            helper.Stub(h => h.DeleteObject(FakeObject.InstanceIdentifier));
 
             var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
 

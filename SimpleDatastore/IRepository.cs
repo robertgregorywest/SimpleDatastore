@@ -10,7 +10,7 @@ namespace SimpleDatastore
         T Load(Guid id);
         IList<T> LoadList();
         IList<T> LoadListUnsorted();
-        bool Save(T instance);
-        bool Delete(Guid id);
+        void Save(T instance);
+        void Delete(Guid id);
     }
 }

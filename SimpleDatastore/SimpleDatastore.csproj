@@ -58,8 +58,9 @@
     <Compile Include="StorageAgent.cs" />
     <Compile Include="StorageDocument.cs" />
     <Compile Include="StringExtensions.cs" />
-    <Compile Include="TypeHelper.cs" />
+    <Compile Include="TypeExtensions.cs" />
     <Compile Include="WebCache.cs" />
+    <Compile Include="XmlDocumentExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

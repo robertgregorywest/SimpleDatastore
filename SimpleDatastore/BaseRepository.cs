@@ -28,30 +28,13 @@ namespace SimpleDatastore
 
         public BaseRepository(IConfiguration configuration)
         {
-            _configuration = configuration;           
+            _configuration = configuration;
         }
 
         public T Load(Guid id)
         {
-            string cacheKey = string.Empty;
-
-            if (_configuration.EnableCaching)
-            {
-                cacheKey = string.Format("{0}.{1}", typeof(T).ToString(), id.ToString());
-
-                if (_configuration.Cache.Get(cacheKey) != null)
-                {
-                    return (T)_configuration.Cache.Get(cacheKey);
-                }
-            }
-
-            T instance = Helper.GetObject(id);
-
-            if (_configuration.EnableCaching)
-            {
-                _configuration.Cache.CacheData(cacheKey, instance, _configuration.CacheDuration);
-            }
-
+            T instance = GetObjectFromCache(id) ?? Helper.GetObject(id);
+            CacheObject(instance);
             return instance;
         }
 
@@ -64,51 +47,77 @@ namespace SimpleDatastore
 
         public IList<T> LoadListUnsorted()
         {
-            string cacheKey = string.Empty;
-
-            if (_configuration.EnableCaching)
-            {
-                cacheKey = typeof(T).ToString();
-
-                if (_configuration.Cache.Get(cacheKey) != null)
-                {
-                    return (List<T>)_configuration.Cache.Get(cacheKey);
-                }
-            }
-
-            IList<T> list = Helper.GetCollection();
-
-            if (_configuration.EnableCaching)
-            {
-                _configuration.Cache.CacheData(cacheKey, list, _configuration.CacheDuration);
-            }
-
-            return list;
+            IList<T> result = GetCollectionFromCache() ?? Helper.GetCollection();
+            CacheCollection(result);
+            return result;
         }
 
-        public bool Save(T instance)
+        public void Save(T instance)
         {
             if (instance.Id == Guid.Empty)
             {
                 instance.Id = Guid.NewGuid();
             }
-
-            bool success = Helper.SaveObject(instance);
-            if (success && _configuration.EnableCaching)
-            {
-                _configuration.Cache.PurgeCacheItems(typeof(T).ToString());
-            }
-            return success;
+            Helper.SaveObject(instance);
+            PurgeCacheItems();
         }
 
-        public bool Delete(Guid id)
+        public void Delete(Guid id)
         {
-            bool success = Helper.DeleteObject(id);
-            if (success && _configuration.EnableCaching)
+            Helper.DeleteObject(id);
+            PurgeCacheItems();
+        }
+
+        private string CacheKeyForObject(Guid id)
+        {
+            return string.Format("{0}.{1}", typeof(T).ToString(), id.ToString());
+        }
+
+        private string CacheKeyForCollection()
+        {
+            return typeof(T).ToString();
+        }
+
+        private T GetObjectFromCache(Guid id)
+        {
+            if (_configuration.EnableCaching)
+            {
+                return _configuration.Cache.Get(CacheKeyForObject(id)) as T;
+            }
+            return null;
+        }
+
+        private void CacheObject(T instance)
+        {
+            if (_configuration.EnableCaching)
+            {
+                _configuration.Cache.CacheData(CacheKeyForObject(instance.Id), instance, _configuration.CacheDuration);
+            }
+        }
+
+        private IList<T> GetCollectionFromCache()
+        {
+            if (_configuration.EnableCaching)
+            {
+                return _configuration.Cache.Get(CacheKeyForCollection()) as IList<T>;
+            }
+            return null;
+        }
+
+        private void CacheCollection(IList<T> collection)
+        {
+            if (_configuration.EnableCaching)
+            {
+                _configuration.Cache.CacheData(CacheKeyForCollection(), collection, _configuration.CacheDuration);
+            }
+        }
+
+        private void PurgeCacheItems()
+        {
+            if (_configuration.EnableCaching)
             {
                 _configuration.Cache.PurgeCacheItems(typeof(T).ToString());
             }
-            return success;
         }
     }
 }

@@ -7,9 +7,9 @@ namespace SimpleDatastore
 {
     public interface IStorageAgent<T> where T : PersistentObject
     {
-        bool DeleteObject(Guid id);
         IList<T> GetCollection();
         T GetObject(Guid id);
-        bool SaveObject(T instance);
+        void SaveObject(T instance);
+        void DeleteObject(Guid id);
     }
 }
