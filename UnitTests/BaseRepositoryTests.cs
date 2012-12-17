@@ -13,14 +13,12 @@ namespace UnitTests
     {
         private IConfiguration _config;
         private IStorageDocument<FakeObject> _storage;
-        private const int CACHE_DURATION = 60;
 
         [TestInitialize]
         public void Setup()
         {
             _config = MockRepository.GenerateStub<IConfiguration>();
             _storage = MockRepository.GenerateStub<IStorageDocument<FakeObject>>();
-
             _config.Stub(c => c.DependencyResolver).Return(new FakeDependencyResolver());
         }
 
@@ -31,194 +29,140 @@ namespace UnitTests
             _storage = null;
         }
 
-        private ICache CacheStub
-        {
-            get
-            {
-                var cache = MockRepository.GenerateStub<ICache>();
-                cache.Stub(c => c.Get(FakeObject.CACHE_KEY)).Return(FakeObject.Instance);
-                cache.Stub(c => c.Get(FakeObject.ROOT_CACHE_KEY)).Return(FakeObject.UnsortedList);
-                cache.Stub(c => c.PurgeCacheItems(FakeObject.ROOT_CACHE_KEY)).IgnoreArguments();
-                return cache;
-            }
-        }
-
         [TestMethod]
-        public void LoadWithCachingEnabledExpectCorrectCacheKeyRetrieved()
+        public void Load_with_caching_enabled_expect_StorageHelper_not_called()
         {
-            _config.Stub(c => c.Cache).Return(CacheStub);
             _config.EnableCaching = true;
 
-            var repo = new BaseRepository<FakeObject>(_config);
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+            var cacheHelper = MockRepository.GenerateStub<ICacheHelper<FakeObject>>();
+
+            cacheHelper.Stub(c => c.GetObject(FakeObject.InstanceIdentifier)).Return(FakeObject.Instance);
+
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper, CacheHelper = cacheHelper };
 
             var result = repo.Load(FakeObject.InstanceIdentifier);
 
-            _config.Cache.AssertWasCalled(c => c.Get(FakeObject.CACHE_KEY));
+            storageHelper.AssertWasNotCalled(h => h.GetObject(FakeObject.InstanceIdentifier));
         }
 
         [TestMethod]
-        public void LoadWithCachingEnabledExpectHelperNotCalled()
+        public void Load_with_caching_enabled_object_not_in_cache_expect_object_to_be_retrieved()
         {
-            _config.Stub(c => c.Cache).Return(CacheStub);
             _config.EnableCaching = true;
 
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+            storageHelper.Stub(h => h.GetCollection()).Return(FakeObject.UnsortedList);
 
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
+            var cacheHelper = MockRepository.GenerateStub<ICacheHelper<FakeObject>>();
+            cacheHelper.Stub(c => c.GetObject(FakeObject.InstanceIdentifier)).Return(null);
 
-            var result = repo.Load(FakeObject.InstanceIdentifier);
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper, CacheHelper = cacheHelper };
 
-            helper.AssertWasNotCalled(h => h.GetObject(FakeObject.InstanceIdentifier));
+            var result = repo.LoadListUnsorted();
+
+            storageHelper.AssertWasCalled(h => h.GetCollection());
         }
 
         [TestMethod]
-        public void LoadWithCachingEnabledObjectNotInCacheExpectRetrievedObjectToBeCached()
+        public void Load_with_caching_enabled_object_not_in_cache_expect_retrieved_object_to_be_cached()
         {            
-            var cache = MockRepository.GenerateStub<ICache>();
-            cache.Stub(c => c.Get(FakeObject.CACHE_KEY)).Return(null);
-            cache.Stub(c => c.CacheData(FakeObject.CACHE_KEY, FakeObject.Instance, CACHE_DURATION));
-
-            _config.Stub(c => c.Cache).Return(cache);
             _config.EnableCaching = true;
-            _config.CacheDuration = CACHE_DURATION;
 
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.GetObject(FakeObject.InstanceIdentifier)).Return(FakeObject.Instance);
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+            storageHelper.Stub(h => h.GetObject(FakeObject.InstanceIdentifier)).Return(FakeObject.Instance);
 
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
+            var cacheHelper = MockRepository.GenerateStub<ICacheHelper<FakeObject>>();
+            cacheHelper.Stub(c=> c.GetObject(FakeObject.InstanceIdentifier)).Return(null);
+            
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper, CacheHelper = cacheHelper };
 
             var result = repo.Load(FakeObject.InstanceIdentifier);
 
-            _config.Cache.AssertWasCalled(c => c.CacheData(FakeObject.CACHE_KEY, FakeObject.Instance, CACHE_DURATION));
+            cacheHelper.AssertWasCalled(c => c.CacheObject(FakeObject.Instance));
         }
 
         [TestMethod]
-        public void LoadWithCachingDisabledExpectRetrievedObjectToBeCached()
+        public void LoadListUnsorted_with_caching_enabled_expect_StorageHelper_not_called()
+        {
+            _config.EnableCaching = true;
+
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+
+            var cacheHelper = MockRepository.GenerateStub<ICacheHelper<FakeObject>>();
+            cacheHelper.Stub(c => c.GetCollection()).Return(FakeObject.UnsortedList);
+
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper, CacheHelper = cacheHelper };
+
+            var result = repo.LoadListUnsorted();
+
+            storageHelper.AssertWasNotCalled(h => h.GetCollection());
+        }
+
+        [TestMethod]
+        public void LoadListUnsorted_with_caching_enabled_object_not_in_cache_expect_object_to_be_retrieved()
+        {
+            _config.EnableCaching = true;
+
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+            storageHelper.Stub(h => h.GetCollection()).Return(FakeObject.UnsortedList);
+
+            var cacheHelper = MockRepository.GenerateStub<ICacheHelper<FakeObject>>();
+            cacheHelper.Stub(c => c.GetCollection()).Return(null);
+
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper, CacheHelper = cacheHelper };
+
+            var result = repo.LoadListUnsorted();
+
+            storageHelper.AssertWasCalled(h => h.GetCollection());
+        }
+
+        [TestMethod]
+        public void LoadListUnsorted_with_caching_disabled_expect_object_to_be_retrieved()
         {
             _config.EnableCaching = false;
 
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.GetObject(FakeObject.InstanceIdentifier)).Return(FakeObject.Instance);
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+            storageHelper.Stub(h => h.GetCollection()).Return(FakeObject.UnsortedList);
 
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
+            var cacheHelper = MockRepository.GenerateStub<ICacheHelper<FakeObject>>();
 
-            var result = repo.Load(FakeObject.InstanceIdentifier);
-
-            helper.AssertWasCalled(h => h.GetObject(FakeObject.InstanceIdentifier));
-        }
-
-        [TestMethod]
-        public void LoadWithCachingEnabledObjectNotInCacheExpectObjectToBeRetrieved()
-        {
-            var cache = MockRepository.GenerateStub<ICache>();
-            cache.Stub(c => c.Get(FakeObject.CACHE_KEY)).Return(null);
-
-            _config.Stub(c => c.Cache).Return(cache);
-            _config.EnableCaching = true;
-
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.GetCollection()).Return(FakeObject.UnsortedList);
-
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper, CacheHelper = cacheHelper };
 
             var result = repo.LoadListUnsorted();
 
-            helper.AssertWasCalled(h => h.GetCollection());
+            storageHelper.AssertWasCalled(h => h.GetCollection());
         }
 
         [TestMethod]
-        public void LoadListUnsortedWithCachingEnabledExpectCorrectCacheKeyRetrieved()
+        public void LoadListUnsorted_with_caching_enabled_object_not_in_cache_expect_retrieved_object_to_be_cached()
         {
-            _config.Stub(c => c.Cache).Return(CacheStub);
             _config.EnableCaching = true;
 
-            var repo = new BaseRepository<FakeObject>(_config);
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+            storageHelper.Stub(h => h.GetCollection()).Return(FakeObject.UnsortedList);
+
+            var cacheHelper = MockRepository.GenerateStub<ICacheHelper<FakeObject>>();
+            cacheHelper.Stub(c => c.GetCollection()).Return(null);
+
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper, CacheHelper = cacheHelper };
 
             var result = repo.LoadListUnsorted();
 
-            _config.Cache.AssertWasCalled(c => c.Get(FakeObject.ROOT_CACHE_KEY));
+            cacheHelper.AssertWasCalled(c => c.CacheCollection(FakeObject.UnsortedList));
         }
 
         [TestMethod]
-        public void LoadListUnsortedWithCachingEnabledExpectHelperNotCalled()
-        {
-            _config.Stub(c => c.Cache).Return(CacheStub);
-            _config.EnableCaching = true;
-
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
-
-            var result = repo.LoadListUnsorted();
-
-            helper.AssertWasNotCalled(h => h.GetCollection());
-        }
-
-        [TestMethod]
-        public void LoadListUnsortedWithCachingEnabledObjectNotInCacheExpectObjectToBeRetrieved()
-        {
-            var cache = MockRepository.GenerateStub<ICache>();
-            cache.Stub(c => c.Get(FakeObject.ROOT_CACHE_KEY)).Return(null);
-
-            _config.Stub(c => c.Cache).Return(cache);
-            _config.EnableCaching = true;
-            _config.CacheDuration = CACHE_DURATION;
-
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.GetCollection()).Return(FakeObject.UnsortedList);
-
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
-
-            var result = repo.LoadListUnsorted();
-
-            helper.AssertWasCalled(h => h.GetCollection());
-        }
-
-        [TestMethod]
-        public void LoadListUnsortedWithCachingDisabledExpectObjectToBeRetrieved()
+        public void LoadListSorted_expect_sorted_list()
         {
             _config.EnableCaching = false;
 
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.GetCollection()).Return(FakeObject.UnsortedList);
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
 
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
+            var cacheHelper = MockRepository.GenerateStub<ICacheHelper<FakeObject>>();
+            cacheHelper.Stub(c => c.GetCollection()).Return(FakeObject.UnsortedList);
 
-            var result = repo.LoadListUnsorted();
-
-            helper.AssertWasCalled(h => h.GetCollection());
-        }
-
-        [TestMethod]
-        public void LoadListUnsortedWithCachingEnabledObjectNotInCacheExpectRetrievedObjectToBeCached()
-        {
-            var cache = MockRepository.GenerateStub<ICache>();
-            cache.Stub(c => c.Get(FakeObject.ROOT_CACHE_KEY)).Return(null);
-            cache.Stub(c => c.CacheData(FakeObject.ROOT_CACHE_KEY, FakeObject.UnsortedList, CACHE_DURATION));
-
-            _config.Stub(c => c.Cache).Return(cache);
-            _config.EnableCaching = true;
-            _config.CacheDuration = CACHE_DURATION;
-
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.GetCollection()).Return(FakeObject.UnsortedList);
-
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
-
-            var result = repo.LoadListUnsorted();
-
-            _config.Cache.AssertWasCalled(c => c.CacheData(FakeObject.ROOT_CACHE_KEY, FakeObject.UnsortedList, CACHE_DURATION));
-        }
-
-        [TestMethod]
-        public void LoadListSortedExpectSortedList()
-        {
-            _config.EnableCaching = false;
-
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.GetCollection()).Return(FakeObject.UnsortedList);
-
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper, CacheHelper = cacheHelper };
 
             var result = repo.LoadList();
 
@@ -226,31 +170,31 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void SaveExpectCallHelperSaveObject()
+        public void Save_expect_call_StorageHelper_SaveObject()
         {
             _config.EnableCaching = false;
 
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.SaveObject(null));
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+            storageHelper.Stub(h => h.SaveObject(null));
 
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper };
 
             repo.Save(FakeObject.Instance);
 
-            helper.AssertWasCalled(h => h.SaveObject(FakeObject.Instance));
+            storageHelper.AssertWasCalled(h => h.SaveObject(FakeObject.Instance));
         }
 
         [TestMethod]
-        public void SaveWithEmptyGuidExpectNewGuid()
+        public void Save_with_empty_Guid_expect_NewGuid()
         {
             var newInstance = new FakeObject();
 
             _config.EnableCaching = false;
 
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.SaveObject(null));
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+            storageHelper.Stub(h => h.SaveObject(null));
 
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper };
 
             repo.Save(newInstance);
 
@@ -258,55 +202,52 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void SaveWithCachingEnabledExpectCachePurged()
+        public void Save_with_caching_enabled_expect_CachePurged()
         {
-            var cache = CacheStub;
-
-            _config.Stub(c => c.Cache).Return(cache);
             _config.EnableCaching = true;
 
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.SaveObject(null));
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+            storageHelper.Stub(h => h.SaveObject(FakeObject.Instance));
 
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
+            var cacheHelper = MockRepository.GenerateStub<ICacheHelper<FakeObject>>();
+
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper, CacheHelper = cacheHelper };
 
             repo.Save(FakeObject.Instance);
 
-            cache.AssertWasCalled(c => c.PurgeCacheItems(FakeObject.ROOT_CACHE_KEY));
+            cacheHelper.AssertWasCalled(c => c.PurgeCacheItems());
         }
 
         [TestMethod]
-        public void DeleteExpectCallHelperDeleteObject()
+        public void Delete_expect_call_helper_delete_object()
         {
             _config.EnableCaching = false;
 
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.DeleteObject(FakeObject.InstanceIdentifier));
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+            storageHelper.Stub(h => h.DeleteObject(FakeObject.InstanceIdentifier));
 
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper };
 
             repo.Delete(FakeObject.InstanceIdentifier);
 
-            helper.AssertWasCalled(h => h.DeleteObject(FakeObject.InstanceIdentifier));
+            storageHelper.AssertWasCalled(h => h.DeleteObject(FakeObject.InstanceIdentifier));
         }
 
         [TestMethod]
-        public void DeleteWithCachingEnabledExpectCachePurged()
+        public void Delete_with_caching_enabled_expect_cache_purged()
         {
-            var cache = MockRepository.GenerateStub<ICache>();
-            cache.Stub(c => c.PurgeCacheItems(FakeObject.ROOT_CACHE_KEY));
-
-            _config.Stub(c => c.Cache).Return(cache);
             _config.EnableCaching = true;
 
-            var helper = MockRepository.GenerateStub<IStorageAgent<FakeObject>>();
-            helper.Stub(h => h.DeleteObject(FakeObject.InstanceIdentifier));
+            var storageHelper = MockRepository.GenerateStub<IStorageHelper<FakeObject>>();
+            storageHelper.Stub(h => h.DeleteObject(FakeObject.InstanceIdentifier));
 
-            var repo = new BaseRepository<FakeObject>(_config) { Helper = helper };
+            var cacheHelper = MockRepository.GenerateStub<ICacheHelper<FakeObject>>();
+
+            var repo = new BaseRepository<FakeObject>(_config) { StorageHelper = storageHelper, CacheHelper = cacheHelper };
 
             repo.Delete(FakeObject.InstanceIdentifier);
 
-            cache.AssertWasCalled(c => c.PurgeCacheItems(FakeObject.ROOT_CACHE_KEY));
+            cacheHelper.AssertWasCalled(c => c.PurgeCacheItems());
         }
     }
 }

@@ -53,10 +53,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseRepositoryTests.cs" />
+    <Compile Include="CacheHelperTests.cs" />
     <Compile Include="CollectionMapperTests.cs" />
     <Compile Include="FakeDependencyResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StorageAgentTests.cs" />
+    <Compile Include="StorageHelperTests.cs" />
     <Compile Include="FakeDocuments.cs" />
     <Compile Include="FakeObject.cs" />
   </ItemGroup>

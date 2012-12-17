@@ -6,28 +6,27 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhino.Mocks;
 using SimpleDatastore;
 using System.Xml;
+using System.Web.Mvc;
 
 namespace UnitTests
 {
     [TestClass]
-    public class StorageAgentTests
+    public class StorageHelperTests
     {
-        private IConfiguration _config;
+        private IDependencyResolver _resolver;
         private IStorageDocument<FakeObject> _storage;
 
         [TestInitialize]
         public void Setup()
         {
-            _config = MockRepository.GenerateStub<IConfiguration>();
+            _resolver = new FakeDependencyResolver();
             _storage = MockRepository.GenerateStub<IStorageDocument<FakeObject>>();
-
-            _config.Stub(c => c.DependencyResolver).Return(new FakeDependencyResolver());
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            _config = null;
+            _resolver = null;
             _storage = null;
         }
 
@@ -36,7 +35,7 @@ namespace UnitTests
         {
             _storage.Stub(s => s.Get()).Return(FakeDocuments.SingleFakeObjectDocument);
 
-            var agent = new StorageAgent<FakeObject>(_config, _storage);
+            var agent = new StorageHelper<FakeObject>(_resolver, _storage);
 
             var result = agent.GetObject(FakeObject.InstanceIdentifier);
 
@@ -48,7 +47,7 @@ namespace UnitTests
         {
             _storage.Stub(s => s.Get()).Return(FakeDocuments.SingleFakeObjectDocument);
 
-            var agent = new StorageAgent<FakeObject>(_config, _storage);
+            var agent = new StorageHelper<FakeObject>(_resolver, _storage);
 
             var result = agent.GetCollection();
 
@@ -60,7 +59,7 @@ namespace UnitTests
         {
             _storage.Stub(s => s.Get()).Return(FakeDocuments.EmptyDocument);
 
-            var agent = new StorageAgent<FakeObject>(_config, _storage);
+            var agent = new StorageHelper<FakeObject>(_resolver, _storage);
 
             agent.SaveObject(FakeObject.Instance);
 
@@ -72,7 +71,7 @@ namespace UnitTests
         {
             _storage.Stub(s => s.Get()).Return(FakeDocuments.SingleFakeObjectDocument);
 
-            var agent = new StorageAgent<FakeObject>(_config, _storage);
+            var agent = new StorageHelper<FakeObject>(_resolver, _storage);
 
             agent.DeleteObject(FakeObject.InstanceIdentifier);
 

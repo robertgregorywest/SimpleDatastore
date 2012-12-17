@@ -12,16 +12,16 @@ using System.Web;
 
 namespace SimpleDatastore
 {
-    internal class StorageAgent<T> : IStorageAgent<T> where T : PersistentObject
+    internal class StorageHelper<T> : IStorageHelper<T> where T : PersistentObject
     {
         private static object _lockObject = new Object();
 
-        private readonly IConfiguration _configuration;
+        private readonly IDependencyResolver _resolver;
         private readonly IStorageDocument<T> _storageDocument;
 
-        public StorageAgent(IConfiguration configuration, IStorageDocument<T> storageDocument)
+        public StorageHelper(IDependencyResolver resolver, IStorageDocument<T> storageDocument)
         {
-            _configuration = configuration;
+            _resolver = resolver;
             _storageDocument = storageDocument;
         }
 
@@ -75,7 +75,7 @@ namespace SimpleDatastore
         private T GetItemFromNode(XPathNavigator nav)
         {
             // Using the resolver so that objects can have dependencies
-            T instance = _configuration.DependencyResolver.GetService<T>();
+            T instance = _resolver.GetService<T>();
 
             foreach (PropertyInfo property in typeof(T).GetValidProperties())
             {
@@ -95,7 +95,7 @@ namespace SimpleDatastore
                     else if (property.PropertyType.IsAPersistentObject())
                     {
                         var repositoryType = typeof(BaseRepository<>).MakeGenericType(property.PropertyType);
-                        dynamic repository = _configuration.DependencyResolver.GetService(repositoryType);
+                        dynamic repository = _resolver.GetService(repositoryType);
                         var persistentObject = repository.Load(nav.Value.ToGuid());
                         property.SetValue(instance, persistentObject, null);
                     }
@@ -104,7 +104,7 @@ namespace SimpleDatastore
                         string[] persistentObjectIds = nav.Value.Split(',');
                         Type elementType = property.PropertyType.GetGenericArguments()[0];
                         Type mapperType = typeof(CollectionMapper<>).MakeGenericType(elementType);
-                        dynamic mapper = _configuration.DependencyResolver.GetService(mapperType);
+                        dynamic mapper = _resolver.GetService(mapperType);
                         var list = mapper.Map(persistentObjectIds);
                         property.SetValue(instance, list, null);
                     }

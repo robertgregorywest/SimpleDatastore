@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SimpleDatastore
 {
-    public interface IStorageAgent<T> where T : PersistentObject
+    public interface IStorageHelper<T> where T : PersistentObject
     {
         IList<T> GetCollection();
         T GetObject(Guid id);

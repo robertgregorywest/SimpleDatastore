@@ -7,9 +7,9 @@ using System.Runtime.Serialization;
 
 namespace SimpleDatastore
 {
-    internal static class TypeExtensions
+    public static class TypeExtensions
     {
-        internal static bool IsAPersistentObject(this Type type)
+        public static bool IsAPersistentObject(this Type type)
         {
             if (typeof(PersistentObject).IsAssignableFrom(type))
             {
@@ -18,7 +18,7 @@ namespace SimpleDatastore
             return false;
         }
 
-        internal static bool IsAPersistentObjectList(this Type type)
+        public static bool IsAPersistentObjectList(this Type type)
         {
             if (type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(IList<>)) && typeof(PersistentObject).IsAssignableFrom(type.GetGenericArguments()[0]))
             {
