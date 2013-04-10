@@ -1,0 +1,13 @@
+﻿@model IList<WebExample.Models.WidgetModel>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Index</h2>
+
+@foreach(var w in Model)
+{
+    <p>@w.Name</p>
+}
