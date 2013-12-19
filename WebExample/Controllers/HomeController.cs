@@ -29,6 +29,10 @@ namespace WebExample.Controllers
             foreach (var widget in widgets)
             {
                 var widgetModel = new WidgetModel() { Name = widget.Name };
+                foreach (var p in widget.Parts)
+                {
+                    widgetModel.Parts.Add(p.Name);
+                }
                 model.Add(widgetModel);
             }
 
