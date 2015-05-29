@@ -76,9 +76,7 @@ namespace SimpleDatastore
 
             foreach (PropertyInfo property in typeof(T).GetValidProperties())
             {
-                var attribute = (DataMemberAttribute)Attribute.GetCustomAttribute(property, typeof(DataMemberAttribute));
-
-                if (nav.MoveToChild(attribute.Name, ""))
+                if (nav.MoveToChild(property.GetPropertyName(), ""))
                 {
                     if (property.PropertyType == typeof(string))
                     {
@@ -158,15 +156,15 @@ namespace SimpleDatastore
 
                 foreach (PropertyInfo property in typeof(T).GetValidProperties())
                 {
-                    var attribute = (DataMemberAttribute)Attribute.GetCustomAttribute(property, typeof(DataMemberAttribute));
+                    string attributeName = property.GetPropertyName();
 
-                    if (attribute.Name == PersistentObject.Identifier)
+                    if (attributeName == PersistentObject.Identifier)
                     {
-                        writer.WriteElementString(attribute.Name, property.GetValue(instance, null).ToString());
+                        writer.WriteElementString(attributeName, property.GetValue(instance, null).ToString());
                     }
                     else
                     {
-                        writer.WriteStartElement(attribute.Name);
+                        writer.WriteStartElement(attributeName);
                         if (property.PropertyType.IsAPersistentObject())
                         {
                             var persistentObject = property.GetValue(instance, null) as PersistentObject;

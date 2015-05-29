@@ -6,9 +6,9 @@ using System.Runtime.Serialization;
 
 namespace SimpleDatastore
 {
-    public static class TypeExtensions
+    internal static class TypeExtensions
     {
-        public static bool IsAPersistentObject(this Type type)
+        internal static bool IsAPersistentObject(this Type type)
         {
             if (typeof(PersistentObject).IsAssignableFrom(type))
             {
@@ -17,7 +17,7 @@ namespace SimpleDatastore
             return false;
         }
 
-        public static bool IsAPersistentObjectList(this Type type)
+        internal static bool IsAPersistentObjectList(this Type type)
         {
             if (type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(IList<>)) && typeof(PersistentObject).IsAssignableFrom(type.GetGenericArguments()[0]))
             {
@@ -38,6 +38,13 @@ namespace SimpleDatastore
                 return true;
             }
             return false;
+        }
+
+        internal static string GetPropertyName(this PropertyInfo property)
+        {
+            var attribute = (DataMemberAttribute)Attribute.GetCustomAttribute(property, typeof(DataMemberAttribute));
+
+            return  attribute.Name ?? string.Empty;
         }
     }
 }
