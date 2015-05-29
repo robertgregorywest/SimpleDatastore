@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Web.Mvc;
 using System.Xml;
 using System.Xml.XPath;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.IO;
-using System.Web;
 
 namespace SimpleDatastore
 {
