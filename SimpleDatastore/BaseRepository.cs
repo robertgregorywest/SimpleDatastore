@@ -11,11 +11,11 @@ namespace SimpleDatastore
         private IStorageHelper<T> _storageHelper;
         internal IStorageHelper<T> StorageHelper
         {
-            get
-            {
-                if (_storageHelper == null)
-                    _storageHelper = new StorageHelper<T>(_configuration.DependencyResolver, new StorageDocument<T>(_configuration));
-                return _storageHelper;
+            get {
+                return _storageHelper ??
+                       (_storageHelper =
+                           new StorageHelper<T>(_configuration.DependencyResolver,
+                               new StorageDocument<T>(_configuration)));
             }
             set
             {
@@ -26,12 +26,7 @@ namespace SimpleDatastore
         private ICacheHelper<T> _cacheHelper;
         internal ICacheHelper<T> CacheHelper
         {
-            get
-            {
-                if (_cacheHelper == null)
-                    _cacheHelper = new CacheHelper<T>(_configuration);
-                return _cacheHelper;
-            }
+            get { return _cacheHelper ?? (_cacheHelper = new CacheHelper<T>(_configuration)); }
             set
             {
                 _cacheHelper = value;
@@ -45,33 +40,29 @@ namespace SimpleDatastore
 
         public T Load(Guid id)
         {
-            T result = CacheHelper.GetObject(id);
+            var result = CacheHelper.GetObject(id);
 
-            if (result == null)
-            {
-                result = StorageHelper.GetObject(id);
-                CacheHelper.CacheObject(result);
-            }
+            if (result != null) return result;
+            result = StorageHelper.GetObject(id);
+            CacheHelper.CacheObject(result);
 
             return result;
         }
 
         public IList<T> LoadList()
         {
-            List<T> list = LoadListUnsorted().ToList();
+            var list = LoadListUnsorted().ToList();
             list.Sort();
             return list;
         }
 
         public IList<T> LoadListUnsorted()
         {
-            IList<T> result = CacheHelper.GetCollection();
+            var result = CacheHelper.GetCollection();
 
-            if (result == null)
-            {
-                result = StorageHelper.GetCollection();
-                CacheHelper.CacheCollection(result);
-            }
+            if (result != null) return result;
+            result = StorageHelper.GetCollection();
+            CacheHelper.CacheCollection(result);
 
             return result;
         }

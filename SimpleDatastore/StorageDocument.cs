@@ -25,7 +25,7 @@ namespace SimpleDatastore
                 }
             }
 
-            XmlDocument doc = new XmlDocument();
+            var doc = new XmlDocument();
             doc.Load(DocumentPath);
             return doc;
         }

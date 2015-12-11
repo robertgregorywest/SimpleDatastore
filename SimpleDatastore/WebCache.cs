@@ -29,9 +29,9 @@ namespace SimpleDatastore
         public void PurgeCacheItems(string prefix)
         {
             prefix = prefix.ToLower();
-            List<string> itemsToRemove = new List<string>();
+            var itemsToRemove = new List<string>();
 
-            IDictionaryEnumerator enumerator = Cache.GetEnumerator();
+            var enumerator = Cache.GetEnumerator();
             while (enumerator.MoveNext())
             {
                 if (enumerator.Key.ToString().ToLower().StartsWith(prefix))
@@ -40,7 +40,7 @@ namespace SimpleDatastore
                 }
             }
 
-            foreach (string itemToRemove in itemsToRemove)
+            foreach (var itemToRemove in itemsToRemove)
             {
                 Cache.Remove(itemToRemove);
             }

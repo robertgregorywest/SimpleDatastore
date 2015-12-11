@@ -12,12 +12,12 @@ namespace SimpleDatastore
             _configuration = configuration;
         }
 
-        private string KeyForObject(Guid id)
+        private static string KeyForObject(Guid id)
         {
             return string.Format("{0}.{1}", typeof(T).ToString(), id.ToString());
         }
 
-        private string KeyForCollection()
+        private static string KeyForCollection()
         {
             return typeof(T).ToString();
         }

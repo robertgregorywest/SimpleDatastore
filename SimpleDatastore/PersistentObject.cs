@@ -8,40 +8,37 @@ namespace SimpleDatastore
     {
         internal const string Identifier = "id";
 
-        private Guid _Id = Guid.Empty;
+        private Guid _id = Guid.Empty;
         [DataMember(Name = Identifier, IsRequired = true)]
         public Guid Id
         {
-            get { return _Id; }
-            set { _Id = value; }
+            get { return _id; }
+            set { _id = value; }
         }
 
         public bool Equals(PersistentObject other)
         {
-            if (other == null)
-                return false;
-
-            return this.Id.Equals(other.Id);
+            return other != null && this.Id.Equals(other.Id);
         }
 
         public override bool Equals(object other)
         {
-            return this.Equals(other as PersistentObject);
+            return Equals(other as PersistentObject);
         }
 
         public override int GetHashCode()
         {
-            return this.Id.GetHashCode();
+            return Id.GetHashCode();
         }
 
         public override string ToString()
         {
-            return this.Id.ToString();
+            return Id.ToString();
         }
 
         public int CompareTo(PersistentObject other)
         {
-            return this.Id.CompareTo(other.Id);
+            return Id.CompareTo(other.Id);
         }
     }
 }

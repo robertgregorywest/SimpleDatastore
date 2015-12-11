@@ -7,9 +7,9 @@ namespace SimpleDatastore
     {
         public DefaultConfiguration(IDependencyResolver dependencyResolver) : base (dependencyResolver, new WebCache())
         {
-            this.CacheDuration = 60;
-            this.EnableCaching = true;
-            this.DatastoreLocation = HttpContext.Current.Server.MapPath("~/App_Data/");
+            CacheDuration = 60;
+            EnableCaching = true;
+            DatastoreLocation = HttpContext.Current.Server.MapPath("~/App_Data/");
         } 
     }
 }

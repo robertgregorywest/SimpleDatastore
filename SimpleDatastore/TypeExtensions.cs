@@ -10,34 +10,22 @@ namespace SimpleDatastore
     {
         internal static bool IsAPersistentObject(this Type type)
         {
-            if (typeof(PersistentObject).IsAssignableFrom(type))
-            {
-                return true;
-            }
-            return false;
+            return typeof(PersistentObject).IsAssignableFrom(type);
         }
 
         internal static bool IsAPersistentObjectList(this Type type)
         {
-            if (type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(IList<>)) && typeof(PersistentObject).IsAssignableFrom(type.GetGenericArguments()[0]))
-            {
-                return true;
-            }
-            return false;
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IList<>) && typeof(PersistentObject).IsAssignableFrom(type.GetGenericArguments()[0]);
         }
 
         internal static IEnumerable<PropertyInfo> GetValidProperties(this Type type)
         {
-            return type.GetProperties().Where(p => IsValidAttribute(p)).OrderBy(p => p.Name);
+            return type.GetProperties().Where(IsValidAttribute).OrderBy(p => p.Name);
         }
 
         private static bool IsValidAttribute(PropertyInfo property)
         {
-            if (Attribute.IsDefined(property, typeof(DataMemberAttribute)))
-            {
-                return true;
-            }
-            return false;
+            return Attribute.IsDefined(property, typeof(DataMemberAttribute));
         }
 
         internal static string GetPropertyName(this PropertyInfo property)

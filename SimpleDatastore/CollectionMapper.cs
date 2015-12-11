@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace SimpleDatastore
 {
@@ -13,18 +14,10 @@ namespace SimpleDatastore
 
         public IList<T> Map(string[] persistentObjectIds)
         {
-            var list = new List<T>();
-
-            foreach (var persistentObjectId in persistentObjectIds)
-            {
-                var persistentObject = _repository.Load(persistentObjectId.ToGuid());
-                if (persistentObject != null)
-                {
-                    list.Add(persistentObject);
-                }
-            }
-
-            return list;
+            return persistentObjectIds
+                .Select(persistentObjectId => _repository.Load(persistentObjectId.ToGuid()))
+                .Where(persistentObject => persistentObject != null)
+                .ToList();
         }
     }
 }

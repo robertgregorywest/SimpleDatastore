@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Web.Mvc;
 using System.Xml;
@@ -11,7 +12,7 @@ namespace SimpleDatastore
 {
     internal class StorageHelper<T> : IStorageHelper<T> where T : PersistentObject
     {
-        private static object _lockObject = new Object();
+        private static readonly object LockObject = new object();
 
         private readonly IDependencyResolver _resolver;
         private readonly IStorageDocument<T> _storageDocument;
@@ -33,16 +34,14 @@ namespace SimpleDatastore
 
             IList<T> collection = new List<T>();
 
-            if (nav.MoveToFirstChild())
-            {
-                var iterator = nav.Select(Constants.DataItemName);
+            if (!nav.MoveToFirstChild()) return collection;
+            var iterator = nav.Select(Constants.DataItemName);
 
-                while (iterator.MoveNext())
-                {
-                    XPathNavigator navCurrent = iterator.Current;
-                    T item = GetItemFromNode(navCurrent);
-                    collection.Add(item);
-                }
+            while (iterator.MoveNext())
+            {
+                var navCurrent = iterator.Current;
+                var item = GetItemFromNode(navCurrent);
+                collection.Add(item);
             }
             return collection;
         }
@@ -57,58 +56,50 @@ namespace SimpleDatastore
             var doc = _storageDocument.Get();
             var nav = doc.CreateNavigator();
 
-            if (nav.MoveToFirstChild())
-            {
-                var navCurrent = nav.SelectSingleNode(string.Format("{0}[{1} = \"{2}\"]", Constants.DataItemName, PersistentObject.Identifier, id.ToString()));
-                if (navCurrent != null)
-                {
-                    T item = GetItemFromNode(navCurrent);
-                    return item;
-                }
-            }
-            return null;
+            if (!nav.MoveToFirstChild()) return null;
+            var navCurrent = nav.SelectSingleNode(string.Format("{0}[{1} = \"{2}\"]", Constants.DataItemName, PersistentObject.Identifier, id.ToString()));
+            if (navCurrent == null) return null;
+            var item = GetItemFromNode(navCurrent);
+            return item;
         }
 
         private T GetItemFromNode(XPathNavigator nav)
         {
             // Using the resolver so that objects can have dependencies
-            T instance = _resolver.GetService<T>();
+            var instance = _resolver.GetService<T>();
 
-            foreach (PropertyInfo property in typeof(T).GetValidProperties())
+            foreach (var property in typeof(T).GetValidProperties().Where(property => nav.MoveToChild(property.GetPropertyName(), "")))
             {
-                if (nav.MoveToChild(property.GetPropertyName(), ""))
+                if (property.PropertyType == typeof(string))
                 {
-                    if (property.PropertyType == typeof(string))
-                    {
-                        property.SetValue(instance, nav.Value, null);
-                    }
-                    else if (property.PropertyType == typeof(Guid))
-                    {
-                        Guid guid = new Guid(nav.Value);
-                        property.SetValue(instance, guid, null);
-                    }
-                    else if (property.PropertyType.IsAPersistentObject())
-                    {
-                        var repositoryType = typeof(BaseRepository<>).MakeGenericType(property.PropertyType);
-                        dynamic repository = _resolver.GetService(repositoryType);
-                        var persistentObject = repository.Load(nav.Value.ToGuid());
-                        property.SetValue(instance, persistentObject, null);
-                    }
-                    else if (property.PropertyType.IsAPersistentObjectList())
-                    {
-                        string[] persistentObjectIds = nav.Value.Split(',');
-                        Type elementType = property.PropertyType.GetGenericArguments()[0];
-                        Type mapperType = typeof(CollectionMapper<>).MakeGenericType(elementType);
-                        dynamic mapper = _resolver.GetService(mapperType);
-                        var list = mapper.Map(persistentObjectIds);
-                        property.SetValue(instance, list, null);
-                    }
-                    else
-                    {
-                        property.SetValue(instance, Convert.ChangeType(nav.Value, property.PropertyType), null);
-                    }
-                    nav.MoveToParent();
+                    property.SetValue(instance, nav.Value, null);
                 }
+                else if (property.PropertyType == typeof(Guid))
+                {
+                    var guid = new Guid(nav.Value);
+                    property.SetValue(instance, guid, null);
+                }
+                else if (property.PropertyType.IsAPersistentObject())
+                {
+                    var repositoryType = typeof(BaseRepository<>).MakeGenericType(property.PropertyType);
+                    dynamic repository = _resolver.GetService(repositoryType);
+                    var persistentObject = repository.Load(nav.Value.ToGuid());
+                    property.SetValue(instance, persistentObject, null);
+                }
+                else if (property.PropertyType.IsAPersistentObjectList())
+                {
+                    var persistentObjectIds = nav.Value.Split(',');
+                    var elementType = property.PropertyType.GetGenericArguments()[0];
+                    var mapperType = typeof(CollectionMapper<>).MakeGenericType(elementType);
+                    dynamic mapper = _resolver.GetService(mapperType);
+                    var list = mapper.Map(persistentObjectIds);
+                    property.SetValue(instance, list, null);
+                }
+                else
+                {
+                    property.SetValue(instance, Convert.ChangeType(nav.Value, property.PropertyType), null);
+                }
+                nav.MoveToParent();
             }
             return instance;
         }
@@ -122,7 +113,7 @@ namespace SimpleDatastore
             var innerXml = CreateXmlForObject(instance);
 
             // Create lock to ensure no concurrency issues
-            lock (_lockObject)
+            lock (LockObject)
             {
                 var doc = _storageDocument.Get();
 
@@ -133,18 +124,18 @@ namespace SimpleDatastore
 
                 if (existingNode != null)
                 {
-                    doc.DocumentElement.ReplaceChild(objectDocFrag, existingNode);
+                    if (doc.DocumentElement != null) doc.DocumentElement.ReplaceChild(objectDocFrag, existingNode);
                 }
                 else
                 {
-                    doc.DocumentElement.AppendChild(objectDocFrag);
+                    if (doc.DocumentElement != null) doc.DocumentElement.AppendChild(objectDocFrag);
                 }
 
                 _storageDocument.Save(doc);
             } // End lock
         }
 
-        private string CreateXmlForObject(T instance)
+        private static string CreateXmlForObject(T instance)
         {
             var objectStringBuilder = new StringBuilder();
 
@@ -154,9 +145,9 @@ namespace SimpleDatastore
             {
                 writer.WriteStartElement(Constants.DataItemName);
 
-                foreach (PropertyInfo property in typeof(T).GetValidProperties())
+                foreach (var property in typeof(T).GetValidProperties())
                 {
-                    string attributeName = property.GetPropertyName();
+                    var attributeName = property.GetPropertyName();
 
                     if (attributeName == PersistentObject.Identifier)
                     {
@@ -168,13 +159,16 @@ namespace SimpleDatastore
                         if (property.PropertyType.IsAPersistentObject())
                         {
                             var persistentObject = property.GetValue(instance, null) as PersistentObject;
-                            writer.WriteCData(persistentObject.Id.ToString());
+                            if (persistentObject != null) writer.WriteCData(persistentObject.Id.ToString());
                         }
                         else if (property.PropertyType.IsAPersistentObjectList())
                         {
                             var persistentObjectList = property.GetValue(instance, null) as IEnumerable<PersistentObject>;
-                            string flattenedList = string.Join<PersistentObject>(",", persistentObjectList);
-                            writer.WriteCData(flattenedList);
+                            if (persistentObjectList != null)
+                            {
+                                var flattenedList = string.Join<PersistentObject>(",", persistentObjectList);
+                                writer.WriteCData(flattenedList);
+                            }
                         }
                         else
                         {
@@ -196,17 +190,15 @@ namespace SimpleDatastore
         public void DeleteObject(Guid id)
         {
             // Create lock to ensure no concurrency issues
-            lock (_lockObject)
+            lock (LockObject)
             {
                 var doc = _storageDocument.Get();
 
-                XmlNode objectNode = doc.SelectExistingNode(id);
+                var objectNode = doc.SelectExistingNode(id);
 
-                if (objectNode != null)
-                {
-                    doc.DocumentElement.RemoveChild(objectNode);
-                    _storageDocument.Save(doc);
-                }
+                if (objectNode == null) return;
+                if (doc.DocumentElement != null) doc.DocumentElement.RemoveChild(objectNode);
+                _storageDocument.Save(doc);
             } // End lock
         }
     }
