@@ -15,7 +15,7 @@ namespace Example.Domain
 
         public int CompareTo(Widget other)
         {
-            return this.Name.CompareTo(other.Name);
+            return string.Compare(Name, other.Name, StringComparison.Ordinal);
         }
     }
 }

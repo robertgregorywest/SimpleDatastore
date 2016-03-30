@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.Mvc;
 using StructureMap;
 
@@ -33,10 +34,7 @@ namespace Example.DependencyResolution
 
         public IEnumerable<object> GetServices(Type serviceType)
         {
-            foreach (object obj in _container.GetAllInstances(serviceType))
-            {
-                yield return obj;
-            }
+            return _container.GetAllInstances(serviceType).Cast<object>();
         }
     }
 }

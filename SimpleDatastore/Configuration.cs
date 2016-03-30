@@ -1,4 +1,5 @@
-﻿using System.Web.Mvc;
+﻿using System.Web;
+using System.Web.Mvc;
 using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore
@@ -12,10 +13,17 @@ namespace SimpleDatastore
         public ICache Cache { get; private set; }
         public IDependencyResolver DependencyResolver { get; private set; }
 
-        public Configuration(IDependencyResolver dependencyResolver, ICache cache)
+        public Configuration(IDependencyResolver dependencyResolver) :
+            this(dependencyResolver, new WebCache(), 60, true, HttpContext.Current.Server.MapPath("~/App_Data/"))
+        {}
+
+        public Configuration(IDependencyResolver dependencyResolver, ICache cache, int cacheDuration, bool enableCaching, string datastoreLocation)
         {
             DependencyResolver = dependencyResolver;
             Cache = cache;
+            CacheDuration = cacheDuration;
+            EnableCaching = enableCaching;
+            DatastoreLocation = datastoreLocation;
         }
     }
 }
