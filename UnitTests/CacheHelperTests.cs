@@ -1,10 +1,7 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SimpleDatastore;
 using Rhino.Mocks;
+using SimpleDatastore.Interfaces;
 
 namespace UnitTests
 {
@@ -13,7 +10,7 @@ namespace UnitTests
     {
         private IConfiguration _config;
         private IStorageDocument<FakeObject> _storage;
-        private const int CACHE_DURATION = 60;
+        private const int CacheDuration = 60;
 
         [TestInitialize]
         public void Setup()
@@ -31,7 +28,7 @@ namespace UnitTests
             _storage = null;
         }
 
-        private ICache CacheStub
+        private static ICache CacheStub
         {
             get
             {
@@ -51,7 +48,7 @@ namespace UnitTests
 
             var helper = new CacheHelper<FakeObject>(_config);
 
-            var result = helper.GetObject(FakeObject.InstanceIdentifier);
+            helper.GetObject(FakeObject.InstanceIdentifier);
 
             _config.Cache.AssertWasCalled(c => c.Get(FakeObject.CACHE_KEY));
         }
@@ -64,7 +61,7 @@ namespace UnitTests
 
             var helper = new CacheHelper<FakeObject>(_config);
 
-            var result = helper.GetCollection();
+            helper.GetCollection();
 
             _config.Cache.AssertWasCalled(c => c.Get(FakeObject.ROOT_CACHE_KEY));
         }

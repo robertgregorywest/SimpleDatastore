@@ -1,6 +1,6 @@
 ﻿using System.Xml;
 
-namespace SimpleDatastore
+namespace SimpleDatastore.Interfaces
 {
     public interface IStorageDocument<T> where T : PersistentObject
     {

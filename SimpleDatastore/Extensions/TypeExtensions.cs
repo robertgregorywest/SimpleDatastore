@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace SimpleDatastore
+namespace SimpleDatastore.Extensions
 {
     internal static class TypeExtensions
     {

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using SimpleDatastore.Extensions;
+using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore
 {

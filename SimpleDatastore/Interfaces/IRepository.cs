@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SimpleDatastore
+namespace SimpleDatastore.Interfaces
 {
     public interface IRepository<T> where T : PersistentObject
     {

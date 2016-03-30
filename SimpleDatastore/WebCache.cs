@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections;
 using System.Web;
 using System.Web.Caching;
+using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore
 {
     public class WebCache : ICache
     {
-        private Cache Cache
+        private static Cache Cache
         {
             get { return HttpRuntime.Cache; }
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore
 {
@@ -11,11 +12,10 @@ namespace SimpleDatastore
         private IStorageHelper<T> _storageHelper;
         internal IStorageHelper<T> StorageHelper
         {
-            get {
+            get
+            {
                 return _storageHelper ??
-                       (_storageHelper =
-                           new StorageHelper<T>(_configuration.DependencyResolver,
-                               new StorageDocument<T>(_configuration)));
+                       (_storageHelper = new StorageHelper<T>(_configuration.DependencyResolver, new StorageDocument<T>(_configuration)));
             }
             set
             {

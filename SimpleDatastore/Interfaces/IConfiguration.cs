@@ -1,6 +1,6 @@
 ﻿using System.Web.Mvc;
 
-namespace SimpleDatastore
+namespace SimpleDatastore.Interfaces
 {
     public interface IConfiguration
     {

@@ -1,6 +1,7 @@
 ﻿using StructureMap;
 using SimpleDatastore;
 using System.Web.Mvc;
+using SimpleDatastore.Interfaces;
 
 namespace Example.DependencyResolution
 {

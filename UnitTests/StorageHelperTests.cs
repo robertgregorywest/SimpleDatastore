@@ -1,12 +1,10 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhino.Mocks;
 using SimpleDatastore;
 using System.Xml;
 using System.Web.Mvc;
+using SimpleDatastore.Interfaces;
 
 namespace UnitTests
 {

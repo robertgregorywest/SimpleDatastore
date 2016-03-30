@@ -1,5 +1,6 @@
 ﻿using System.Xml;
 using System.IO;
+using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore
 {
@@ -17,7 +18,7 @@ namespace SimpleDatastore
             // Create document if it does not exist
             if (!File.Exists(DocumentPath))
             {
-                using (XmlWriter writer = XmlWriter.Create(DocumentPath))
+                using (var writer = XmlWriter.Create(DocumentPath))
                 {
                     writer.WriteStartElement(Constants.DataElementName);
                     writer.WriteEndElement();

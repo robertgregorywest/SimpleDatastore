@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SimpleDatastore
+namespace SimpleDatastore.Extensions
 {
     public static class StringExtensions
     {

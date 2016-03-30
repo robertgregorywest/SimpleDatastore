@@ -1,4 +1,4 @@
-﻿namespace SimpleDatastore
+﻿namespace SimpleDatastore.Interfaces
 {
     public interface ICache
     {
