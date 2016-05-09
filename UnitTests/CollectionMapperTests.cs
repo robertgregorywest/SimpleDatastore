@@ -15,7 +15,7 @@ namespace UnitTests
             var repository = MockRepository.GenerateStub<IRepository<FakeObject>>();
             repository.Stub(r => r.Load(FakeObject.InstanceIdentifier)).Return(FakeObject.Instance);
 
-            var ids = new string[] { FakeObject.IDENTIFIER_VALUE};
+            var ids = new string[] { FakeObject.IdentifierValue};
 
             var mapper = new CollectionMapper<FakeObject>(repository);
 
@@ -31,7 +31,7 @@ namespace UnitTests
             repo.Stub(r => r.Load(FakeObject.InstanceIdentifier)).Return(FakeObject.Instance);
             repo.Stub(r => r.Load(FakeObject.SecondInstanceIdentifier)).Return(FakeObject.SecondInstance);
 
-            var ids = new string[] { FakeObject.IDENTIFIER_VALUE, FakeObject.IDENTIFIER_VALUE_2 };
+            var ids = new string[] { FakeObject.IdentifierValue, FakeObject.IdentifierValue2 };
 
             var mapper = new CollectionMapper<FakeObject>(repo);
 

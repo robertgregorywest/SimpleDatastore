@@ -33,9 +33,9 @@ namespace UnitTests
             get
             {
                 var cache = MockRepository.GenerateStub<ICache>();
-                cache.Stub(c => c.Get(FakeObject.CACHE_KEY)).Return(FakeObject.Instance);
-                cache.Stub(c => c.Get(FakeObject.ROOT_CACHE_KEY)).Return(FakeObject.UnsortedList);
-                cache.Stub(c => c.PurgeCacheItems(FakeObject.ROOT_CACHE_KEY)).IgnoreArguments();
+                cache.Stub(c => c.Get(FakeObject.CacheKey)).Return(FakeObject.Instance);
+                cache.Stub(c => c.Get(FakeObject.RootCacheKey)).Return(FakeObject.UnsortedList);
+                cache.Stub(c => c.PurgeCacheItems(FakeObject.RootCacheKey)).IgnoreArguments();
                 return cache;
             }
         }
@@ -50,7 +50,7 @@ namespace UnitTests
 
             helper.GetObject(FakeObject.InstanceIdentifier);
 
-            _config.Cache.AssertWasCalled(c => c.Get(FakeObject.CACHE_KEY));
+            _config.Cache.AssertWasCalled(c => c.Get(FakeObject.CacheKey));
         }
 
         [TestMethod]
@@ -63,7 +63,7 @@ namespace UnitTests
 
             helper.GetCollection();
 
-            _config.Cache.AssertWasCalled(c => c.Get(FakeObject.ROOT_CACHE_KEY));
+            _config.Cache.AssertWasCalled(c => c.Get(FakeObject.RootCacheKey));
         }
     }
 }
