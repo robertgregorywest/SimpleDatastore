@@ -60,7 +60,7 @@ namespace SimpleDatastore
 
             using (var scope = _provider.CreateScope())
             {
-                dynamic repository = _provider.GetService(repositoryType);
+                dynamic repository = ActivatorUtilities.CreateInstance(_provider, repositoryType);
                 var persistentObject = repository.Load(id);
                 property.SetValue(instance, persistentObject, null);
             }

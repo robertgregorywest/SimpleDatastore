@@ -15,14 +15,12 @@ namespace ExampleCore
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, IHostingEnvironment hostingEnvironment)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            HostingEnvironment = hostingEnvironment;
         }
 
         public IConfiguration Configuration { get; }
-        public IHostingEnvironment HostingEnvironment { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -36,9 +34,7 @@ namespace ExampleCore
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddMemoryCache();
-
-            services.AddSimpleDatastore(new Configuration(60, true, System.IO.Path.Combine(HostingEnvironment.ContentRootPath, "App_Data")));
+            services.AddSimpleDatastore();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

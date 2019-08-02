@@ -16,7 +16,7 @@
             @foreach (var w in Model)
             {
                 <li>
-                    @w.Name
+                    @w.Name (main part: @w.MainPart)
                     <ul>
                         @foreach (var x in w.Parts)
                         {

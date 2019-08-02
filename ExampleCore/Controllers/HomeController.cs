@@ -29,7 +29,7 @@ namespace ExampleCore.Controllers
             // something like AutoMapper in production code
             foreach (var widget in widgets)
             {
-                var widgetModel = new WidgetModel() { Name = widget.Name };
+                var widgetModel = new WidgetModel() { Name = widget.Name, MainPart = widget.MainPart.Name };
                 foreach (var p in widget.Parts)
                 {
                     widgetModel.Parts.Add(p.Name);
