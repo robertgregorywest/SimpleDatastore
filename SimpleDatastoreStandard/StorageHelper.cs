@@ -1,7 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using SimpleDatastore.Extensions;
+﻿using SimpleDatastore.Extensions;
 using SimpleDatastore.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Xml;
 
 namespace SimpleDatastore
 {
@@ -9,14 +11,40 @@ namespace SimpleDatastore
     {
         private static readonly object LockObject = new object();
 
-        private readonly IStorageDocument<T> _storageDocument;
+        private readonly IConfiguration _configuration;
 
         private readonly IXmlResolver<T> _resolver;
 
-        public StorageHelper(IStorageDocument<T> storageDocument, IXmlResolver<T> resolver)
+        public string DocumentPath { get; }
+
+        public StorageHelper(IConfiguration configuration, IXmlResolver<T> resolver)
         {
-            _storageDocument = storageDocument;
+            _configuration = configuration;
             _resolver = resolver;
+            DocumentPath = string.Format("{0}\\{1}{2}", _configuration.DatastoreLocation, typeof(T).ToString(), Constants.FileExtension);
+        }
+
+        public XmlDocument GetDocument()
+        {
+            // Create document if it does not exist
+            if (!File.Exists(DocumentPath))
+            {
+                using (var writer = XmlWriter.Create(DocumentPath))
+                {
+                    writer.WriteStartElement(Constants.DataElementName);
+                    writer.WriteEndElement();
+                    writer.Flush();
+                }
+            }
+
+            var doc = new XmlDocument();
+            doc.Load(DocumentPath);
+            return doc;
+        }
+
+        public void SaveDocument(XmlDocument document)
+        {
+            document.Save(DocumentPath);
         }
 
         /// <summary>
@@ -27,7 +55,7 @@ namespace SimpleDatastore
         {
             lock (LockObject)
             {
-                var doc = _storageDocument.Get();
+                var doc = GetDocument();
                 var nav = doc.CreateNavigator();
 
                 IList<T> collection = new List<T>();
@@ -55,7 +83,7 @@ namespace SimpleDatastore
         {
             lock (LockObject)
             {
-                var doc = _storageDocument.Get();
+                var doc = GetDocument();
                 var nav = doc.CreateNavigator();
 
                 if (!nav.MoveToFirstChild()) return null;
@@ -82,7 +110,7 @@ namespace SimpleDatastore
 
             lock (LockObject)
             {
-                var doc = _storageDocument.Get();
+                var doc = GetDocument();
 
                 var objectDocFrag = doc.CreateDocumentFragment();
                 objectDocFrag.InnerXml = innerXml;
@@ -98,7 +126,7 @@ namespace SimpleDatastore
                     if (doc.DocumentElement != null) doc.DocumentElement.AppendChild(objectDocFrag);
                 }
 
-                _storageDocument.Save(doc);
+                SaveDocument(doc);
             }
         }
 
@@ -110,13 +138,14 @@ namespace SimpleDatastore
         {
             lock (LockObject)
             {
-                var doc = _storageDocument.Get();
+                var doc = GetDocument();
 
                 var objectNode = doc.SelectExistingNode(id);
 
                 if (objectNode == null) return;
+
                 if (doc.DocumentElement != null) doc.DocumentElement.RemoveChild(objectNode);
-                _storageDocument.Save(doc);
+                SaveDocument(doc);
             }
         }
     }
