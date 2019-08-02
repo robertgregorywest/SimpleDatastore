@@ -3,18 +3,10 @@ SimpleDatastore
 
 A simple .NET persistence library which uses XML file storage.
 
-To use simply create instances of the IRepository<> class and configure your IoC container to use the BaseRepository<> class to instantiate them.
+This project has now updated to use .NET standard and the built-in dependency resolution framework. The easiest way to use it in an ASP.NET Core app is with the additional  NuGet package SimpleDatastore.Extensions.Microsoft.DependencyInjection. Simply include the following in your ConfigureServices to use the default configuration:
 
-All your objects need to inherit from PersistenceObject. Decorate any fields you want to persist with the System.Runtime.Serialization.DataMember attribute.
+services.AddSimpleDatastore();
 
-The project currently has a dependency on the DependencyResolver so is focussed on ASP.NET MVC.
+Then to use simply create instances of the IRepository<> for your types. All your objects need to inherit from PersistentObject. Decorate any fields you want to persist with the System.Runtime.Serialization.DataMember attribute. The default configuration uses the ASP.NET IMemoryCache.
 
-An example configuration using StructureMap:
-
-ObjectFactory.Initialize(x =>
-{
-    x.For<IConfiguration>().Use<DefaultConfiguration>();
-    x.For(typeof(IRepository<>)).Use(typeof(BaseRepository<>));
-});
-
-The default configuration uses the ASP.NET cache and stores data files in App_Data.
+A full working example app is included in the solution.
