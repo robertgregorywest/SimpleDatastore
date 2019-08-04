@@ -14,7 +14,11 @@ namespace SimpleDatastore
 
         private readonly Func<Type, object> _activator;
 
-        public XmlResolver(IServiceProvider provider) : this(provider, t => ActivatorUtilities.CreateInstance(provider, t.GetType())) { }
+        public XmlResolver(IServiceProvider provider)
+        {
+            _provider = provider;
+            _activator = type => ActivatorUtilities.CreateInstance(_provider, type);
+        }
 
         public XmlResolver(IServiceProvider provider, Func<Type, object> activator)
         {
@@ -24,7 +28,7 @@ namespace SimpleDatastore
 
         public T GetItemFromNode(XPathNavigator nav)
         {
-            // Using the provider to activate the instance so that objects can have dependencies
+            // Using the activator the instance so that objects can have dependencies
             T instance = (T)_activator.Invoke(typeof(T));
 
             foreach (var property in typeof(T).GetValidProperties().Where(property => nav.MoveToChild(property.GetPropertyName(), "")))
