@@ -17,7 +17,7 @@ namespace SimpleDatastore
         {
             services.AddSingleton(typeof(IRepository<>), typeof(BaseRepository<>));
             services.AddSingleton(typeof(IStorageHelper<>), typeof(StorageHelper<>));
-            services.AddSingleton(typeof(ICacheHelper<>), typeof(CacheHelper<>));
+            services.AddSingleton(typeof(IXmlDocumentProvider<>), typeof(XmlDocumentProvider<>));
             services.AddSingleton(typeof(IXmlResolver<>), typeof(XmlResolver<>));
             services.AddSingleton(config);
             services.AddMemoryCache();

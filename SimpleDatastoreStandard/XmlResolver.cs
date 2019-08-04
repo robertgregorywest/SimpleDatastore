@@ -12,58 +12,57 @@ namespace SimpleDatastore
     {
         private readonly IServiceProvider _provider;
 
-        public XmlResolver(IServiceProvider provider)
+        private readonly Func<Type, object> _activator;
+
+        public XmlResolver(IServiceProvider provider) : this(provider, t => ActivatorUtilities.CreateInstance(provider, t.GetType())) { }
+
+        public XmlResolver(IServiceProvider provider, Func<Type, object> activator)
         {
             _provider = provider;
+            _activator = activator;
         }
 
         public T GetItemFromNode(XPathNavigator nav)
         {
-            // https://medium.com/volosoft/asp-net-core-dependency-injection-best-practices-tips-tricks-c6e9c67f9d96
-            using (var scope = _provider.CreateScope())
+            // Using the provider to activate the instance so that objects can have dependencies
+            T instance = (T)_activator.Invoke(typeof(T));
+
+            foreach (var property in typeof(T).GetValidProperties().Where(property => nav.MoveToChild(property.GetPropertyName(), "")))
             {
-                // Using the provider to activate the instance so that objects can have dependencies
-                T instance = (T)ActivatorUtilities.CreateInstance(_provider, typeof(T));
-
-                foreach (var property in typeof(T).GetValidProperties().Where(property => nav.MoveToChild(property.GetPropertyName(), "")))
+                if (property.PropertyType == typeof(string))
                 {
-                    if (property.PropertyType == typeof(string))
-                    {
-                        property.SetValue(instance, nav.Value, null);
-                    }
-                    else if (property.PropertyType == typeof(Guid))
-                    {
-                        property.SetValue(instance, new Guid(nav.Value), null);
-                    }
-                    else if (property.PropertyType.IsAPersistentObject())
-                    {
-                        SetPersistentObjectProperty(property, instance, nav.Value.ToGuid());
-                    }
-                    else if (property.PropertyType.IsAPersistentObjectList())
-                    {
-                        SetPersistentObjectListProperty(property, instance, nav.Value.Split(','));
-                    }
-                    else
-                    {
-                        property.SetValue(instance, Convert.ChangeType(nav.Value, property.PropertyType), null);
-                    }
-
-                    nav.MoveToParent();
+                    property.SetValue(instance, nav.Value, null);
                 }
-                return instance;
+                else if (property.PropertyType == typeof(Guid))
+                {
+                    property.SetValue(instance, new Guid(nav.Value), null);
+                }
+                else if (property.PropertyType.IsAPersistentObject())
+                {
+                    SetPersistentObjectProperty(property, instance, nav.Value.ToGuid());
+                }
+                else if (property.PropertyType.IsAPersistentObjectList())
+                {
+                    SetPersistentObjectListProperty(property, instance, nav.Value.Split(','));
+                }
+                else
+                {
+                    property.SetValue(instance, Convert.ChangeType(nav.Value, property.PropertyType), null);
+                }
+
+                nav.MoveToParent();
             }
+
+            return instance;
         }
 
         private void SetPersistentObjectProperty(PropertyInfo property, T instance, Guid id)
         {
             var repositoryType = typeof(BaseRepository<>).MakeGenericType(property.PropertyType);
 
-            using (var scope = _provider.CreateScope())
-            {
-                dynamic repository = ActivatorUtilities.CreateInstance(_provider, repositoryType);
-                var persistentObject = repository.Load(id);
-                property.SetValue(instance, persistentObject, null);
-            }
+            dynamic repository = _activator.Invoke(repositoryType);
+            var persistentObject = repository.Load(id);
+            property.SetValue(instance, persistentObject, null);
         }
 
         private void SetPersistentObjectListProperty(PropertyInfo property, T instance, string[] persistentObjectIds)
@@ -71,12 +70,9 @@ namespace SimpleDatastore
             var elementType = property.PropertyType.GetGenericArguments()[0];
             var mapperType = typeof(CollectionMapper<>).MakeGenericType(elementType);
 
-            using (var scope = _provider.CreateScope())
-            {
-                dynamic mapper = ActivatorUtilities.CreateInstance(_provider, mapperType);
-                var list = mapper.Map(persistentObjectIds);
-                property.SetValue(instance, list, null);
-            }
+            dynamic mapper = _activator.Invoke(mapperType);
+            var list = mapper.Map(persistentObjectIds);
+            property.SetValue(instance, list, null);
         }
     }
 }

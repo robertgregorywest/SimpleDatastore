@@ -3,6 +3,7 @@ using SimpleDatastore.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Xml;
 
 namespace SimpleDatastore
@@ -11,51 +12,20 @@ namespace SimpleDatastore
     {
         private static readonly object LockObject = new object();
 
-        private readonly IConfiguration _configuration;
-
         private readonly IXmlResolver<T> _resolver;
+        private readonly IXmlDocumentProvider<T> _provider;
 
-        public string DocumentPath { get; }
-
-        public StorageHelper(IConfiguration configuration, IXmlResolver<T> resolver)
+        public StorageHelper(IXmlResolver<T> resolver, IXmlDocumentProvider<T> provider)
         {
-            _configuration = configuration;
             _resolver = resolver;
-            DocumentPath = string.Format("{0}\\{1}{2}", _configuration.DatastoreLocation, typeof(T).ToString(), Constants.FileExtension);
+            _provider = provider;
         }
 
-        public XmlDocument GetDocument()
-        {
-            // Create document if it does not exist
-            if (!File.Exists(DocumentPath))
-            {
-                using (var writer = XmlWriter.Create(DocumentPath))
-                {
-                    writer.WriteStartElement(Constants.DataElementName);
-                    writer.WriteEndElement();
-                    writer.Flush();
-                }
-            }
-
-            var doc = new XmlDocument();
-            doc.Load(DocumentPath);
-            return doc;
-        }
-
-        public void SaveDocument(XmlDocument document)
-        {
-            document.Save(DocumentPath);
-        }
-
-        /// <summary>
-        /// Get a collection of objects from an XML document by using the attribute information
-        /// </summary>
-        /// <returns>A collection of populated objects from the database</returns>
         public IList<T> GetCollection()
         {
             lock (LockObject)
             {
-                var doc = GetDocument();
+                var doc = _provider.GetDocument();
                 var nav = doc.CreateNavigator();
 
                 IList<T> collection = new List<T>();
@@ -74,22 +44,15 @@ namespace SimpleDatastore
             }
         }
 
-        /// <summary>
-        /// Get a class instance from an XML document by identifer
-        /// </summary>
-        /// <param name="id">The identifier for the instance</param>
-        /// <returns>The instance of T from the XML document</returns>
         public T GetObject(Guid id)
         {
             lock (LockObject)
             {
-                var doc = GetDocument();
+                var doc = _provider.GetDocument();
                 var nav = doc.CreateNavigator();
 
                 if (!nav.MoveToFirstChild()) return null;
-                var navCurrent =
-                    nav.SelectSingleNode(string.Format("{0}[{1} = \"{2}\"]", Constants.DataItemName,
-                        PersistentObject.Identifier, id.ToString()));
+                var navCurrent = nav.SelectSingleNode($"{Constants.DataItemName}[{PersistentObject.Identifier} = \"{id.ToString()}\"]");
                 if (navCurrent == null) return null;
 
                 var item = _resolver.GetItemFromNode(navCurrent);
@@ -98,19 +61,13 @@ namespace SimpleDatastore
             }
         }
 
-        /// <summary>
-        /// Saves the instance into XML document using attribute information
-        /// </summary>
-        /// <param name="instance">the instance of T to be saved</param>
         public void SaveObject(T instance)
         {
-            var xmlGenerator = new XmlGenerator<T>(instance);
-
-            var innerXml = xmlGenerator.Create();
+            var innerXml = BuildXml(instance);
 
             lock (LockObject)
             {
-                var doc = GetDocument();
+                var doc = _provider.GetDocument();
 
                 var objectDocFrag = doc.CreateDocumentFragment();
                 objectDocFrag.InnerXml = innerXml;
@@ -126,27 +83,71 @@ namespace SimpleDatastore
                     if (doc.DocumentElement != null) doc.DocumentElement.AppendChild(objectDocFrag);
                 }
 
-                SaveDocument(doc);
+                _provider.SaveDocument(doc);
             }
         }
 
-        /// <summary>
-        /// Delete an object from an XML document by identifer
-        /// </summary>
-        /// <param name="id">The identifier for the object</param>
         public void DeleteObject(Guid id)
         {
             lock (LockObject)
             {
-                var doc = GetDocument();
+                var doc = _provider.GetDocument();
 
                 var objectNode = doc.SelectExistingNode(id);
 
                 if (objectNode == null) return;
 
                 if (doc.DocumentElement != null) doc.DocumentElement.RemoveChild(objectNode);
-                SaveDocument(doc);
+                _provider.SaveDocument(doc);
             }
+        }
+
+        private string BuildXml(T instance)
+        {
+            var objectStringBuilder = new StringBuilder();
+
+            var settings = new XmlWriterSettings() { OmitXmlDeclaration = true };
+
+            using (var writer = XmlWriter.Create(objectStringBuilder, settings))
+            {
+                writer.WriteStartElement(Constants.DataItemName);
+
+                foreach (var property in typeof(T).GetValidProperties())
+                {
+                    var attributeName = property.GetPropertyName();
+
+                    if (attributeName == PersistentObject.Identifier)
+                    {
+                        writer.WriteElementString(attributeName, property.GetValue(instance, null).ToString());
+                    }
+                    else
+                    {
+                        writer.WriteStartElement(attributeName);
+                        if (property.PropertyType.IsAPersistentObject())
+                        {
+                            var persistentObject = property.GetValue(instance, null) as PersistentObject;
+                            if (persistentObject != null) writer.WriteCData(persistentObject.Id.ToString());
+                        }
+                        else if (property.PropertyType.IsAPersistentObjectList())
+                        {
+                            var persistentObjectList = property.GetValue(instance, null) as IEnumerable<PersistentObject>;
+                            if (persistentObjectList != null)
+                            {
+                                var flattenedList = string.Join<PersistentObject>(",", persistentObjectList);
+                                writer.WriteCData(flattenedList);
+                            }
+                        }
+                        else
+                        {
+                            writer.WriteCData(property.GetValue(instance, null).ToString());
+                        }
+                        writer.WriteEndElement();
+                    }
+                }
+                writer.WriteEndElement();
+            }
+
+            return objectStringBuilder.ToString();
         }
     }
 }

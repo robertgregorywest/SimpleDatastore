@@ -8,21 +8,34 @@ namespace SimpleDatastore
     public class BaseRepository<T> : IRepository<T> where T : PersistentObject
     {
         private readonly IStorageHelper<T> _storageHelper;
-        private readonly ICacheHelper<T> _cacheHelper;
+        private readonly IConfiguration _config;
+        private readonly ICache _cache;
 
-        public BaseRepository(IStorageHelper<T> storageHelper, ICacheHelper<T> cacheHelper)
+        private static string KeyForObject(Guid id) => string.Format("{0}.{1}", typeof(T).ToString(), id.ToString());
+        private static string KeyForCollection() => typeof(T).ToString();
+
+        public BaseRepository(IStorageHelper<T> storageHelper, IConfiguration config, ICache cache)
         {
             _storageHelper = storageHelper;
-            _cacheHelper = cacheHelper;
+            _config = config;
+            _cache = cache;
         }
 
         public T Load(Guid id)
         {
-            var result = _cacheHelper.GetObject(id);
+            var result = _config.EnableCaching ? _cache.Get(KeyForObject(id)) as T : null;
 
-            if (result != null) return result;
+            if (result != null)
+            {
+                return result;
+            }
+
             result = _storageHelper.GetObject(id);
-            _cacheHelper.CacheObject(result);
+
+            if (_config.EnableCaching)
+            {
+                _cache.Set(KeyForObject(result.Id), result, _config.CacheDuration);
+            }
 
             return result;
         }
@@ -36,11 +49,19 @@ namespace SimpleDatastore
 
         public IList<T> LoadListUnsorted()
         {
-            var result = _cacheHelper.GetCollection();
+            var result = _config.EnableCaching ? _cache.Get(KeyForCollection()) as IList<T> : null;
 
-            if (result != null) return result;
+            if (result != null)
+            {
+                return result;
+            }
+
             result = _storageHelper.GetCollection();
-            _cacheHelper.CacheCollection(result);
+
+            if (_config.EnableCaching)
+            {
+                _cache.Set(KeyForCollection(), result, _config.CacheDuration);
+            }
 
             return result;
         }
@@ -51,14 +72,25 @@ namespace SimpleDatastore
             {
                 instance.Id = Guid.NewGuid();
             }
+
             _storageHelper.SaveObject(instance);
-            _cacheHelper.PurgeCacheItems(instance.Id);
+
+            PurgeCacheItem(instance.Id);
         }
 
         public void Delete(Guid id)
         {
             _storageHelper.DeleteObject(id);
-            _cacheHelper.PurgeCacheItems(id);
+            PurgeCacheItem(id);
+        }
+
+        private void PurgeCacheItem(Guid id)
+        {
+            if (_config.EnableCaching)
+            {
+                _cache.Remove(KeyForObject(id));
+                _cache.Remove(KeyForCollection());
+            }
         }
     }
 }

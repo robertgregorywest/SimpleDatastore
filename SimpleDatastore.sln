@@ -5,25 +5,18 @@ VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EEDAA922-2916-4F67-B77D-EC471C1B5BD6}"
 	ProjectSection(SolutionItems) = preProject
-		Local.testsettings = Local.testsettings
 		README.md = README.md
-		SimpleDatastore.vsmdi = SimpleDatastore.vsmdi
-		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleDatastore", "SimpleDatastore\SimpleDatastore.csproj", "{04CDC9BC-E41C-42CA-8205-94815C9C49FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleDatastoreStandard", "SimpleDatastoreStandard\SimpleDatastoreStandard.csproj", "{9DC195D3-E323-47E3-8D30-BEDB994AB384}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{68AD260F-389E-4DB9-9A98-6FFF24A65724}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Domain", "Example.Domain\Example.Domain.csproj", "{6AF97302-9B81-4D18-90D8-BA5CB55F1FB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "Example\Example.csproj", "{365C0C24-75FC-4E51-AE17-6B1C0C54536A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleDatastore.DI", "SimpleDatastore.DI\SimpleDatastore.DI.csproj", "{62DD04E5-7DCC-41BD-9B71-E9994A6E0968}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleDatastoreStandard", "SimpleDatastoreStandard\SimpleDatastoreStandard.csproj", "{9DC195D3-E323-47E3-8D30-BEDB994AB384}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleDatastore.Tests", "SimpleDatastore.Tests\SimpleDatastore.Tests.csproj", "{F6E15182-F625-4072-8FAD-AD289009147D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleCore", "ExampleCore\ExampleCore.csproj", "{9075373B-B38F-433F-A0A4-7C4C48C70872}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Domain", "Example.Domain\Example.Domain.csproj", "{6AF97302-9B81-4D18-90D8-BA5CB55F1FB3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleDatastore.DI", "SimpleDatastore.DI\SimpleDatastore.DI.csproj", "{62DD04E5-7DCC-41BD-9B71-E9994A6E0968}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Web", "Example.Web\Example.Web.csproj", "{8286D9D4-CD5B-4536-9951-0794B2922A55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,26 +24,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{04CDC9BC-E41C-42CA-8205-94815C9C49FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{04CDC9BC-E41C-42CA-8205-94815C9C49FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{04CDC9BC-E41C-42CA-8205-94815C9C49FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{04CDC9BC-E41C-42CA-8205-94815C9C49FB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{68AD260F-389E-4DB9-9A98-6FFF24A65724}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{68AD260F-389E-4DB9-9A98-6FFF24A65724}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{68AD260F-389E-4DB9-9A98-6FFF24A65724}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{68AD260F-389E-4DB9-9A98-6FFF24A65724}.Release|Any CPU.Build.0 = Release|Any CPU
-		{365C0C24-75FC-4E51-AE17-6B1C0C54536A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{365C0C24-75FC-4E51-AE17-6B1C0C54536A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{365C0C24-75FC-4E51-AE17-6B1C0C54536A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{365C0C24-75FC-4E51-AE17-6B1C0C54536A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9DC195D3-E323-47E3-8D30-BEDB994AB384}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9DC195D3-E323-47E3-8D30-BEDB994AB384}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DC195D3-E323-47E3-8D30-BEDB994AB384}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DC195D3-E323-47E3-8D30-BEDB994AB384}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9075373B-B38F-433F-A0A4-7C4C48C70872}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9075373B-B38F-433F-A0A4-7C4C48C70872}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9075373B-B38F-433F-A0A4-7C4C48C70872}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9075373B-B38F-433F-A0A4-7C4C48C70872}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6AF97302-9B81-4D18-90D8-BA5CB55F1FB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6AF97302-9B81-4D18-90D8-BA5CB55F1FB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6AF97302-9B81-4D18-90D8-BA5CB55F1FB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -59,6 +36,14 @@ Global
 		{62DD04E5-7DCC-41BD-9B71-E9994A6E0968}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62DD04E5-7DCC-41BD-9B71-E9994A6E0968}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62DD04E5-7DCC-41BD-9B71-E9994A6E0968}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6E15182-F625-4072-8FAD-AD289009147D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6E15182-F625-4072-8FAD-AD289009147D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6E15182-F625-4072-8FAD-AD289009147D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6E15182-F625-4072-8FAD-AD289009147D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8286D9D4-CD5B-4536-9951-0794B2922A55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8286D9D4-CD5B-4536-9951-0794B2922A55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8286D9D4-CD5B-4536-9951-0794B2922A55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8286D9D4-CD5B-4536-9951-0794B2922A55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
