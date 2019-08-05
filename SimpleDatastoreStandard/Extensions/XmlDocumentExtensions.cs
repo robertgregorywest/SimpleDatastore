@@ -7,7 +7,7 @@ namespace SimpleDatastore.Extensions
     {
         internal static XmlNode SelectExistingNode(this XmlDocument doc, Guid id)
         {
-            return doc.DocumentElement != null ? doc.DocumentElement.SelectSingleNode(string.Format("{0}[{1} = \"{2}\"]", Constants.DataItemName, PersistentObject.Identifier, id.ToString())) : null;
+            return doc.DocumentElement?.SelectSingleNode(string.Format("{0}[{1} = \"{2}\"]", Constants.DataItemName, PersistentObject.Identifier, id.ToString()));
         }
     }
 }

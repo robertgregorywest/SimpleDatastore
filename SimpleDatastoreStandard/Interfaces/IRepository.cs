@@ -8,6 +8,7 @@ namespace SimpleDatastore.Interfaces
         T Load(Guid id);
         IList<T> LoadList();
         IList<T> LoadListUnsorted();
+        IList<T> LoadListByIds(string[] persistentObjectIds);
         void Save(T instance);
         void Delete(Guid id);
     }

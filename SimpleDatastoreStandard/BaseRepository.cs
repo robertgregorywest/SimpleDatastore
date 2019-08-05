@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SimpleDatastore.Extensions;
 using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore
@@ -65,6 +66,8 @@ namespace SimpleDatastore
 
             return result;
         }
+
+        public IList<T> LoadListByIds(string[] persistentObjectIds) => persistentObjectIds.Select(id => Load(id.ToGuid())).Where(po => po != null).ToList();
 
         public void Save(T instance)
         {

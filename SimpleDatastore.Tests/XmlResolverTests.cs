@@ -24,7 +24,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public void GetItemFromNode_Should_Return_Object()
         {
-            var resolver = new XmlResolver<FakeObject>(_provider, t => new FakeObject());
+            var resolver = new XmlResolver<FakeObject>(_provider, () => new FakeObject());
 
             var result = resolver.GetItemFromNode(FakeDocuments.SingleFakeObjectNavigtor);
 

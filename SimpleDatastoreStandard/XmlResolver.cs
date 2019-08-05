@@ -12,15 +12,15 @@ namespace SimpleDatastore
     {
         private readonly IServiceProvider _provider;
 
-        private readonly Func<Type, object> _activator;
+        private readonly Func<T> _activator;
 
         public XmlResolver(IServiceProvider provider)
         {
             _provider = provider;
-            _activator = type => ActivatorUtilities.CreateInstance(_provider, type);
+            _activator = () => ActivatorUtilities.CreateInstance<T>(_provider);
         }
 
-        public XmlResolver(IServiceProvider provider, Func<Type, object> activator)
+        public XmlResolver(IServiceProvider provider, Func<T> activator)
         {
             _provider = provider;
             _activator = activator;
@@ -29,7 +29,7 @@ namespace SimpleDatastore
         public T GetItemFromNode(XPathNavigator nav)
         {
             // Using the activator the instance so that objects can have dependencies
-            T instance = (T)_activator.Invoke(typeof(T));
+            T instance = _activator.Invoke();
 
             foreach (var property in typeof(T).GetValidProperties().Where(property => nav.MoveToChild(property.GetPropertyName(), "")))
             {
@@ -62,9 +62,8 @@ namespace SimpleDatastore
 
         private void SetPersistentObjectProperty(PropertyInfo property, T instance, Guid id)
         {
-            var repositoryType = typeof(BaseRepository<>).MakeGenericType(property.PropertyType);
-
-            dynamic repository = _activator.Invoke(repositoryType);
+            var repositoryType = typeof(IRepository<>).MakeGenericType(property.PropertyType);
+            dynamic repository = _provider.GetService(repositoryType);
             var persistentObject = repository.Load(id);
             property.SetValue(instance, persistentObject, null);
         }
@@ -72,10 +71,9 @@ namespace SimpleDatastore
         private void SetPersistentObjectListProperty(PropertyInfo property, T instance, string[] persistentObjectIds)
         {
             var elementType = property.PropertyType.GetGenericArguments()[0];
-            var mapperType = typeof(CollectionMapper<>).MakeGenericType(elementType);
-
-            dynamic mapper = _activator.Invoke(mapperType);
-            var list = mapper.Map(persistentObjectIds);
+            var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
+            dynamic repository = _provider.GetService(repositoryType);
+            var list = repository.LoadListByIds(persistentObjectIds);
             property.SetValue(instance, list, null);
         }
     }

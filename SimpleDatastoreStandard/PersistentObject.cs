@@ -11,36 +11,22 @@ namespace SimpleDatastore
         internal const string Identifier = "id";
 
         private Guid _id = Guid.Empty;
+
         [DataMember(Name = Identifier, IsRequired = true)]
         public Guid Id
         {
-            get { return _id; }
-            set { _id = value; }
+            get => _id;
+            set => _id = value;
         }
 
-        public bool Equals(PersistentObject other)
-        {
-            return other != null && this.Id.Equals(other.Id);
-        }
+        public bool Equals(PersistentObject other) => other != null && Id.Equals(other.Id);
 
-        public override bool Equals(object other)
-        {
-            return Equals(other as PersistentObject);
-        }
+        public override bool Equals(object other) => Equals(other as PersistentObject);
 
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
+        public override int GetHashCode() => Id.GetHashCode();
 
-        public override string ToString()
-        {
-            return Id.ToString();
-        }
+        public override string ToString() => Id.ToString();
 
-        public int CompareTo(PersistentObject other)
-        {
-            return Id.CompareTo(other.Id);
-        }
+        public int CompareTo(PersistentObject other) => Id.CompareTo(other.Id);
     }
 }
