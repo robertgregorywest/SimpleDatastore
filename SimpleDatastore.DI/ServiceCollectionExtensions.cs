@@ -8,10 +8,14 @@ namespace SimpleDatastore
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddSimpleDatastore(this IServiceCollection services)
-            => AddSimpleDatastore(services, new Configuration(60, true, Path.Combine(services.BuildServiceProvider().GetService<IHostingEnvironment>().ContentRootPath, "App_Data")));
-   
+        {
+            return AddSimpleDatastore(services, new Configuration(60, true, Path.Combine(services.BuildServiceProvider().GetService<IHostingEnvironment>().ContentRootPath, "App_Data")));
+        }
+
         public static IServiceCollection AddSimpleDatastore(this IServiceCollection services, IConfiguration config)
-            => ConfigureSimpleDatastore(services, config);
+        {
+            return ConfigureSimpleDatastore(services, config);
+        }
 
         private static IServiceCollection ConfigureSimpleDatastore(IServiceCollection services, IConfiguration config)
         {
