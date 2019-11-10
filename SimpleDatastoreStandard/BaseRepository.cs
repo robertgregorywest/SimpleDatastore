@@ -12,8 +12,15 @@ namespace SimpleDatastore
         private readonly IConfiguration _config;
         private readonly ICache _cache;
 
-        private static string KeyForObject(Guid id) => string.Format("{0}.{1}", typeof(T).ToString(), id.ToString());
-        private static string KeyForCollection() => typeof(T).ToString();
+        private static string KeyForObject(Guid id)
+        {
+            return $"{typeof(T)}.{id.ToString()}";
+        }
+
+        private static string KeyForCollection()
+        {
+            return typeof(T).ToString();
+        }
 
         public BaseRepository(IStorageHelper<T> storageHelper, IConfiguration config, ICache cache)
         {
@@ -24,21 +31,7 @@ namespace SimpleDatastore
 
         public T Load(Guid id)
         {
-            var result = _config.EnableCaching ? _cache.Get(KeyForObject(id)) as T : null;
-
-            if (result != null)
-            {
-                return result;
-            }
-
-            result = _storageHelper.GetObject(id);
-
-            if (_config.EnableCaching)
-            {
-                _cache.Set(KeyForObject(result.Id), result, _config.CacheDuration);
-            }
-
-            return result;
+            return GetCacheItem(() => _storageHelper.GetObject(id), KeyForObject(id));
         }
 
         public IList<T> LoadList()
@@ -50,24 +43,13 @@ namespace SimpleDatastore
 
         public IList<T> LoadListUnsorted()
         {
-            var result = _config.EnableCaching ? _cache.Get(KeyForCollection()) as IList<T> : null;
-
-            if (result != null)
-            {
-                return result;
-            }
-
-            result = _storageHelper.GetCollection();
-
-            if (_config.EnableCaching)
-            {
-                _cache.Set(KeyForCollection(), result, _config.CacheDuration);
-            }
-
-            return result;
+            return GetCacheItem<IList<T>>(() => _storageHelper.GetCollection(), KeyForCollection());
         }
 
-        public IList<T> LoadListByIds(string[] persistentObjectIds) => persistentObjectIds.Select(id => Load(id.ToGuid())).Where(po => po != null).ToList();
+        public IList<T> LoadListByIds(string[] persistentObjectIds)
+        {
+            return persistentObjectIds.Select(id => Load(id.ToGuid())).Where(po => po != null).ToList();
+        }
 
         public void Save(T instance)
         {
@@ -85,6 +67,30 @@ namespace SimpleDatastore
         {
             _storageHelper.DeleteObject(id);
             PurgeCacheItem(id);
+        }
+
+        private TResult GetCacheItem<TResult>(Func<TResult> func, string cacheKey)
+        {
+            if (!_config.EnableCaching)
+            {
+                return func.Invoke();
+            }
+
+            object cacheItem = _cache.Get(cacheKey);
+
+            if (cacheItem is TResult result)
+            {
+                return result;
+            }
+
+            result = func.Invoke();
+
+            if (result != null)
+            {
+                _cache.Set(cacheKey, result, _config.CacheDuration);
+            }
+
+            return result;
         }
 
         private void PurgeCacheItem(Guid id)
