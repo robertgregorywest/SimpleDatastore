@@ -43,7 +43,7 @@ namespace SimpleDatastore
 
         public IList<T> LoadListUnsorted()
         {
-            return GetCacheItem<IList<T>>(() => _storageHelper.GetCollection(), KeyForCollection());
+            return GetCacheItem(() => _storageHelper.GetCollection(), KeyForCollection());
         }
 
         public IList<T> LoadListByIds(string[] persistentObjectIds)
