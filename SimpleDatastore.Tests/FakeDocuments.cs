@@ -5,16 +5,16 @@ namespace SimpleDatastore.Tests
 {
     internal static class FakeDocuments
     {
-        private static readonly string _singleFakeObject = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><id>{FakeObject.IdentifierValue}</id><name><![CDATA[{FakeObject.NameValue}]]></name></dataItem></data>";
-        private static readonly string _emptyDocument = @"<?xml version=""1.0"" encoding=""utf-8""?><data></data>";
-        private static readonly string _unsortedList = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><id>{FakeObject.IdentifierValue2}</id><name><![CDATA[{FakeObject.NameValue2}]]></name></dataItem><dataItem><id>{FakeObject.IdentifierValue}</id><name><![CDATA[{FakeObject.NameValue}]]></name></dataItem></data>";
+        private static readonly string SingleFakeObjectFixture = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><id>{FakeObject.IdentifierValue}</id><name><![CDATA[{FakeObject.NameValue}]]></name></dataItem></data>";
+        private const string EmptyDocumentFixture = @"<?xml version=""1.0"" encoding=""utf-8""?><data></data>";
+        private static readonly string UnsortedListFixture = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><id>{FakeObject.IdentifierValue2}</id><name><![CDATA[{FakeObject.NameValue2}]]></name></dataItem><dataItem><id>{FakeObject.IdentifierValue}</id><name><![CDATA[{FakeObject.NameValue}]]></name></dataItem></data>";
 
         public static XmlDocument SingleFakeObjectDocument
         {
             get
             {
                 var doc = new XmlDocument();
-                doc.LoadXml(_singleFakeObject);
+                doc.LoadXml(SingleFakeObjectFixture);
                 return doc;
             }
         }
@@ -24,7 +24,7 @@ namespace SimpleDatastore.Tests
             get
             {
                 var doc = new XmlDocument();
-                doc.LoadXml(_emptyDocument);
+                doc.LoadXml(EmptyDocumentFixture);
                 return doc;
             }
         }
@@ -34,7 +34,7 @@ namespace SimpleDatastore.Tests
             get
             {
                 var doc = new XmlDocument();
-                doc.LoadXml(_unsortedList);
+                doc.LoadXml(UnsortedListFixture);
                 return doc;
             }
         }
@@ -44,7 +44,7 @@ namespace SimpleDatastore.Tests
             get
             {
                 var doc = new XmlDocument();
-                doc.LoadXml(_singleFakeObject);
+                doc.LoadXml(SingleFakeObjectFixture);
                 var nav = doc.CreateNavigator();
                 nav.MoveToFirstChild();
                 var navCurrent = nav.SelectSingleNode($"{Constants.DataItemName}[{PersistentObject.Identifier} = \"{FakeObject.IdentifierValue}\"]");

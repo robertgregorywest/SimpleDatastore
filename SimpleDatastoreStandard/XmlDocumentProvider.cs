@@ -1,8 +1,5 @@
 ﻿using SimpleDatastore.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Xml;
 
 namespace SimpleDatastore
@@ -13,7 +10,7 @@ namespace SimpleDatastore
 
         public XmlDocumentProvider(IConfiguration configuration)
         {
-            DocumentPath = string.Format("{0}\\{1}{2}", configuration.DatastoreLocation, typeof(T).ToString(), Constants.FileExtension);
+            DocumentPath = $"{configuration.DatastoreLocation}\\{typeof(T)}{Constants.FileExtension}";
         }
 
         public XmlDocument GetDocument()

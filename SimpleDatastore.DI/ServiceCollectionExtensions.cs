@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SimpleDatastore.Interfaces;
 using System.IO;
 
+// ReSharper disable once CheckNamespace
 namespace SimpleDatastore
 {
     public static class ServiceCollectionExtensions

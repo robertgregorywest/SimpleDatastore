@@ -25,8 +25,6 @@ namespace Example.Web.Controllers
 
             var model = new List<WidgetModel>();
 
-            // Using view models just to demonstrate good practice - mapping should be achieved with
-            // something like AutoMapper in production code
             foreach (var widget in widgets)
             {
                 var widgetModel = new WidgetModel() { Name = widget.Name, MainPart = widget.MainPart.Name };
@@ -38,11 +36,6 @@ namespace Example.Web.Controllers
             }
 
             return View(model);
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

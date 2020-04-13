@@ -2,7 +2,6 @@
 using SimpleDatastore.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Xml;
 
@@ -10,6 +9,7 @@ namespace SimpleDatastore
 {
     public class StorageHelper<T> : IStorageHelper<T> where T : PersistentObject
     {
+        // ReSharper disable once StaticMemberInGenericType
         private static readonly object LockObject = new object();
 
         private readonly IXmlResolver<T> _resolver;

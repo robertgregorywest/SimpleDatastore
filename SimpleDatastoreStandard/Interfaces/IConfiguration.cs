@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SimpleDatastore.Interfaces
+﻿namespace SimpleDatastore.Interfaces
 {
     public interface IConfiguration
     {

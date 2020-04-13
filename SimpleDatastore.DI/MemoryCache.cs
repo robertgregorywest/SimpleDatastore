@@ -2,6 +2,7 @@
 using SimpleDatastore.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
+// ReSharper disable once CheckNamespace
 namespace SimpleDatastore
 {
     public class MemoryCache : ICache
