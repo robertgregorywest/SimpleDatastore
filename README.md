@@ -10,3 +10,5 @@ services.AddSimpleDatastore();
 Then to use simply create instances of the IRepository<> for your types. All your objects need to inherit from PersistentObject. Decorate any fields you want to persist with the System.Runtime.Serialization.DataMember attribute. The default configuration uses the ASP.NET IMemoryCache.
 
 A full working example app is included in the solution.
+
+[![Build Status](https://dev.azure.com/robgwest/SimpleDatastore/_apis/build/status/robertgregorywest.SimpleDatastore?branchName=master)](https://dev.azure.com/robgwest/SimpleDatastore/_build/latest?definitionId=3&branchName=master)
