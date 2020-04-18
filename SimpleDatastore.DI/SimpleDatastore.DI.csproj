@@ -3,14 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>SimpleDatastore.Extensions.Microsoft.DependencyInjection</PackageId>
+    <Version>1.0.3</Version>
     <Authors>Rob West</Authors>
     <Product>SimpleDatastore.Extensions.Microsoft.DependencyInjection</Product>
     <Description>SimpleDatastore extensions for ASP.NET Core</Description>
     <PackageProjectUrl>https://github.com/robertgregorywest/SimpleDatastore</PackageProjectUrl>
     <RepositoryUrl>https://github.com/robertgregorywest/SimpleDatastore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>1.0.3</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
