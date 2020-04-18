@@ -37,10 +37,9 @@ steps:
     nobuild: true
     packDirectory: '$(Build.ArtifactStagingDirectory)'
 
-#- task: DotNetCoreCLI@2
-#  displayName: 'dotnet push'
-#  inputs:
-#    command: 'push'
-#    nugetFeedType: 'external'
-#    externalEndPoint: 'nuget_robertgegorywest'
-
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet push'
+  inputs:
+    command: 'push'
+    nugetFeedType: 'external'
+    externalEndPoint: 'nuget_robertgegorywest'
