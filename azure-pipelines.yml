@@ -19,7 +19,7 @@ steps:
   inputs:
     command: 'build'
     arguments: '--configuration $(buildConfiguration)'
-    projects: '**/*.csproj'
+    projects: '**/SimpleDatastore*.csproj'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet tests'
@@ -33,27 +33,14 @@ steps:
   inputs:
     command: 'pack'
     arguments: '--configuration $(buildConfiguration)'
-    packagesToPack: '**/*.csproj'
+    packagesToPack: '**/SimpleDatastore*.csproj'
     nobuild: true
     packDirectory: '$(Build.ArtifactStagingDirectory)'
 
 #- task: DotNetCoreCLI@2
+#  displayName: 'dotnet push'
 #  inputs:
 #    command: 'push'
 #    nugetFeedType: 'external'
 #    externalEndPoint: 'nuget_robertgegorywest'
-  
-#- task: NuGetCommand@2
-#  inputs:
-#    command: 'pack'
-#    packagesToPack: '**/*.csproj'
-#    versioningScheme: 'off'
-
-#- task: NuGetCommand@2
-#  inputs:
-#    command: 'push'
-#    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-# $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
-#    nuGetFeedType: 'external'
-#    publishFeedCredentials: 'nuget_robertgegorywest'
 
