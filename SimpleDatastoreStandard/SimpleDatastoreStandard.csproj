@@ -6,13 +6,10 @@
     <Version>2.0.3</Version>
     <Authors>Rob West</Authors>
     <Product>SimpleDatastore</Product>
-    <PackageDescription>A simple .NET persistence library which uses XML file storage</PackageDescription>
     <Description>A simple .NET persistence library which uses XML file storage</Description>
     <PackageProjectUrl>https://github.com/robertgregorywest/SimpleDatastore</PackageProjectUrl>
     <RepositoryUrl>https://github.com/robertgregorywest/SimpleDatastore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RootNamespace>SimpleDatastore</RootNamespace>
   </PropertyGroup>
 

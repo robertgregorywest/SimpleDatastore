@@ -10,7 +10,6 @@
     <PackageProjectUrl>https://github.com/robertgregorywest/SimpleDatastore</PackageProjectUrl>
     <RepositoryUrl>https://github.com/robertgregorywest/SimpleDatastore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
