@@ -2,29 +2,34 @@
 using Microsoft.Extensions.DependencyInjection;
 using SimpleDatastore.Interfaces;
 using System.IO;
+using JetBrains.Annotations;
 
 // ReSharper disable once CheckNamespace
 namespace SimpleDatastore
 {
     public static class ServiceCollectionExtensions
     {
+        [UsedImplicitly]
         public static IServiceCollection AddSimpleDatastore(this IServiceCollection services)
         {
-            return AddSimpleDatastore(services, new Configuration(60, true, Path.Combine(services.BuildServiceProvider().GetService<IHostingEnvironment>().ContentRootPath, "App_Data")));
+            var contentRootPath = services.BuildServiceProvider().GetService<IHostingEnvironment>().ContentRootPath;
+            var configuration = new Configuration(60, true, Path.Combine(contentRootPath, Constants.DataFolder));
+            return ConfigureSimpleDatastore(services, configuration);
         }
 
-        public static IServiceCollection AddSimpleDatastore(this IServiceCollection services, IConfiguration config)
+        [UsedImplicitly]
+        public static IServiceCollection AddSimpleDatastore(this IServiceCollection services, IConfiguration configuration)
         {
-            return ConfigureSimpleDatastore(services, config);
+            return ConfigureSimpleDatastore(services, configuration);
         }
 
-        private static IServiceCollection ConfigureSimpleDatastore(IServiceCollection services, IConfiguration config)
+        private static IServiceCollection ConfigureSimpleDatastore(IServiceCollection services, IConfiguration configuration)
         {
             services.AddSingleton(typeof(IRepository<>), typeof(BaseRepository<>));
             services.AddSingleton(typeof(IStorageHelper<>), typeof(StorageHelper<>));
             services.AddSingleton(typeof(IXmlDocumentProvider<>), typeof(XmlDocumentProvider<>));
             services.AddSingleton(typeof(IXmlResolver<>), typeof(XmlResolver<>));
-            services.AddSingleton(config);
+            services.AddSingleton(configuration);
             services.AddMemoryCache();
             services.AddSingleton<ICache, MemoryCache>();
 

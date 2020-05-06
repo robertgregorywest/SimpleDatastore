@@ -4,22 +4,33 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- master
+  branches:
+    - feature/*
+    - master
 
 pool:
   vmImage: 'windows-latest'
 
 variables:
   buildConfiguration: 'Release'
+  GitVersion.SemVer: ''
 
 steps:
 
+- task: UseGitVersion@5
+  displayName: GitVersion
+  inputs:
+    versionSpec: '5.x'
+    updateAssemblyInfo: true
+      
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build'
   inputs:
     command: 'build'
-    arguments: '--configuration $(buildConfiguration)'
-    projects: '**/SimpleDatastore*.csproj'
+    projects: '**/SimpleDatastore.csproj'
+    configuration: '$(buildConfiguration)'
+    versioningScheme: byEnvVar
+    versionEnvVar: 'GitVersion.SemVer'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet tests'
@@ -32,10 +43,11 @@ steps:
   displayName: "dotnet pack"
   inputs:
     command: 'pack'
-    arguments: '--configuration $(buildConfiguration)'
-    packagesToPack: '**/SimpleDatastore*.csproj'
+    packagesToPack: '**/SimpleDatastore.csproj'
     nobuild: true
     packDirectory: '$(Build.ArtifactStagingDirectory)'
+    versioningScheme: byEnvVar
+    versionEnvVar: 'GitVersion.SemVer'
 
 - task: NuGetCommand@2
   inputs:
@@ -43,3 +55,5 @@ steps:
     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     nuGetFeedType: 'external'
     publishFeedCredentials: 'nuget_robertgegorywest'
+    versioningScheme: byEnvVar@2
+    ersionEnvVar: 'GitVersion.SemVer'
