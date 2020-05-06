@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>SimpleDatastore</PackageId>
-    <Version>2.0.3</Version>
     <Authors>Rob West</Authors>
     <Product>SimpleDatastore</Product>
     <Description>A simple .NET persistence library which uses XML file storage</Description>
