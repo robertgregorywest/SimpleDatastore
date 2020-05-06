@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SimpleDatastoreStandard\SimpleDatastoreStandard.csproj" />
+    <ProjectReference Include="..\SimpleDatastore\SimpleDatastore.csproj" />
   </ItemGroup>
 
 </Project>

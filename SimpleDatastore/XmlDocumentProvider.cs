@@ -10,7 +10,7 @@ namespace SimpleDatastore
 
         public XmlDocumentProvider(IConfiguration configuration)
         {
-            DocumentPath = $"{configuration.DatastoreLocation}\\{typeof(T)}{Constants.FileExtension}";
+            DocumentPath = Path.Combine(configuration.DatastoreLocation, $"{typeof(T)}{Constants.FileExtension}");
         }
 
         public XmlDocument GetDocument()

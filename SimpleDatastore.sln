@@ -6,13 +6,13 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EEDAA922-2916-4F67-B77D-EC471C1B5BD6}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+		azure-pipelines.yml = azure-pipelines.yml
+		GitVersion.yml = GitVersion.yml
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleDatastoreStandard", "SimpleDatastoreStandard\SimpleDatastoreStandard.csproj", "{9DC195D3-E323-47E3-8D30-BEDB994AB384}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleDatastore", "SimpleDatastore\SimpleDatastore.csproj", "{9DC195D3-E323-47E3-8D30-BEDB994AB384}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Domain", "Example.Domain\Example.Domain.csproj", "{6AF97302-9B81-4D18-90D8-BA5CB55F1FB3}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleDatastore.DI", "SimpleDatastore.DI\SimpleDatastore.DI.csproj", "{62DD04E5-7DCC-41BD-9B71-E9994A6E0968}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleDatastore.Tests", "SimpleDatastore.Tests\SimpleDatastore.Tests.csproj", "{F6E15182-F625-4072-8FAD-AD289009147D}"
 EndProject
@@ -32,10 +32,6 @@ Global
 		{6AF97302-9B81-4D18-90D8-BA5CB55F1FB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6AF97302-9B81-4D18-90D8-BA5CB55F1FB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6AF97302-9B81-4D18-90D8-BA5CB55F1FB3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{62DD04E5-7DCC-41BD-9B71-E9994A6E0968}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{62DD04E5-7DCC-41BD-9B71-E9994A6E0968}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{62DD04E5-7DCC-41BD-9B71-E9994A6E0968}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{62DD04E5-7DCC-41BD-9B71-E9994A6E0968}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F6E15182-F625-4072-8FAD-AD289009147D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F6E15182-F625-4072-8FAD-AD289009147D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6E15182-F625-4072-8FAD-AD289009147D}.Release|Any CPU.ActiveCfg = Release|Any CPU
