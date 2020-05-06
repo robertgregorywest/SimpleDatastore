@@ -21,6 +21,7 @@ steps:
   inputs:
     versionSpec: '5.x'
     updateAssemblyInfo: true
+    updateAssemblyInfoFilename: '$(Build.SourcesDirectory)/SimpleDatastore/Properties/AssemblyInfo.cs'
       
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build'
