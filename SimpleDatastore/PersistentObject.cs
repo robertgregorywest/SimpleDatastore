@@ -8,14 +8,8 @@ namespace SimpleDatastore
     {
         internal const string Identifier = "id";
 
-        private Guid _id = Guid.Empty;
-
         [DataMember(Name = Identifier, IsRequired = true)]
-        public Guid Id
-        {
-            get => _id;
-            set => _id = value;
-        }
+        public Guid Id { get; set; } = Guid.Empty;
 
         public bool Equals(PersistentObject other) => other != null && Id.Equals(other.Id);
 

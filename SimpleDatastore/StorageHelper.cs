@@ -76,11 +76,11 @@ namespace SimpleDatastore
 
                 if (existingNode != null)
                 {
-                    if (doc.DocumentElement != null) doc.DocumentElement.ReplaceChild(objectDocFrag, existingNode);
+                    doc.DocumentElement?.ReplaceChild(objectDocFrag, existingNode);
                 }
                 else
                 {
-                    if (doc.DocumentElement != null) doc.DocumentElement.AppendChild(objectDocFrag);
+                    doc.DocumentElement?.AppendChild(objectDocFrag);
                 }
 
                 _provider.SaveDocument(doc);
@@ -97,12 +97,13 @@ namespace SimpleDatastore
 
                 if (objectNode == null) return;
 
-                if (doc.DocumentElement != null) doc.DocumentElement.RemoveChild(objectNode);
+                doc.DocumentElement?.RemoveChild(objectNode);
+                
                 _provider.SaveDocument(doc);
             }
         }
 
-        private string BuildXml(T instance)
+        private static string BuildXml(T instance)
         {
             var objectStringBuilder = new StringBuilder();
 
@@ -125,15 +126,13 @@ namespace SimpleDatastore
                         writer.WriteStartElement(attributeName);
                         if (property.PropertyType.IsAPersistentObject())
                         {
-                            var persistentObject = property.GetValue(instance, null) as PersistentObject;
-                            if (persistentObject != null) writer.WriteCData(persistentObject.Id.ToString());
+                            if (property.GetValue(instance, null) is PersistentObject persistentObject) writer.WriteCData(persistentObject.Id.ToString());
                         }
                         else if (property.PropertyType.IsAPersistentObjectList())
                         {
-                            var persistentObjectList = property.GetValue(instance, null) as IEnumerable<PersistentObject>;
-                            if (persistentObjectList != null)
+                            if (property.GetValue(instance, null) is IEnumerable<PersistentObject> persistentObjectList)
                             {
-                                var flattenedList = string.Join<PersistentObject>(",", persistentObjectList);
+                                var flattenedList = string.Join(",", persistentObjectList);
                                 writer.WriteCData(flattenedList);
                             }
                         }
