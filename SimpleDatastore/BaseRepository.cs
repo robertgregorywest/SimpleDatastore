@@ -76,7 +76,7 @@ namespace SimpleDatastore
                 return func.Invoke();
             }
 
-            object cacheItem = _cache.Get(cacheKey);
+            var cacheItem = _cache.Get(cacheKey);
 
             if (cacheItem is TResult result)
             {
