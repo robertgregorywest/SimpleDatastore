@@ -12,7 +12,6 @@ namespace SimpleDatastore.Tests
         public void Setup()
         {
             _provider = Substitute.For<IServiceProvider>();
-
         }
 
         [TearDown]
@@ -26,7 +25,7 @@ namespace SimpleDatastore.Tests
         {
             var resolver = new XmlResolver<FakeObject>(_provider, () => new FakeObject());
 
-            var result = resolver.GetItemFromNode(FakeDocuments.SingleFakeObjectNavigtor);
+            var result = resolver.GetItemFromNode(FakeDocuments.SingleFakeObjectNavigator);
 
             Assert.AreEqual(FakeObject.Instance, result);
         }

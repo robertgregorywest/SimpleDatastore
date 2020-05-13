@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace SimpleDatastore.Tests
 {
-    public class FakeObject : PersistentObject, IComparable<FakeObject>
+    public class FakeObject : PersistentObject, IEquatable<FakeObject>, IComparable<FakeObject>
     {
         public const string IdentifierValue = "675b689d-db4e-43ed-94dd-591f73a0fc74";
         public const string NameValue = "FakeObject name";
@@ -16,21 +16,16 @@ namespace SimpleDatastore.Tests
         [DataMember(Name = "name")]
         public string Name { get; set; }
 
-        public int CompareTo(FakeObject other)
-        {
-            return string.Compare(Name, other.Name, StringComparison.Ordinal);
-        }
+        public bool Equals(FakeObject other) => Id == other.Id;
+        public override bool Equals(object other) => Equals(other as FakeObject);
+        public override int GetHashCode() => Id.GetHashCode();
+        public override string ToString() => Id.ToString();
+        public int CompareTo(FakeObject other) => Id.CompareTo(other.Id);
 
         public static Guid InstanceIdentifier => new Guid(IdentifierValue);
-
         public static FakeObject Instance => new FakeObject() { Id = InstanceIdentifier, Name = NameValue };
-
         public static Guid SecondInstanceIdentifier => new Guid(IdentifierValue2);
-
         public static FakeObject SecondInstance => new FakeObject() { Id = SecondInstanceIdentifier, Name = NameValue2 };
-
-        public static List<FakeObject> UnsortedList => new List<FakeObject>() { SecondInstance, Instance };
-
-        public static List<FakeObject> SortedList => new List<FakeObject>() { Instance, SecondInstance };
+        public static IEnumerable<FakeObject> Collection => new[] { SecondInstance, Instance };
     }
 }

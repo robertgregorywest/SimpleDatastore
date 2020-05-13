@@ -9,38 +9,34 @@ namespace SimpleDatastore
 {
     public class StorageHelper<T> : IStorageHelper<T> where T : PersistentObject
     {
+        // Lock intended to be per type
         // ReSharper disable once StaticMemberInGenericType
         private static readonly object LockObject = new object();
 
-        private readonly IXmlResolver<T> _resolver;
-        private readonly IXmlDocumentProvider<T> _provider;
+        private readonly IItemResolver<T> _resolver;
+        private readonly IDocumentProvider<T> _provider;
 
-        public StorageHelper(IXmlResolver<T> resolver, IXmlDocumentProvider<T> provider)
+        public StorageHelper(IItemResolver<T> resolver, IDocumentProvider<T> provider)
         {
             _resolver = resolver;
             _provider = provider;
         }
 
-        public IList<T> GetCollection()
+        public IEnumerable<T> GetCollection()
         {
             lock (LockObject)
             {
-                var doc = _provider.GetDocument();
-                var nav = doc.CreateNavigator();
+                var nav = _provider.GetDocument().CreateNavigator();
 
-                IList<T> collection = new List<T>();
-
-                if (!nav.MoveToFirstChild()) return collection;
+                if (!nav.MoveToFirstChild()) yield break;
 
                 var iterator = nav.Select(Constants.DataItemName);
 
                 while (iterator.MoveNext())
                 {
                     var navCurrent = iterator.Current;
-                    var item = _resolver.GetItemFromNode(navCurrent);
-                    collection.Add(item);
+                    yield return _resolver.GetItemFromNode(navCurrent);
                 }
-                return collection;
             }
         }
 
@@ -98,7 +94,7 @@ namespace SimpleDatastore
                 if (objectNode == null) return;
 
                 doc.DocumentElement?.RemoveChild(objectNode);
-                
+
                 _provider.SaveDocument(doc);
             }
         }
@@ -107,7 +103,7 @@ namespace SimpleDatastore
         {
             var objectStringBuilder = new StringBuilder();
 
-            var settings = new XmlWriterSettings() { OmitXmlDeclaration = true };
+            var settings = new XmlWriterSettings() {OmitXmlDeclaration = true};
 
             using (var writer = XmlWriter.Create(objectStringBuilder, settings))
             {
@@ -126,14 +122,15 @@ namespace SimpleDatastore
                         writer.WriteStartElement(attributeName);
                         if (property.PropertyType.IsAPersistentObject())
                         {
-                            if (property.GetValue(instance, null) is PersistentObject persistentObject) writer.WriteCData(persistentObject.Id.ToString());
+                            if (property.GetValue(instance, null) is PersistentObject persistentObject)
+                                writer.WriteCData(persistentObject.Id.ToString());
                         }
-                        else if (property.PropertyType.IsAPersistentObjectList())
+                        else if (property.PropertyType.IsAPersistentObjectEnumerable())
                         {
-                            if (property.GetValue(instance, null) is IEnumerable<PersistentObject> persistentObjectList)
+                            if (property.GetValue(instance, null) is IEnumerable<PersistentObject> persistentObjectEnumerable)
                             {
-                                var flattenedList = string.Join(",", persistentObjectList);
-                                writer.WriteCData(flattenedList);
+                                var flattenedEnumerable = string.Join(",", persistentObjectEnumerable);
+                                writer.WriteCData(flattenedEnumerable);
                             }
                         }
                         else

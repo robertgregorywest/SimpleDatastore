@@ -21,7 +21,7 @@ namespace Example.Web.Controllers
 
         public IActionResult Index()
         {
-            var widgets = _repo.LoadList();
+            var widgets = _repo.LoadCollection();
 
             var model = new List<WidgetModel>();
 

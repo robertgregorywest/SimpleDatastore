@@ -1,4 +1,5 @@
-﻿using NSubstitute;
+﻿using System.Linq;
+using NSubstitute;
 using NUnit.Framework;
 using SimpleDatastore.Interfaces;
 using System.Xml;
@@ -7,14 +8,14 @@ namespace SimpleDatastore.Tests
 {
     public class StorageHelperTests
     {
-        private IXmlResolver<FakeObject> _resolver;
-        private IXmlDocumentProvider<FakeObject> _provider;
+        private IItemResolver<FakeObject> _resolver;
+        private IDocumentProvider<FakeObject> _provider;
 
         [SetUp]
         public void Setup()
         {
-            _resolver = Substitute.For<IXmlResolver<FakeObject>>();
-            _provider = Substitute.For<IXmlDocumentProvider<FakeObject>>();
+            _resolver = Substitute.For<IItemResolver<FakeObject>>();
+            _provider = Substitute.For<IDocumentProvider<FakeObject>>();
         }
 
         [TearDown]

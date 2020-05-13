@@ -11,24 +11,19 @@ namespace SimpleDatastore
         private readonly IStorageHelper<T> _storageHelper;
         private readonly IConfiguration _config;
         private readonly ICache _cache;
+        private readonly string _keyForCollection;
 
-        private static string KeyForObject(Guid id)
-        {
-            return $"{typeof(T)}.{id.ToString()}";
-        }
-
-        private static string KeyForCollection()
-        {
-            return typeof(T).ToString();
-        }
+        private static string KeyForObject(Guid id) => $"{typeof(T)}.{id.ToString()}";
 
         public BaseRepository(IStorageHelper<T> storageHelper, IConfiguration config, ICache cache)
         {
             _storageHelper = storageHelper;
             _config = config;
             _cache = cache;
+            _keyForCollection = typeof(T).ToString();
         }
 
+        ///<inheritdoc/>
         public T Load(Guid id)
         {
             return GetCacheItem(() => _storageHelper.GetObject(id), KeyForObject(id));
@@ -39,28 +34,24 @@ namespace SimpleDatastore
             return Load(id);
         }
 
-        public IList<T> LoadList()
+        ///<inheritdoc/>
+        public IEnumerable<T> LoadCollection()
         {
-            var list = LoadListUnsorted().ToList();
-            list.Sort();
-            return list;
+            return GetCacheItem(() => _storageHelper.GetCollection(), _keyForCollection);
         }
 
-        public IList<T> LoadListUnsorted()
+        ///<inheritdoc/>
+        public IEnumerable<T> LoadCollectionByIds(IEnumerable<string> persistentObjectIds)
         {
-            return GetCacheItem(() => _storageHelper.GetCollection(), KeyForCollection());
+            return persistentObjectIds.Select(id => Load(id.ToGuid())).Where(p => p != null);
         }
 
-        public IList<T> LoadListByIds(string[] persistentObjectIds)
+        object IRepository.LoadObjectCollectionByIds(string[] persistentObjectIds)
         {
-            return persistentObjectIds.Select(id => Load(id.ToGuid())).Where(po => po != null).ToList();
+            return LoadCollectionByIds(persistentObjectIds);
         }
 
-        object IRepository.LoadObjectListByIds(string[] persistentObjectIds)
-        {
-            return LoadListByIds(persistentObjectIds);
-        }
-
+        ///<inheritdoc/>
         public void Save(T instance)
         {
             if (instance.Id == Guid.Empty)
@@ -70,16 +61,17 @@ namespace SimpleDatastore
 
             _storageHelper.SaveObject(instance);
 
-            PurgeCacheItem(instance.Id);
+            PurgeCache(instance.Id);
         }
 
+        ///<inheritdoc/>
         public void Delete(Guid id)
         {
             _storageHelper.DeleteObject(id);
-            PurgeCacheItem(id);
+            PurgeCache(id);
         }
 
-        private TResult GetCacheItem<TResult>(Func<TResult> func, string cacheKey)
+        private TResult GetCacheItem<TResult>(Func<TResult> func, string cacheKey) where TResult : class
         {
             if (!_config.EnableCaching)
             {
@@ -103,13 +95,12 @@ namespace SimpleDatastore
             return result;
         }
 
-        private void PurgeCacheItem(Guid id)
+        private void PurgeCache(Guid id)
         {
-            if (_config.EnableCaching)
-            {
-                _cache.Remove(KeyForObject(id));
-                _cache.Remove(KeyForCollection());
-            }
+            if (!_config.EnableCaching) return;
+            
+            _cache.Remove(KeyForObject(id));
+            _cache.Remove(_keyForCollection);
         }
     }
 }

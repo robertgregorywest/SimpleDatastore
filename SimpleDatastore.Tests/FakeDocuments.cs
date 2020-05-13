@@ -5,9 +5,9 @@ namespace SimpleDatastore.Tests
 {
     internal static class FakeDocuments
     {
-        private static readonly string SingleFakeObjectFixture = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><id>{FakeObject.IdentifierValue}</id><name><![CDATA[{FakeObject.NameValue}]]></name></dataItem></data>";
+        private static readonly string SingleFakeObjectFixture = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><name><![CDATA[{FakeObject.NameValue}]]></name><id>{FakeObject.IdentifierValue}</id></dataItem></data>";
         private const string EmptyDocumentFixture = @"<?xml version=""1.0"" encoding=""utf-8""?><data></data>";
-        private static readonly string UnsortedListFixture = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><id>{FakeObject.IdentifierValue2}</id><name><![CDATA[{FakeObject.NameValue2}]]></name></dataItem><dataItem><id>{FakeObject.IdentifierValue}</id><name><![CDATA[{FakeObject.NameValue}]]></name></dataItem></data>";
+        private static readonly string CollectionFixture = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><name><![CDATA[{FakeObject.NameValue2}]]></name><id>{FakeObject.IdentifierValue2}</id></dataItem><dataItem><name><![CDATA[{FakeObject.NameValue}]]></name><id>{FakeObject.IdentifierValue}</id></dataItem></data>";
 
         public static XmlDocument SingleFakeObjectDocument
         {
@@ -28,18 +28,18 @@ namespace SimpleDatastore.Tests
                 return doc;
             }
         }
-
-        public static XmlDocument UnsortedList
+        
+        public static XmlDocument CollectionDocument
         {
             get
             {
                 var doc = new XmlDocument();
-                doc.LoadXml(UnsortedListFixture);
+                doc.LoadXml(CollectionFixture);
                 return doc;
             }
         }
 
-        public static XPathNavigator SingleFakeObjectNavigtor
+        public static XPathNavigator SingleFakeObjectNavigator
         {
             get
             {

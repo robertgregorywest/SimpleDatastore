@@ -5,7 +5,7 @@ using SimpleDatastore;
 
 namespace Example.Domain
 {
-    public class Widget : PersistentObject, IComparable<Widget>
+    public class Widget : PersistentObject
     {
         [DataMember(Name = "name")]
         public string Name { get; set; }
@@ -14,11 +14,6 @@ namespace Example.Domain
         public Part MainPart { get; set; }
 
         [DataMember(Name = "parts")]
-        public IList<Part> Parts { get; set; }
-
-        public int CompareTo(Widget other)
-        {
-            return string.Compare(Name, other.Name, StringComparison.Ordinal);
-        }
+        public IEnumerable<Part> Parts { get; set; }
     }
 }
