@@ -43,11 +43,11 @@ namespace SimpleDatastore
                 }
                 else if (property.PropertyType.IsAPersistentObject())
                 {
-                    SetPersistentObjectProperty(property, instance, nav.Value.ToGuid());
+                    SetPersistentObjectProperty(property, ref instance, nav.Value.ToGuid());
                 }
                 else if (property.PropertyType.IsAPersistentObjectList())
                 {
-                    SetPersistentObjectListProperty(property, instance, nav.Value.Split(','));
+                    SetPersistentObjectListProperty(property, ref instance, nav.Value.Split(','));
                 }
                 else
                 {
@@ -60,21 +60,27 @@ namespace SimpleDatastore
             return instance;
         }
 
-        private void SetPersistentObjectProperty(PropertyInfo property, T instance, Guid id)
+        private void SetPersistentObjectProperty(PropertyInfo property, ref T instance, Guid id)
         {
             var repositoryType = typeof(IRepository<>).MakeGenericType(property.PropertyType);
-            dynamic repository = _provider.GetService(repositoryType);
-            var persistentObject = repository.Load(id);
-            property.SetValue(instance, persistentObject, null);
+            var repository = _provider.GetService(repositoryType);
+            if (repository is IRepository iRepository)
+            {
+                var persistentObject = iRepository.LoadObject(id);
+                property.SetValue(instance, persistentObject, null);
+            }
         }
 
-        private void SetPersistentObjectListProperty(PropertyInfo property, T instance, string[] persistentObjectIds)
+        private void SetPersistentObjectListProperty(PropertyInfo property, ref T instance, string[] persistentObjectIds)
         {
             var elementType = property.PropertyType.GetGenericArguments()[0];
             var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
-            dynamic repository = _provider.GetService(repositoryType);
-            var list = repository.LoadListByIds(persistentObjectIds);
-            property.SetValue(instance, list, null);
+            var repository = _provider.GetService(repositoryType);
+            if (repository is IRepository iRepository)
+            {
+                var list = iRepository.LoadObjectListByIds(persistentObjectIds);
+                property.SetValue(instance, list, null);
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore
 {
-    public class BaseRepository<T> : IRepository<T> where T : PersistentObject
+    public class BaseRepository<T> : IRepository, IRepository<T> where T : PersistentObject
     {
         private readonly IStorageHelper<T> _storageHelper;
         private readonly IConfiguration _config;
@@ -34,6 +34,11 @@ namespace SimpleDatastore
             return GetCacheItem(() => _storageHelper.GetObject(id), KeyForObject(id));
         }
 
+        object IRepository.LoadObject(Guid id)
+        {
+            return Load(id);
+        }
+
         public IList<T> LoadList()
         {
             var list = LoadListUnsorted().ToList();
@@ -49,6 +54,11 @@ namespace SimpleDatastore
         public IList<T> LoadListByIds(string[] persistentObjectIds)
         {
             return persistentObjectIds.Select(id => Load(id.ToGuid())).Where(po => po != null).ToList();
+        }
+
+        object IRepository.LoadObjectListByIds(string[] persistentObjectIds)
+        {
+            return LoadListByIds(persistentObjectIds);
         }
 
         public void Save(T instance)
