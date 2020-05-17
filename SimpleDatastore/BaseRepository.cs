@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Options;
 using SimpleDatastore.Extensions;
 using SimpleDatastore.Interfaces;
 
@@ -9,18 +10,18 @@ namespace SimpleDatastore
     public class BaseRepository<T> : IRepository, IRepository<T> where T : PersistentObject
     {
         private readonly IStorageHelper<T> _storageHelper;
-        private readonly IConfiguration _config;
+        private readonly SimpleDatastoreOptions _options;
         private readonly ICache _cache;
-        private readonly string _keyForCollection;
+        
+        private readonly string _keyForCollection = typeof(T).ToString();
 
         private static string KeyForObject(Guid id) => $"{typeof(T)}.{id.ToString()}";
 
-        public BaseRepository(IStorageHelper<T> storageHelper, IConfiguration config, ICache cache)
+        public BaseRepository(IStorageHelper<T> storageHelper, IOptions<SimpleDatastoreOptions> options, ICache cache)
         {
             _storageHelper = storageHelper;
-            _config = config;
+            _options = options.Value;
             _cache = cache;
-            _keyForCollection = typeof(T).ToString();
         }
 
         ///<inheritdoc/>
@@ -73,7 +74,7 @@ namespace SimpleDatastore
 
         private TResult GetCacheItem<TResult>(Func<TResult> func, string cacheKey) where TResult : class
         {
-            if (!_config.EnableCaching)
+            if (!_options.EnableCaching)
             {
                 return func.Invoke();
             }
@@ -89,7 +90,7 @@ namespace SimpleDatastore
 
             if (result != null)
             {
-                _cache.Set(cacheKey, result, _config.CacheDuration);
+                _cache.Set(cacheKey, result, _options.CacheDuration);
             }
 
             return result;
@@ -97,7 +98,7 @@ namespace SimpleDatastore
 
         private void PurgeCache(Guid id)
         {
-            if (!_config.EnableCaching) return;
+            if (!_options.EnableCaching) return;
             
             _cache.Remove(KeyForObject(id));
             _cache.Remove(_keyForCollection);

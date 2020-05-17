@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using System;
 using System.Linq;
+using Microsoft.Extensions.Options;
 using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore.Tests
@@ -9,23 +10,23 @@ namespace SimpleDatastore.Tests
     public class BaseRepositoryTests
     {
         private IStorageHelper<FakeObject> _storageHelper;
-        private IConfiguration _config;
+        private IOptions<SimpleDatastoreOptions> _options;
         private ICache _cache;
 
         [SetUp]
         public void Setup()
         {
             _storageHelper = Substitute.For<IStorageHelper<FakeObject>>();
-            _config = Substitute.For<IConfiguration>();
+            _options = Substitute.For<IOptions<SimpleDatastoreOptions>>();
+            _options.Value.Returns(new SimpleDatastoreOptions() { EnableCaching = false });
             _cache = Substitute.For<ICache>();
-            _config.EnableCaching = false;
         }
 
         [TearDown]
         public void Cleanup()
         {
             _storageHelper = null;
-            _config = null;
+            _options = null;
             _cache = null;
         }
 
@@ -34,7 +35,7 @@ namespace SimpleDatastore.Tests
         {
             _storageHelper.GetCollection().Returns(FakeObject.Collection);
 
-            var repo = new BaseRepository<FakeObject>(_storageHelper, _config, _cache);
+            var repo = new BaseRepository<FakeObject>(_storageHelper, _options, _cache);
 
             var result = repo.LoadCollection();
 
@@ -44,7 +45,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public void Save_expect_call_StorageHelper_SaveObject()
         {
-            var repo = new BaseRepository<FakeObject>(_storageHelper, _config, _cache);
+            var repo = new BaseRepository<FakeObject>(_storageHelper, _options, _cache);
 
             repo.Save(FakeObject.Instance);
 
@@ -56,7 +57,7 @@ namespace SimpleDatastore.Tests
         {
             var newInstance = new FakeObject();
 
-            var repo = new BaseRepository<FakeObject>(_storageHelper, _config, _cache);
+            var repo = new BaseRepository<FakeObject>(_storageHelper, _options, _cache);
 
             repo.Save(newInstance);
 
@@ -66,7 +67,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public void Delete_expect_call_helper_delete_object()
         {
-            var repo = new BaseRepository<FakeObject>(_storageHelper, _config, _cache);
+            var repo = new BaseRepository<FakeObject>(_storageHelper, _options, _cache);
 
             repo.Delete(FakeObject.InstanceIdentifier);
 
@@ -76,9 +77,9 @@ namespace SimpleDatastore.Tests
         [Test]
         public void Delete_expect_cache_purged()
         {
-            _config.EnableCaching = true;
+            _options.Value.Returns(new SimpleDatastoreOptions() { EnableCaching = true });
 
-            var repo = new BaseRepository<FakeObject>(_storageHelper, _config, _cache);
+            var repo = new BaseRepository<FakeObject>(_storageHelper, _options, _cache);
 
             repo.Delete(FakeObject.InstanceIdentifier);
 

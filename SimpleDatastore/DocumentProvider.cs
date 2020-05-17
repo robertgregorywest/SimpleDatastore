@@ -1,27 +1,29 @@
 ﻿using SimpleDatastore.Interfaces;
 using System.IO;
 using System.Xml;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace SimpleDatastore
 {
     public class DocumentProvider<T> : IDocumentProvider<T> where T : PersistentObject
     {
-        private readonly IConfiguration _config;
+        private readonly SimpleDatastoreOptions _options;
         private readonly ICache _cache;
         private readonly string _documentPath;
         private readonly string _keyForDocument;
 
-        public DocumentProvider(IConfiguration config, ICache cache)
+        public DocumentProvider(IHostingEnvironment environment, IOptions<SimpleDatastoreOptions> options, ICache cache)
         {
-            _config = config;
+            _options = options.Value;
             _cache = cache;
-            _documentPath = Path.Combine(_config.DatastoreLocation, $"{typeof(T)}{Constants.FileExtension}");
+            _documentPath = Path.Combine(environment.ContentRootPath, _options.DatastoreLocation, $"{typeof(T)}{Constants.FileExtension}");
             _keyForDocument = $"Doc.{typeof(T)}";
         }
 
         public XmlDocument GetDocument()
         {
-            if (_config.EnableCaching)
+            if (_options.EnableCaching)
             {
                 var cacheItem = _cache.Get(_keyForDocument);
                 if (cacheItem is XmlDocument docFromCache)
@@ -43,9 +45,9 @@ namespace SimpleDatastore
             var doc = new XmlDocument();
             doc.Load(_documentPath);
 
-            if (_config.EnableCaching)
+            if (_options.EnableCaching)
             {
-                _cache.Set(_keyForDocument, doc, _config.CacheDuration);
+                _cache.Set(_keyForDocument, doc, _options.CacheDuration);
             }
             
             return doc;
@@ -55,7 +57,7 @@ namespace SimpleDatastore
         {
             document.Save(_documentPath);
 
-            if (_config.EnableCaching)
+            if (_options.EnableCaching)
             {
                 _cache.Remove(_keyForDocument);
             }
