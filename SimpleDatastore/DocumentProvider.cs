@@ -27,7 +27,7 @@ namespace SimpleDatastore
                 {
                     using (var writer = XmlWriter.Create(_documentPath, new XmlWriterSettings { Async = true }))
                     {
-                        await writer.WriteStartElementAsync("", Constants.DataElementName, "");
+                        await writer.WriteStartElementAsync("", Constants.RootElementName, "");
                         await writer.WriteEndElementAsync();
                         await writer.FlushAsync();
                     }
