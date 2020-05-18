@@ -62,12 +62,12 @@ namespace SimpleDatastore.Tests
             provider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyDocument));
 
             await helper.SaveObjectAsync(Widgets.SomeWidget);
-            
+
             var doc = new XmlDocument();
             doc.LoadXml(Widgets.SomeWidgetSingleDocument.GetFixtureXml());
             var expectedInnerXml = doc.InnerText;
 
-            await _provider.Received().SaveDocumentAsync(Arg.Is<XmlDocument>(d => d.InnerText == expectedInnerXml));
+            await provider.Received().SaveDocumentAsync(Arg.Is<XmlDocument>(d => d.InnerText == expectedInnerXml));
         }
     }
 }
