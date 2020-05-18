@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -30,7 +29,11 @@ namespace SimpleDatastore
         public async Task<T> LoadAsync(Guid id)
         {
             return await _memoryCache.GetOrCreateAsync(KeyForObject(id),
-                async (cacheEntry) => await _storageHelper.GetObjectAsync(id));
+                async (cacheEntry) =>
+                {
+                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_options.CacheDuration));
+                    return await _storageHelper.GetObjectAsync(id);
+                });
         }
 
         async Task<object> IRepository.LoadObjectAsync(Guid id)
@@ -42,7 +45,11 @@ namespace SimpleDatastore
         public async Task<IEnumerable<T>> LoadCollectionAsync()
         {
             return await _memoryCache.GetOrCreateAsync(_keyForCollection,
-                async (cacheEntry) => await _storageHelper.GetCollectionAsync());
+                async (cacheEntry) =>
+                {
+                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_options.CacheDuration));
+                    return await _storageHelper.GetCollectionAsync();
+                });
         }
 
         ///<inheritdoc/>
