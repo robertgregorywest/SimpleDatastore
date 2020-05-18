@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using SimpleDatastore;
 
@@ -14,6 +13,8 @@ namespace Example.Domain
         public Part MainPart { get; set; }
 
         [DataMember(Name = "parts")]
-        public IEnumerable<Part> Parts { get; set; }
+        public IList<Part> Parts { get; set; }
+        
+        public Part NonPersistedProperty { get; set; }
     }
 }

@@ -15,7 +15,7 @@ namespace SimpleDatastore.Extensions
 
         internal static bool IsAPersistentObjectEnumerable(this Type type)
         {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>) && typeof(PersistentObject).IsAssignableFrom(type.GetGenericArguments()[0]);
+            return type.IsGenericType && typeof(IEnumerable<PersistentObject>).IsAssignableFrom(type);
         }
 
         internal static IEnumerable<PropertyInfo> GetValidProperties(this Type type)
