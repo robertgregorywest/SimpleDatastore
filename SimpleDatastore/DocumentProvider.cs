@@ -1,7 +1,10 @@
 ﻿using SimpleDatastore.Interfaces;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
+using System.IO.Abstractions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
@@ -10,12 +13,14 @@ namespace SimpleDatastore
 {
     public class DocumentProvider<T> : IDocumentProvider<T> where T : PersistentObject
     {
+        private readonly IFileSystem _fileSystem;
         private readonly string _documentPath;
         
         private readonly AsyncLock _mutex = new AsyncLock();
 
-        public DocumentProvider(IOptions<SimpleDatastoreOptions> options, IHostingEnvironment environment)
+        public DocumentProvider(IOptions<SimpleDatastoreOptions> options, IHostingEnvironment environment, IFileSystem fileSystem)
         {
+            _fileSystem = fileSystem;
             _documentPath = Path.Combine(environment.ContentRootPath, options.Value.DatastoreLocation, $"{typeof(T)}{Constants.FileExtension}");
         }
 
@@ -23,14 +28,11 @@ namespace SimpleDatastore
         {
             using (await _mutex.LockAsync())
             {
-                if (!File.Exists(_documentPath))
+                if (!_fileSystem.File.Exists(_documentPath))
                 {
-                    using (var writer = XmlWriter.Create(_documentPath))
-                    {
-                        await writer.WriteStartElementAsync("", Constants.DataElementName, "");
-                        await writer.WriteEndElementAsync();
-                        await writer.FlushAsync();
-                    }
+                    var root = new XElement(Constants.RootElementName);
+                    var output = root.ToString();
+                    await _fileSystem.File.WriteAllTextAsync(_documentPath, output, CancellationToken.None);
                 }
 
                 var doc = new XmlDocument();

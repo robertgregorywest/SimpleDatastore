@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleDatastore.Interfaces;
 using JetBrains.Annotations;
@@ -20,6 +21,7 @@ namespace SimpleDatastore
             services.AddSingleton(typeof(IStorageHelper<>), typeof(StorageHelper<>));
             services.AddSingleton(typeof(IDocumentProvider<>), typeof(DocumentProvider<>));
             services.AddSingleton(typeof(IItemResolver<>), typeof(ItemResolver<>));
+            services.AddScoped<IFileSystem, FileSystem>();
             services.AddMemoryCache();
 
             return services;
