@@ -2,6 +2,8 @@
 using NUnit.Framework;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using SimpleDatastore.Interfaces;
 
@@ -11,7 +13,7 @@ namespace SimpleDatastore.Tests
     {
         private IStorageHelper<FakeObject> _storageHelper;
         private IOptions<SimpleDatastoreOptions> _options;
-        private ICache _cache;
+        private IMemoryCache _cache;
 
         [SetUp]
         public void Setup()
@@ -19,7 +21,7 @@ namespace SimpleDatastore.Tests
             _storageHelper = Substitute.For<IStorageHelper<FakeObject>>();
             _options = Substitute.For<IOptions<SimpleDatastoreOptions>>();
             _options.Value.Returns(new SimpleDatastoreOptions() { EnableCaching = false });
-            _cache = Substitute.For<ICache>();
+            _cache = Substitute.For<IMemoryCache>();
         }
 
         [TearDown]
@@ -31,57 +33,57 @@ namespace SimpleDatastore.Tests
         }
 
         [Test]
-        public void LoadCollection_expect_collection_in_storage_order()
+        public async Task LoadCollection_expect_collection_in_storage_order()
         {
-            _storageHelper.GetCollection().Returns(FakeObject.Collection);
+            _storageHelper.GetCollectionAsync().Returns(Task.FromResult(FakeObject.Collection));
 
             var repo = new BaseRepository<FakeObject>(_storageHelper, _options, _cache);
 
-            var result = repo.LoadCollection();
+            var result = await repo.LoadCollectionAsync();
 
             Assert.IsTrue(FakeObject.Collection.SequenceEqual(result));
         }
 
         [Test]
-        public void Save_expect_call_StorageHelper_SaveObject()
+        public async Task Save_expect_call_StorageHelper_SaveObject()
         {
             var repo = new BaseRepository<FakeObject>(_storageHelper, _options, _cache);
 
-            repo.Save(FakeObject.Instance);
+            await repo.SaveAsync(FakeObject.Instance);
 
-            _storageHelper.Received().SaveObject(FakeObject.Instance);
+            await _storageHelper.Received().SaveObjectAsync(FakeObject.Instance);
         }
 
         [Test]
-        public void Save_with_empty_Guid_expect_NewGuid()
+        public async Task Save_with_empty_Guid_expect_NewGuid()
         {
             var newInstance = new FakeObject();
 
             var repo = new BaseRepository<FakeObject>(_storageHelper, _options, _cache);
 
-            repo.Save(newInstance);
+            await repo.SaveAsync(newInstance);
 
             Assert.AreNotEqual(newInstance.Id, Guid.Empty);
         }
 
         [Test]
-        public void Delete_expect_call_helper_delete_object()
+        public async Task Delete_expect_call_helper_delete_object()
         {
             var repo = new BaseRepository<FakeObject>(_storageHelper, _options, _cache);
 
-            repo.Delete(FakeObject.InstanceIdentifier);
+            await repo.DeleteAsync(FakeObject.InstanceIdentifier);
 
-            _storageHelper.Received().DeleteObject(FakeObject.InstanceIdentifier);
+            await _storageHelper.Received().DeleteObjectAsync(FakeObject.InstanceIdentifier);
         }
 
         [Test]
-        public void Delete_expect_cache_purged()
+        public async Task Delete_expect_cache_purged()
         {
             _options.Value.Returns(new SimpleDatastoreOptions() { EnableCaching = true });
 
             var repo = new BaseRepository<FakeObject>(_storageHelper, _options, _cache);
 
-            repo.Delete(FakeObject.InstanceIdentifier);
+            await repo.DeleteAsync(FakeObject.InstanceIdentifier);
 
             _cache.Received().Remove(FakeObject.CacheKey);
             _cache.Received().Remove(FakeObject.RootCacheKey);

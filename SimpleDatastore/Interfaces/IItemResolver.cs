@@ -1,9 +1,10 @@
-﻿using System.Xml.XPath;
+﻿using System.Threading.Tasks;
+using System.Xml.XPath;
 
 namespace SimpleDatastore.Interfaces
 {
-    public interface IItemResolver<out T> where T : PersistentObject
+    public interface IItemResolver<T> where T : PersistentObject
     {
-        T GetItemFromNode(XPathNavigator nav);
+        Task<T> GetItemFromNodeAsync(XPathNavigator nav);
     }
 }

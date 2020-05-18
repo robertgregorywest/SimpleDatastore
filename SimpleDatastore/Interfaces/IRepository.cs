@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace SimpleDatastore.Interfaces
 {
     internal interface IRepository
     {
-        object LoadObject(Guid id);
-        object LoadObjectCollectionByIds(string[] persistentObjectIds);
+        Task<object> LoadObjectAsync(Guid id);
+        Task<object> LoadObjectCollectionByIdsAsync(string[] persistentObjectIds);
     }
     
     public interface IRepository<T> where T : PersistentObject
@@ -18,14 +19,14 @@ namespace SimpleDatastore.Interfaces
         /// <param name="id">Identifier for the persistent object</param>
         /// <returns>Persistent object</returns>
         [UsedImplicitly]
-        T Load(Guid id);
+        Task<T> LoadAsync(Guid id);
 
         /// <summary>
         /// Get all persistent objects of generic type in the order they are stored in the storage document
         /// </summary>
         /// <returns>List of persistent objects</returns>
         [UsedImplicitly]
-        IEnumerable<T> LoadCollection();
+        Task<IEnumerable<T>> LoadCollectionAsync();
 
         /// <summary>
         /// Get persistent objects based on provided identifiers
@@ -33,20 +34,20 @@ namespace SimpleDatastore.Interfaces
         /// <param name="persistentObjectIds">The array of persistent object identifiers to retrieve</param>
         /// <returns>List of persistent objects</returns>
         [UsedImplicitly]
-        IEnumerable<T> LoadCollectionByIds(IEnumerable<string> persistentObjectIds);
+        Task<IEnumerable<T>> LoadCollectionByIdsAsync(IEnumerable<string> persistentObjectIds);
         
         /// <summary>
         /// Save a persistent object to the storage document
         /// </summary>
         /// <param name="instance">Instance to save</param>
         [UsedImplicitly]
-        void Save(T instance);
+        Task SaveAsync(T instance);
         
         /// <summary>
         /// Delete a persistent object from the storage document
         /// </summary>
         /// <param name="id">Identifier to delete</param>
         [UsedImplicitly]
-        void Delete(Guid id);
+        Task DeleteAsync(Guid id);
     }
 }

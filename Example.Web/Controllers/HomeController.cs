@@ -19,9 +19,9 @@ namespace Example.Web.Controllers
             _repo = repo;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var widgets = _repo.LoadCollection();
+            var widgets = await _repo.LoadCollectionAsync();
 
             var model = new List<WidgetModel>();
 

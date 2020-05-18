@@ -1,8 +1,11 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
 using SimpleDatastore.Interfaces;
 using System.Xml;
+using Example.Domain;
+using SimpleDatastore.Tests.Extensions;
 
 namespace SimpleDatastore.Tests
 {
@@ -26,27 +29,45 @@ namespace SimpleDatastore.Tests
         }
 
         [Test]
-        public void SaveObject_should_save_document()
+        public async Task SaveObject_should_save_document()
         {
-            _provider.GetDocument().Returns(FakeDocuments.EmptyDocument);
+            _provider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyDocument));
 
             var helper = new StorageHelper<FakeObject>(_resolver, _provider);
 
-            helper.SaveObject(FakeObject.Instance);
+            await helper.SaveObjectAsync(FakeObject.Instance);
 
-            _provider.Received().SaveDocument(Arg.Is<XmlDocument>(d => d.InnerXml == FakeDocuments.SingleFakeObjectDocument.InnerXml));
+            await _provider.Received().SaveDocumentAsync(Arg.Is<XmlDocument>(d => d.InnerXml == FakeDocuments.SingleFakeObjectDocument.InnerXml));
         }
 
         [Test]
-        public void DeleteObject_should_save_empty_document()
+        public async Task DeleteObject_should_save_empty_document()
         {
-            _provider.GetDocument().Returns(FakeDocuments.SingleFakeObjectDocument);
+            _provider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.SingleFakeObjectDocument));
 
-            var agent = new StorageHelper<FakeObject>(_resolver, _provider);
+            var helper = new StorageHelper<FakeObject>(_resolver, _provider);
 
-            agent.DeleteObject(FakeObject.InstanceIdentifier);
+            await helper.DeleteObjectAsync(FakeObject.InstanceIdentifier);
 
-            _provider.Received().SaveDocument(Arg.Is<XmlDocument>(d => d.InnerXml == FakeDocuments.EmptyDocument.InnerXml));
+            await _provider.Received().SaveDocumentAsync(Arg.Is<XmlDocument>(d => d.InnerXml == FakeDocuments.EmptyDocument.InnerXml));
+        }
+
+        [Test]
+        public async Task Save_object_with_child_objects_should_persist_ids()
+        {
+            var resolver = Substitute.For<IItemResolver<Widget>>();
+            var provider = Substitute.For<IDocumentProvider<Widget>>();
+            var helper = new StorageHelper<Widget>(resolver, provider);
+            
+            provider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyDocument));
+
+            await helper.SaveObjectAsync(Widgets.SomeWidget);
+            
+            var doc = new XmlDocument();
+            doc.LoadXml(Widgets.SomeWidgetSingleDocument.GetFixtureXml());
+            var expectedInnerXml = doc.InnerText;
+
+            await _provider.Received().SaveDocumentAsync(Arg.Is<XmlDocument>(d => d.InnerText == expectedInnerXml));
         }
     }
 }

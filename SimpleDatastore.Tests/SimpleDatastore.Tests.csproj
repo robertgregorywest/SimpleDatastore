@@ -12,7 +12,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Example.Domain\Example.Domain.csproj" />
     <ProjectReference Include="..\SimpleDatastore\SimpleDatastore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Fixtures\Example.Domain.Widget.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\Example.Domain.Part.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\Example.Domain.Widget.SomeWidget.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

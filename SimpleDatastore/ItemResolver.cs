@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Xml.XPath;
 using JetBrains.Annotations;
 using SimpleDatastore.Interfaces;
@@ -9,26 +10,26 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SimpleDatastore
 {
-    public class XmlResolver<T> : IItemResolver<T> where T : PersistentObject
+    public class ItemResolver<T> : IItemResolver<T> where T : PersistentObject
     {
         private readonly IServiceProvider _provider;
 
         private readonly Func<T> _activator;
 
         [UsedImplicitly]
-        public XmlResolver(IServiceProvider provider)
+        public ItemResolver(IServiceProvider provider)
         {
             _provider = provider;
             _activator = () => ActivatorUtilities.CreateInstance<T>(_provider);
         }
 
-        public XmlResolver(IServiceProvider provider, Func<T> activator)
+        public ItemResolver(IServiceProvider provider, Func<T> activator)
         {
             _provider = provider;
             _activator = activator;
         }
 
-        public T GetItemFromNode(XPathNavigator nav)
+        public async Task<T> GetItemFromNodeAsync(XPathNavigator nav)
         {
             // Using the activator the instance so that objects can have dependencies
             var instance = _activator.Invoke();
@@ -47,11 +48,11 @@ namespace SimpleDatastore
                 }
                 else if (property.PropertyType.IsAPersistentObject())
                 {
-                    SetPersistentObjectProperty(property, ref instance, nav.Value.ToGuid());
+                    await SetPersistentObjectProperty(property, instance, nav.Value.ToGuid());
                 }
                 else if (property.PropertyType.IsAPersistentObjectEnumerable())
                 {
-                    SetPersistentObjectEnumerableProperty(property, ref instance, nav.Value.Split(','));
+                    await SetPersistentObjectEnumerableProperty(property, instance, nav.Value.Split(','));
                 }
                 else
                 {
@@ -63,25 +64,25 @@ namespace SimpleDatastore
             return instance;
         }
 
-        private void SetPersistentObjectProperty(PropertyInfo property, ref T instance, Guid id)
+        private async Task SetPersistentObjectProperty(PropertyInfo property, T instance, Guid id)
         {
             var repositoryType = typeof(IRepository<>).MakeGenericType(property.PropertyType);
             var repository = _provider.GetService(repositoryType);
             if (repository is IRepository iRepository)
             {
-                var persistentObject = iRepository.LoadObject(id);
+                var persistentObject = await iRepository.LoadObjectAsync(id);
                 property.SetValue(instance, persistentObject, null);
             }
         }
 
-        private void SetPersistentObjectEnumerableProperty(PropertyInfo property, ref T instance, string[] persistentObjectIds)
+        private async Task SetPersistentObjectEnumerableProperty(PropertyInfo property, T instance, string[] persistentObjectIds)
         {
             var elementType = property.PropertyType.GetGenericArguments()[0];
             var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
             var repository = _provider.GetService(repositoryType);
             if (repository is IRepository iRepository)
             {
-                var collection = iRepository.LoadObjectCollectionByIds(persistentObjectIds);
+                var collection = await iRepository.LoadObjectCollectionByIdsAsync(persistentObjectIds);
                 property.SetValue(instance, collection, null);
             }
         }

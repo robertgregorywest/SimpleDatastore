@@ -3,16 +3,13 @@ using SimpleDatastore.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace SimpleDatastore
 {
     public class StorageHelper<T> : IStorageHelper<T> where T : PersistentObject
     {
-        // Lock intended to be per type
-        // ReSharper disable once StaticMemberInGenericType
-        private static readonly object LockObject = new object();
-
         private readonly IItemResolver<T> _resolver;
         private readonly IDocumentProvider<T> _provider;
 
@@ -22,88 +19,81 @@ namespace SimpleDatastore
             _provider = provider;
         }
 
-        public IEnumerable<T> GetCollection()
+        public async Task<IEnumerable<T>> GetCollectionAsync()
         {
-            lock (LockObject)
+            var doc = await _provider.GetDocumentAsync();
+            var nav = doc.CreateNavigator();
+            
+            if (!nav.MoveToFirstChild()) return null;
+
+            var list = new List<T>();
+            
+            var iterator = nav.Select(Constants.DataItemName);
+
+            while (iterator.MoveNext())
             {
-                var nav = _provider.GetDocument().CreateNavigator();
-
-                if (!nav.MoveToFirstChild()) yield break;
-
-                var iterator = nav.Select(Constants.DataItemName);
-
-                while (iterator.MoveNext())
-                {
-                    var navCurrent = iterator.Current;
-                    yield return _resolver.GetItemFromNode(navCurrent);
-                }
+                var navCurrent = iterator.Current;
+                list.Add(await _resolver.GetItemFromNodeAsync(navCurrent));
             }
+
+            return list;
         }
 
-        public T GetObject(Guid id)
+        public async Task<T> GetObjectAsync(Guid id)
         {
-            lock (LockObject)
-            {
-                var doc = _provider.GetDocument();
-                var nav = doc.CreateNavigator();
+            var doc = await _provider.GetDocumentAsync();
+            var nav = doc.CreateNavigator();
 
-                if (!nav.MoveToFirstChild()) return null;
-                var navCurrent = nav.SelectSingleNode($"{Constants.DataItemName}[{PersistentObject.Identifier} = \"{id.ToString()}\"]");
-                if (navCurrent == null) return null;
+            if (!nav.MoveToFirstChild()) return null;
+            var navCurrent = nav.SelectSingleNode($"{Constants.DataItemName}[{PersistentObject.Identifier} = \"{id.ToString()}\"]");
+            if (navCurrent == null) return null;
 
-                var item = _resolver.GetItemFromNode(navCurrent);
+            var item = await _resolver.GetItemFromNodeAsync(navCurrent);
 
-                return item;
-            }
+            return item;
         }
 
-        public void SaveObject(T instance)
+        public async Task SaveObjectAsync(T instance)
         {
             var innerXml = BuildXml(instance);
 
-            lock (LockObject)
+            var doc = await _provider.GetDocumentAsync();
+
+            var objectDocFrag = doc.CreateDocumentFragment();
+            objectDocFrag.InnerXml = innerXml;
+
+            var existingNode = doc.SelectExistingNode(instance.Id);
+
+            if (existingNode != null)
             {
-                var doc = _provider.GetDocument();
-
-                var objectDocFrag = doc.CreateDocumentFragment();
-                objectDocFrag.InnerXml = innerXml;
-
-                var existingNode = doc.SelectExistingNode(instance.Id);
-
-                if (existingNode != null)
-                {
-                    doc.DocumentElement?.ReplaceChild(objectDocFrag, existingNode);
-                }
-                else
-                {
-                    doc.DocumentElement?.AppendChild(objectDocFrag);
-                }
-
-                _provider.SaveDocument(doc);
+                doc.DocumentElement?.ReplaceChild(objectDocFrag, existingNode);
             }
+            else
+            {
+                doc.DocumentElement?.AppendChild(objectDocFrag);
+            }
+
+            await _provider.SaveDocumentAsync(doc);
         }
 
-        public void DeleteObject(Guid id)
+        public async Task DeleteObjectAsync(Guid id)
         {
-            lock (LockObject)
-            {
-                var doc = _provider.GetDocument();
+            var doc = await _provider.GetDocumentAsync();
 
-                var objectNode = doc.SelectExistingNode(id);
+            var objectNode = doc.SelectExistingNode(id);
 
-                if (objectNode == null) return;
+            if (objectNode == null) return;
 
-                doc.DocumentElement?.RemoveChild(objectNode);
+            doc.DocumentElement?.RemoveChild(objectNode);
 
-                _provider.SaveDocument(doc);
-            }
+            await _provider.SaveDocumentAsync(doc);
         }
 
         private static string BuildXml(T instance)
         {
             var objectStringBuilder = new StringBuilder();
 
-            var settings = new XmlWriterSettings() {OmitXmlDeclaration = true};
+            var settings = new XmlWriterSettings() { OmitXmlDeclaration = true };
 
             using (var writer = XmlWriter.Create(objectStringBuilder, settings))
             {

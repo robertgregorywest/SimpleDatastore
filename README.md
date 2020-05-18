@@ -4,11 +4,23 @@
 
 A simple .NET persistence library which uses XML file storage.
 
-This project has now been updated to use .NET standard and the built-in dependency resolution framework. The easiest way to use it in an ASP.NET Core app. Simply include the following in your ConfigureServices to use the default configuration:
+This project has now been updated to use .NET standard and the built-in dependency resolution framework. 
+The easiest way to use it in an ASP.NET Core app. Simply include the following in your ConfigureServices 
+to use the default configuration:
 
 `services.AddSimpleDatastore();`
 
-Then to use SimpleDatastore create instances of the `IRepository<>` for your types. All your objects need to inherit from `PersistentObject`. Decorate any fields you want to persist with the `System.Runtime.Serialization.DataMember` attribute. The default configuration uses the ASP.NET `IMemoryCache` but you can implement your own version.
+Then to use SimpleDatastore create instances of the `IRepository<>` for your types. All your objects need to 
+inherit from `PersistentObject`. Decorate any fields you want to persist with 
+the `System.Runtime.Serialization.DataMember` attribute. The default configuration uses the ASP.NET `IMemoryCache` but 
+you can implement your own version.
 
 A full working example app is included in the solution.
+
+## Configuration
+
+The `SimpleDatastoreOptions` class provides the following settings:
+* enabling caching using the `ICache` implementation (default is true)
+* cache duration in minutes (default is 60 minutes)
+* storage file location (default is /App_Data for old times' sake)
 

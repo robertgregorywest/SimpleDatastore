@@ -1,65 +1,50 @@
 ﻿using SimpleDatastore.Interfaces;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
+using Nito.AsyncEx;
 
 namespace SimpleDatastore
 {
     public class DocumentProvider<T> : IDocumentProvider<T> where T : PersistentObject
     {
-        private readonly SimpleDatastoreOptions _options;
-        private readonly ICache _cache;
         private readonly string _documentPath;
-        private readonly string _keyForDocument;
+        
+        private readonly AsyncLock _mutex = new AsyncLock();
 
-        public DocumentProvider(IHostingEnvironment environment, IOptions<SimpleDatastoreOptions> options, ICache cache)
+        public DocumentProvider(IOptions<SimpleDatastoreOptions> options, IHostingEnvironment environment)
         {
-            _options = options.Value;
-            _cache = cache;
-            _documentPath = Path.Combine(environment.ContentRootPath, _options.DatastoreLocation, $"{typeof(T)}{Constants.FileExtension}");
-            _keyForDocument = $"Doc.{typeof(T)}";
+            _documentPath = Path.Combine(environment.ContentRootPath, options.Value.DatastoreLocation, $"{typeof(T)}{Constants.FileExtension}");
         }
 
-        public XmlDocument GetDocument()
+        public async Task<XmlDocument> GetDocumentAsync()
         {
-            if (_options.EnableCaching)
+            using (await _mutex.LockAsync())
             {
-                var cacheItem = _cache.Get(_keyForDocument);
-                if (cacheItem is XmlDocument docFromCache)
+                if (!File.Exists(_documentPath))
                 {
-                    return docFromCache;
+                    using (var writer = XmlWriter.Create(_documentPath))
+                    {
+                        await writer.WriteStartElementAsync("", Constants.DataElementName, "");
+                        await writer.WriteEndElementAsync();
+                        await writer.FlushAsync();
+                    }
                 }
-            }
-            
-            if (!File.Exists(_documentPath))
-            {
-                using (var writer = XmlWriter.Create(_documentPath))
-                {
-                    writer.WriteStartElement(Constants.DataElementName);
-                    writer.WriteEndElement();
-                    writer.Flush();
-                }
-            }
 
-            var doc = new XmlDocument();
-            doc.Load(_documentPath);
+                var doc = new XmlDocument();
+                doc.Load(_documentPath);
 
-            if (_options.EnableCaching)
-            {
-                _cache.Set(_keyForDocument, doc, _options.CacheDuration);
+                return doc;
             }
-            
-            return doc;
         }
 
-        public void SaveDocument(XmlDocument document)
+        public async Task SaveDocumentAsync(XmlDocument document)
         {
-            document.Save(_documentPath);
-
-            if (_options.EnableCaching)
+            using (await _mutex.LockAsync())
             {
-                _cache.Remove(_keyForDocument);
+                document.Save(_documentPath);
             }
         }
     }
