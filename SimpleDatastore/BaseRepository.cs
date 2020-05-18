@@ -28,6 +28,10 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public async Task<T> LoadAsync(Guid id)
         {
+            if (!_options.EnableCaching)
+            {
+                return await _storageHelper.GetObjectAsync(id);
+            }
             return await _memoryCache.GetOrCreateAsync(KeyForObject(id),
                 async (cacheEntry) =>
                 {
@@ -44,6 +48,10 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public async Task<IEnumerable<T>> LoadCollectionAsync()
         {
+            if (!_options.EnableCaching)
+            {
+                return await _storageHelper.GetCollectionAsync();
+            }
             return await _memoryCache.GetOrCreateAsync(_keyForCollection,
                 async (cacheEntry) =>
                 {
