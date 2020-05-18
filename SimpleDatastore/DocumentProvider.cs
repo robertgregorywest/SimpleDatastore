@@ -25,7 +25,7 @@ namespace SimpleDatastore
             {
                 if (!File.Exists(_documentPath))
                 {
-                    using (var writer = XmlWriter.Create(_documentPath))
+                    using (var writer = XmlWriter.Create(_documentPath, new XmlWriterSettings { Async = true }))
                     {
                         await writer.WriteStartElementAsync("", Constants.DataElementName, "");
                         await writer.WriteEndElementAsync();
