@@ -89,7 +89,7 @@ namespace SimpleDatastore
             await _provider.SaveDocumentAsync(doc);
         }
 
-        private static string BuildXml(T instance)
+        internal static string BuildXml(T instance)
         {
             var objectStringBuilder = new StringBuilder();
 

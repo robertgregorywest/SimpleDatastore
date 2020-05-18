@@ -53,21 +53,15 @@ namespace SimpleDatastore.Tests
         }
 
         [Test]
-        public async Task Save_object_with_child_objects_should_persist_ids()
+        public void BuildXml_with_child_objects_should_persist_ids()
         {
-            var resolver = Substitute.For<IItemResolver<Widget>>();
-            var provider = Substitute.For<IDocumentProvider<Widget>>();
-            var helper = new StorageHelper<Widget>(resolver, provider);
-            
-            provider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyDocument));
-
-            await helper.SaveObjectAsync(Widgets.SomeWidget);
+            var result = StorageHelper<Widget>.BuildXml(Widgets.SomeWidget);
 
             var doc = new XmlDocument();
             doc.LoadXml(Widgets.SomeWidgetSingleDocument.GetFixtureXml());
-            var expectedInnerXml = doc.InnerText;
+            var expectedInnerXml = doc.DocumentElement.InnerXml;
 
-            await provider.Received().SaveDocumentAsync(Arg.Is<XmlDocument>(d => d.InnerText == expectedInnerXml));
+            Assert.AreEqual(result, expectedInnerXml);
         }
     }
 }
