@@ -15,7 +15,6 @@ namespace SimpleDatastore
     {
         private readonly IFileSystem _fileSystem;
         private readonly string _documentPath;
-        
         private readonly AsyncLock _mutex = new AsyncLock();
 
         public DocumentProvider(IOptions<SimpleDatastoreOptions> options, IHostingEnvironment environment, IFileSystem fileSystem)
@@ -24,38 +23,32 @@ namespace SimpleDatastore
             _documentPath = Path.Combine(environment.ContentRootPath, options.Value.DatastoreLocation, $"{typeof(T)}{Constants.FileExtension}");
         }
 
-        public async Task<XmlDocument> GetDocumentAsync()
+        public async Task<XDocument> GetDocumentAsync()
         {
             using (await _mutex.LockAsync())
             {
                 if (!_fileSystem.File.Exists(_documentPath))
                 {
-<<<<<<< HEAD
-                    var root = new XElement(Constants.RootElementName);
-                    var output = root.ToString();
-                    await _fileSystem.File.WriteAllTextAsync(_documentPath, output, CancellationToken.None);
-=======
-                    using (var writer = XmlWriter.Create(_documentPath, new XmlWriterSettings { Async = true }))
-                    {
-                        await writer.WriteStartElementAsync("", Constants.RootElementName, "");
-                        await writer.WriteEndElementAsync();
-                        await writer.FlushAsync();
-                    }
->>>>>>> 3.0.0
+                    return new XDocument(
+                        new XDeclaration("1.0", "utf-8", null),
+                        new XElement(Constants.RootElementName)
+                    );
                 }
 
-                var doc = new XmlDocument();
-                doc.Load(_documentPath);
+                using var reader = _fileSystem.File.OpenText(_documentPath);
+                var doc = XDocument.Load(reader);
 
                 return doc;
             }
         }
 
-        public async Task SaveDocumentAsync(XmlDocument document)
+        public async Task SaveDocumentAsync(XDocument document)
         {
             using (await _mutex.LockAsync())
             {
-                document.Save(_documentPath);
+                await using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.OpenOrCreate);
+                using var writer = XmlWriter.Create(stream, new XmlWriterSettings { Async = true, Indent = true });
+                await document.SaveAsync(writer, CancellationToken.None);
             }
         }
     }

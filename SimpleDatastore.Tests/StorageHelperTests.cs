@@ -1,11 +1,8 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
 using SimpleDatastore.Interfaces;
-using System.Xml;
-using Example.Domain;
-using SimpleDatastore.Tests.Extensions;
+using System.Xml.Linq;
 
 namespace SimpleDatastore.Tests
 {
@@ -29,39 +26,60 @@ namespace SimpleDatastore.Tests
         }
 
         [Test]
-        public async Task SaveObject_should_save_document()
+        public async Task GetObjectAsync_should_send_element_to_provider()
         {
-            _provider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyDocument));
-
+            _provider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.SingeFakeObjectXDocument));
+            _resolver.GetItemFromNodeAsync(null).ReturnsForAnyArgs(FakeObject.Instance);
+        
             var helper = new StorageHelper<FakeObject>(_resolver, _provider);
 
-            await helper.SaveObjectAsync(FakeObject.Instance);
+            var actual = await helper.GetObjectAsync(FakeObject.InstanceIdentifier);
+            
+            Assert.IsNotNull(actual);
 
-            await _provider.Received().SaveDocumentAsync(Arg.Is<XmlDocument>(d => d.InnerXml == FakeDocuments.SingleFakeObjectDocument.InnerXml));
+            await _resolver.Received()
+                .GetItemFromNodeAsync(Arg.Is<XElement>(e => e.ToString() == FakeDocuments.SingleFakeObjectXElement.ToString()));
         }
 
         [Test]
+        public async Task SaveObject_should_save_document()
+        {
+            _provider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyXDocument));
+        
+            var helper = new StorageHelper<FakeObject>(_resolver, _provider);
+        
+            await helper.SaveObjectAsync(FakeObject.Instance);
+        
+            await _provider.Received().SaveDocumentAsync(Arg.Is<XDocument>(d => d.ToString() == FakeDocuments.SingeFakeObjectXDocument.ToString()));
+        }
+        
+        [Test]
         public async Task DeleteObject_should_save_empty_document()
         {
-            _provider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.SingleFakeObjectDocument));
-
+            _provider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.SingeFakeObjectXDocument));
+        
             var helper = new StorageHelper<FakeObject>(_resolver, _provider);
-
+        
             await helper.DeleteObjectAsync(FakeObject.InstanceIdentifier);
-
-            await _provider.Received().SaveDocumentAsync(Arg.Is<XmlDocument>(d => d.InnerXml == FakeDocuments.EmptyDocument.InnerXml));
+        
+            await _provider.Received().SaveDocumentAsync(Arg.Is<XDocument>(d => d.ToString() == FakeDocuments.EmptyXDocument.ToString()));
         }
 
         [Test]
         public void BuildXml_with_child_objects_should_persist_ids()
         {
-            var result = StorageHelper<Widget>.BuildXml(Widgets.SomeWidget);
-
-            var doc = new XmlDocument();
-            doc.LoadXml(Widgets.SomeWidgetSingleDocument.GetFixtureXml());
-            var expectedInnerXml = doc.DocumentElement.InnerXml;
-
-            Assert.AreEqual(result, expectedInnerXml);
+            var result = StorageHelper<FakeObject>.BuildXml(FakeObject.Instance);
+            Assert.AreEqual(result.ToString(), FakeDocuments.SingleFakeObjectXElement.ToString());
         }
-    }
+
+        [Test]
+        public void GetElementById_should_return_Element()
+        {
+            var actual = StorageHelper<FakeObject>.GetElementById(FakeDocuments.SingeFakeObjectXDocument,
+                FakeObject.InstanceIdentifier);
+            
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(FakeDocuments.SingleFakeObjectXElement.ToString(), actual.ToString());
+        }
+}
 }

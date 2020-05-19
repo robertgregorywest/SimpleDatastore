@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Xml.XPath;
+using System.Xml.Linq;
 using JetBrains.Annotations;
 using SimpleDatastore.Interfaces;
 using SimpleDatastore.Extensions;
@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SimpleDatastore
 {
+    ///<inheritdoc/>
     public class ItemResolver<T> : IItemResolver<T> where T : PersistentObject
     {
         private readonly IServiceProvider _provider;
@@ -29,37 +30,38 @@ namespace SimpleDatastore
             _activator = activator;
         }
 
-        public async Task<T> GetItemFromNodeAsync(XPathNavigator nav)
+        ///<inheritdoc/>
+        public async Task<T> GetItemFromNodeAsync(XElement element)
         {
-            // Using the activator the instance so that objects can have dependencies
+            // Using the activator so the instance can have dependencies
             var instance = _activator.Invoke();
 
             foreach (var property in typeof(T).GetValidProperties())
             {
-                if (!nav.MoveToChild(property.GetPropertyName(), "")) continue;
+                var propertyElement = element.Elements(property.GetPropertyName()).First();
+                
+                if (propertyElement == null) continue;
                 
                 if (property.PropertyType == typeof(string))
                 {
-                    property.SetValue(instance, nav.Value, null);
+                    property.SetValue(instance, propertyElement.Value, null);
                 }
                 else if (property.PropertyType == typeof(Guid))
                 {
-                    property.SetValue(instance, new Guid(nav.Value), null);
+                    property.SetValue(instance, new Guid(propertyElement.Value), null);
                 }
                 else if (property.PropertyType.IsAPersistentObject())
                 {
-                    await SetPersistentObjectProperty(property, instance, nav.Value.ToGuid());
+                    await SetPersistentObjectProperty(property, instance, propertyElement.Value.ToGuid());
                 }
                 else if (property.PropertyType.IsAPersistentObjectEnumerable())
                 {
-                    await SetPersistentObjectEnumerableProperty(property, instance, nav.Value.Split(','));
+                    await SetPersistentObjectEnumerableProperty(property, instance, propertyElement.Value.Split(','));
                 }
                 else
                 {
-                    property.SetValue(instance, Convert.ChangeType(nav.Value, property.PropertyType), null);
+                    property.SetValue(instance, Convert.ChangeType(propertyElement.Value, property.PropertyType), null);
                 }
-
-                nav.MoveToParent();
             }
             return instance;
         }

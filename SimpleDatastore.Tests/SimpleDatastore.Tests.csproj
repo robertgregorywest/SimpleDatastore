@@ -26,6 +26,9 @@
     <None Update="Fixtures\Example.Domain.Widget.SomeWidget.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Fixtures\Empty.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

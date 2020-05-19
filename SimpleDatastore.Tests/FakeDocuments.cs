@@ -1,55 +1,19 @@
-﻿using System.Xml;
-using System.Xml.XPath;
+﻿using System.Xml.Linq;
+using SimpleDatastore.Tests.Extensions;
 
 namespace SimpleDatastore.Tests
 {
     internal static class FakeDocuments
     {
-        private static readonly string SingleFakeObjectFixture = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><name><![CDATA[{FakeObject.NameValue}]]></name><id>{FakeObject.IdentifierValue}</id></dataItem></data>";
-        private const string EmptyDocumentFixture = @"<?xml version=""1.0"" encoding=""utf-8""?><data></data>";
-        private static readonly string CollectionFixture = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><name><![CDATA[{FakeObject.NameValue2}]]></name><id>{FakeObject.IdentifierValue2}</id></dataItem><dataItem><name><![CDATA[{FakeObject.NameValue}]]></name><id>{FakeObject.IdentifierValue}</id></dataItem></data>";
-
-        public static XmlDocument SingleFakeObjectDocument
-        {
-            get
-            {
-                var doc = new XmlDocument();
-                doc.LoadXml(SingleFakeObjectFixture);
-                return doc;
-            }
-        }
-
-        public static XmlDocument EmptyDocument
-        {
-            get
-            {
-                var doc = new XmlDocument();
-                doc.LoadXml(EmptyDocumentFixture);
-                return doc;
-            }
-        }
+        private static readonly string SingleFakeObjectFixture = $@"<dataItem><name><![CDATA[{FakeObject.NameValue}]]></name><id>{FakeObject.IdentifierValue}</id></dataItem>";
+        private static readonly string SingleFakeObjectDocumentFixture = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><name><![CDATA[{FakeObject.NameValue}]]></name><id>{FakeObject.IdentifierValue}</id></dataItem></data>";
+        private static readonly string CollectionDocumentFixture = $@"<?xml version=""1.0"" encoding=""utf-8""?><data><dataItem><name><![CDATA[{FakeObject.NameValue2}]]></name><id>{FakeObject.IdentifierValue2}</id></dataItem><dataItem><name><![CDATA[{FakeObject.NameValue}]]></name><id>{FakeObject.IdentifierValue}</id></dataItem></data>";
         
-        public static XmlDocument CollectionDocument
-        {
-            get
-            {
-                var doc = new XmlDocument();
-                doc.LoadXml(CollectionFixture);
-                return doc;
-            }
-        }
+        private const string EmptyDocumentFilename = "Empty.xml";
 
-        public static XPathNavigator SingleFakeObjectNavigator
-        {
-            get
-            {
-                var doc = new XmlDocument();
-                doc.LoadXml(SingleFakeObjectFixture);
-                var nav = doc.CreateNavigator();
-                nav.MoveToFirstChild();
-                var navCurrent = nav.SelectSingleNode($"{Constants.DataItemName}[{PersistentObject.Identifier} = \"{FakeObject.IdentifierValue}\"]");
-                return navCurrent;
-            }
-        }
+        public static XDocument EmptyXDocument => XDocument.Load(EmptyDocumentFilename.GetFixturePath());
+        public static XElement SingleFakeObjectXElement => XElement.Parse(SingleFakeObjectFixture);
+        public static XDocument SingeFakeObjectXDocument => XDocument.Parse(SingleFakeObjectDocumentFixture);
+        public static XDocument CollectionFakeObjectXDocument => XDocument.Parse(CollectionDocumentFixture);
     }
 }

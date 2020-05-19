@@ -21,7 +21,7 @@ namespace SimpleDatastore
             services.AddSingleton(typeof(IStorageHelper<>), typeof(StorageHelper<>));
             services.AddSingleton(typeof(IDocumentProvider<>), typeof(DocumentProvider<>));
             services.AddSingleton(typeof(IItemResolver<>), typeof(ItemResolver<>));
-            services.AddScoped<IFileSystem, FileSystem>();
+            services.AddSingleton<IFileSystem, FileSystem>();
             services.AddMemoryCache();
 
             return services;

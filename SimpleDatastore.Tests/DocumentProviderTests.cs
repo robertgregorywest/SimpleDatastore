@@ -12,7 +12,7 @@ namespace SimpleDatastore.Tests
     public class DocumentProviderTests
     {
         [Test]
-        public async Task No_document_should_create_document()
+        public async Task No_document_should_return_empty_document()
         {
             var options = Substitute.For<IOptions<SimpleDatastoreOptions>>();
             var hostingEnvironment = Substitute.For<IHostingEnvironment>();
@@ -21,12 +21,12 @@ namespace SimpleDatastore.Tests
             options.Value.Returns(new SimpleDatastoreOptions());
             hostingEnvironment.ContentRootPath.Returns("rootPath");
             fileSystem.File.Exists("").ReturnsForAnyArgs(false);
-            //fileSystem.File.Create("").ReturnsForAnyArgs(new MemoryStream());
             
             var provider = new DocumentProvider<FakeObject>(options, hostingEnvironment, fileSystem);
 
-            var document = await provider.GetDocumentAsync();
-            
+            var doc = await provider.GetDocumentAsync();
+
+            Assert.AreEqual(doc.ToString(), FakeDocuments.EmptyXDocument.ToString());
         }
     }
 }

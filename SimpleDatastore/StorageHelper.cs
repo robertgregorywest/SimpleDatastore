@@ -2,9 +2,9 @@
 using SimpleDatastore.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Xml;
+using System.Xml.Linq;
 
 namespace SimpleDatastore
 {
@@ -19,121 +19,115 @@ namespace SimpleDatastore
             _provider = provider;
         }
 
+        ///<inheritdoc/>
         public async Task<IEnumerable<T>> GetCollectionAsync()
         {
             var doc = await _provider.GetDocumentAsync();
-            var nav = doc.CreateNavigator();
-            
-            if (!nav.MoveToFirstChild()) return null;
 
             var list = new List<T>();
-            
-            var iterator = nav.Select(Constants.DataItemName);
 
-            while (iterator.MoveNext())
+            var elements = doc.Descendants(Constants.DataItemName);
+
+            foreach (var element in elements)
             {
-                var navCurrent = iterator.Current;
-                list.Add(await _resolver.GetItemFromNodeAsync(navCurrent));
+                list.Add(await _resolver.GetItemFromNodeAsync(element));
             }
 
             return list;
         }
 
+        ///<inheritdoc/>
         public async Task<T> GetObjectAsync(Guid id)
         {
             var doc = await _provider.GetDocumentAsync();
-            var nav = doc.CreateNavigator();
 
-            if (!nav.MoveToFirstChild()) return null;
-            var navCurrent = nav.SelectSingleNode($"{Constants.DataItemName}[{PersistentObject.Identifier} = \"{id.ToString()}\"]");
-            if (navCurrent == null) return null;
+            var element = GetElementById(doc, id);
 
-            var item = await _resolver.GetItemFromNodeAsync(navCurrent);
+            if (element == null) return null;
+
+            var item = await _resolver.GetItemFromNodeAsync(element);
 
             return item;
         }
 
+        ///<inheritdoc/>
         public async Task SaveObjectAsync(T instance)
         {
-            var innerXml = BuildXml(instance);
+            var element = BuildXml(instance);
 
             var doc = await _provider.GetDocumentAsync();
+            
+            var existingElement = GetElementById(doc, instance.Id);
 
-            var objectDocFrag = doc.CreateDocumentFragment();
-            objectDocFrag.InnerXml = innerXml;
-
-            var existingNode = doc.SelectExistingNode(instance.Id);
-
-            if (existingNode != null)
+            if (existingElement != null)
             {
-                doc.DocumentElement?.ReplaceChild(objectDocFrag, existingNode);
+                existingElement.ReplaceWith(element);
             }
             else
             {
-                doc.DocumentElement?.AppendChild(objectDocFrag);
+                doc.Root?.Add(element);
             }
 
             await _provider.SaveDocumentAsync(doc);
         }
 
+        ///<inheritdoc/>
         public async Task DeleteObjectAsync(Guid id)
         {
             var doc = await _provider.GetDocumentAsync();
 
-            var objectNode = doc.SelectExistingNode(id);
+            var element = GetElementById(doc, id);
 
-            if (objectNode == null) return;
+            if (element == null) return;
 
-            doc.DocumentElement?.RemoveChild(objectNode);
+            element.Remove();
 
             await _provider.SaveDocumentAsync(doc);
         }
 
-        internal static string BuildXml(T instance)
+        internal static XElement GetElementById(XDocument doc, Guid id)
         {
-            var objectStringBuilder = new StringBuilder();
+            return doc
+                .Descendants(Constants.DataItemName)
+                .FirstOrDefault(el => el.Element(PersistentObject.Identifier)?.Value == id.ToString());
+        }
 
-            var settings = new XmlWriterSettings() { OmitXmlDeclaration = true };
-
-            using (var writer = XmlWriter.Create(objectStringBuilder, settings))
+        internal static XElement BuildXml(T instance)
+        {
+            var element = new XElement(Constants.DataItemName);
+            
+            foreach (var property in typeof(T).GetValidProperties())
             {
-                writer.WriteStartElement(Constants.DataItemName);
+                var attributeName = property.GetPropertyName();
 
-                foreach (var property in typeof(T).GetValidProperties())
+                if (attributeName == PersistentObject.Identifier)
                 {
-                    var attributeName = property.GetPropertyName();
-
-                    if (attributeName == PersistentObject.Identifier)
+                    element.Add(new XElement(attributeName, property.GetValue(instance, null).ToString()));
+                }
+                else
+                {
+                    if (property.PropertyType.IsAPersistentObject())
                     {
-                        writer.WriteElementString(attributeName, property.GetValue(instance, null).ToString());
+                        if (property.GetValue(instance, null) is PersistentObject persistentObject)
+                        {
+                            element.Add(new XElement(attributeName, persistentObject.Id.ToString()));
+                        }
+                    }
+                    else if (property.PropertyType.IsAPersistentObjectEnumerable())
+                    {
+                        if (property.GetValue(instance, null) is IEnumerable<PersistentObject> persistentObjectEnumerable)
+                        {
+                            var flattenedEnumerable = string.Join(",", persistentObjectEnumerable);
+                            element.Add(new XElement(attributeName, flattenedEnumerable));
+                        }
                     }
                     else
                     {
-                        writer.WriteStartElement(attributeName);
-                        if (property.PropertyType.IsAPersistentObject())
-                        {
-                            if (property.GetValue(instance, null) is PersistentObject persistentObject)
-                                writer.WriteCData(persistentObject.Id.ToString());
-                        }
-                        else if (property.PropertyType.IsAPersistentObjectEnumerable())
-                        {
-                            if (property.GetValue(instance, null) is IEnumerable<PersistentObject> persistentObjectEnumerable)
-                            {
-                                var flattenedEnumerable = string.Join(",", persistentObjectEnumerable);
-                                writer.WriteCData(flattenedEnumerable);
-                            }
-                        }
-                        else
-                        {
-                            writer.WriteCData(property.GetValue(instance, null).ToString());
-                        }
-                        writer.WriteEndElement();
+                        element.Add(new XElement(attributeName, new XCData(property.GetValue(instance, null).ToString())));
                     }
                 }
-                writer.WriteEndElement();
             }
-
-            return objectStringBuilder.ToString();
+            return element;
         }
     }
 }

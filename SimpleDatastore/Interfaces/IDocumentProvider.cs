@@ -1,11 +1,12 @@
 ﻿using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace SimpleDatastore.Interfaces
 {
     public interface IDocumentProvider<T> where T : PersistentObject
     {
-        Task<XmlDocument> GetDocumentAsync();
-        Task SaveDocumentAsync(XmlDocument document);
+        Task<XDocument> GetDocumentAsync();
+        Task SaveDocumentAsync(XDocument document);
     }
 }

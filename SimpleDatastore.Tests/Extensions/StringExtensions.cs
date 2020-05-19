@@ -9,5 +9,10 @@ namespace SimpleDatastore.Tests.Extensions
         {
             return File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures", fixture));
         }
+
+        public static string GetFixturePath(this string fixture)
+        {
+            return Path.Combine(Environment.CurrentDirectory, "Fixtures", fixture);
+        }
     }
 }
