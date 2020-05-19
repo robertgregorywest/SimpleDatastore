@@ -30,9 +30,18 @@ namespace SimpleDatastore
             {
                 if (!_fileSystem.File.Exists(_documentPath))
                 {
+<<<<<<< HEAD
                     var root = new XElement(Constants.RootElementName);
                     var output = root.ToString();
                     await _fileSystem.File.WriteAllTextAsync(_documentPath, output, CancellationToken.None);
+=======
+                    using (var writer = XmlWriter.Create(_documentPath, new XmlWriterSettings { Async = true }))
+                    {
+                        await writer.WriteStartElementAsync("", Constants.RootElementName, "");
+                        await writer.WriteEndElementAsync();
+                        await writer.FlushAsync();
+                    }
+>>>>>>> 3.0.0
                 }
 
                 var doc = new XmlDocument();
