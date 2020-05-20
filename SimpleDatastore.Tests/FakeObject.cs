@@ -12,6 +12,7 @@ namespace SimpleDatastore.Tests
         public const string CacheKey = "SimpleDatastore.Tests.FakeObject.675b689d-db4e-43ed-94dd-591f73a0fc74";
         public const string IdentifierValue2 = "ab08bec7-835f-49ca-a285-6ba195576305";
         public const string NameValue2 = "Second FakeObject name";
+        public const string NameValue2Updated = "Second FakeObject name updated";
 
         [DataMember(Name = "name")]
         public string Name { get; set; }

@@ -1,8 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
 using SimpleDatastore.Interfaces;
 using System.Xml.Linq;
+using FluentAssertions;
 
 namespace SimpleDatastore.Tests
 {
@@ -26,7 +30,7 @@ namespace SimpleDatastore.Tests
         }
 
         [Test]
-        public async Task GetObjectAsync_should_send_element_to_provider()
+        public async Task GetObjectAsync_should_send_element_to_resolver()
         {
             _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.SingeFakeObjectXDocument));
             _resolver.GetItemFromNodeAsync(null).ReturnsForAnyArgs(FakeObject.Instance);
@@ -40,9 +44,26 @@ namespace SimpleDatastore.Tests
             await _resolver.Received()
                 .GetItemFromNodeAsync(Arg.Is<XElement>(e => e.ToString() == FakeDocuments.SingleFakeObjectXElement.ToString()));
         }
+        
+        [Test]
+        public async Task GetCollectionAsync_should_return_collection()
+        {
+            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument));
+            var serviceProvider = Substitute.For<IServiceProvider>();
+            _resolver = new ItemResolver<FakeObject>(serviceProvider);
+        
+            var provider = new PersistentObjectProvider<FakeObject>(_resolver, _documentProvider);
+
+            var actual = await provider.GetCollectionAsync();
+            
+            actual.Should()
+                .NotBeEmpty()
+                .And.HaveCount(c => c == 2)
+                .And.ContainInOrder(FakeObject.SecondInstance, FakeObject.Instance);
+        }
 
         [Test]
-        public async Task SaveObject_should_save_document()
+        public async Task SaveObject_should_save_document_with_empty_document()
         {
             _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyXDocument));
         
@@ -51,6 +72,23 @@ namespace SimpleDatastore.Tests
             await provider.SaveObjectAsync(FakeObject.Instance);
         
             await _documentProvider.Received().SaveDocumentAsync(Arg.Is<XDocument>(d => d.ToString() == FakeDocuments.SingeFakeObjectXDocument.ToString()));
+        }
+        
+        [Test]
+        public async Task SaveObject_should_update_existing_object()
+        {
+            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument));
+            var serviceProvider = Substitute.For<IServiceProvider>();
+            _resolver = new ItemResolver<FakeObject>(serviceProvider);
+        
+            var provider = new PersistentObjectProvider<FakeObject>(_resolver, _documentProvider);
+            
+            var actual = FakeObject.SecondInstance;
+            actual.Name = FakeObject.NameValue2Updated;
+        
+            await provider.SaveObjectAsync(actual);
+        
+            await _documentProvider.Received().SaveDocumentAsync(Arg.Is<XDocument>(d => d.ToString() == FakeDocuments.CollectionFakeObjectXDocumentUpdated.ToString()));
         }
         
         [Test]
