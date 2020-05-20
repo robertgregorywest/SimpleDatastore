@@ -10,7 +10,7 @@ namespace SimpleDatastore
 {
     public class BaseRepository<T> : IRepository, IRepository<T> where T : PersistentObject
     {
-        private readonly IStorageHelper<T> _storageHelper;
+        private readonly IPersistentObjectProvider<T> _persistentObjectProvider;
         private readonly SimpleDatastoreOptions _options;
         private readonly IMemoryCache _memoryCache;
         
@@ -18,9 +18,9 @@ namespace SimpleDatastore
 
         private static string KeyForObject(Guid id) => $"{typeof(T)}.{id.ToString()}";
 
-        public BaseRepository(IStorageHelper<T> storageHelper, IOptions<SimpleDatastoreOptions> options, IMemoryCache memoryCache)
+        public BaseRepository(IPersistentObjectProvider<T> persistentObjectProvider, IOptions<SimpleDatastoreOptions> options, IMemoryCache memoryCache)
         {
-            _storageHelper = storageHelper;
+            _persistentObjectProvider = persistentObjectProvider;
             _options = options.Value;
             _memoryCache = memoryCache;
         }
@@ -30,13 +30,13 @@ namespace SimpleDatastore
         {
             if (!_options.EnableCaching)
             {
-                return await _storageHelper.GetObjectAsync(id);
+                return await _persistentObjectProvider.GetObjectAsync(id);
             }
             return await _memoryCache.GetOrCreateAsync(KeyForObject(id),
                 async (cacheEntry) =>
                 {
                     cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_options.CacheDuration));
-                    return await _storageHelper.GetObjectAsync(id);
+                    return await _persistentObjectProvider.GetObjectAsync(id);
                 });
         }
 
@@ -50,13 +50,13 @@ namespace SimpleDatastore
         {
             if (!_options.EnableCaching)
             {
-                return await _storageHelper.GetCollectionAsync();
+                return await _persistentObjectProvider.GetCollectionAsync();
             }
             return await _memoryCache.GetOrCreateAsync(_keyForCollection,
                 async (cacheEntry) =>
                 {
                     cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_options.CacheDuration));
-                    return await _storageHelper.GetCollectionAsync();
+                    return await _persistentObjectProvider.GetCollectionAsync();
                 });
         }
 
@@ -88,14 +88,14 @@ namespace SimpleDatastore
                 instance.Id = Guid.NewGuid();
             }
 
-            await _storageHelper.SaveObjectAsync(instance);
+            await _persistentObjectProvider.SaveObjectAsync(instance);
             PurgeCache(instance.Id);
         }
 
         ///<inheritdoc/>
         public async Task DeleteAsync(Guid id)
         {
-            await _storageHelper.DeleteObjectAsync(id);
+            await _persistentObjectProvider.DeleteObjectAsync(id);
             PurgeCache(id);
         }
 

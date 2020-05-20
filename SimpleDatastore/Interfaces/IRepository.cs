@@ -11,6 +11,10 @@ namespace SimpleDatastore.Interfaces
         Task<object> LoadObjectCollectionByIdsAsync(string[] persistentObjectIds);
     }
     
+    /// <summary>
+    /// Provides e=methods to retrieve persistent objects from storage documents
+    /// </summary>
+    /// <typeparam name="T">PersistentObject type to work with</typeparam>
     public interface IRepository<T> where T : PersistentObject
     {
         /// <summary>

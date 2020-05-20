@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace SimpleDatastore.Tests
 {
@@ -26,8 +27,8 @@ namespace SimpleDatastore.Tests
         {
             var resolver = new ItemResolver<FakeObject>(_provider, () => new FakeObject());
 
-            var result = await resolver.GetItemFromNodeAsync(FakeDocuments.SingleFakeObjectNavigator);
-
+            var result = await resolver.GetItemFromNodeAsync(FakeDocuments.SingleFakeObjectXElement);
+        
             Assert.AreEqual(FakeObject.Instance, result);
         }
     }

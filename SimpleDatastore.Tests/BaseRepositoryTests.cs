@@ -11,14 +11,14 @@ namespace SimpleDatastore.Tests
 {
     public class BaseRepositoryTests
     {
-        private IStorageHelper<FakeObject> _storageHelper;
+        private IPersistentObjectProvider<FakeObject> _storageHelper;
         private IOptions<SimpleDatastoreOptions> _options;
         private IMemoryCache _cache;
 
         [SetUp]
         public void Setup()
         {
-            _storageHelper = Substitute.For<IStorageHelper<FakeObject>>();
+            _storageHelper = Substitute.For<IPersistentObjectProvider<FakeObject>>();
             _options = Substitute.For<IOptions<SimpleDatastoreOptions>>();
             _options.Value.Returns(new SimpleDatastoreOptions() { EnableCaching = false });
             _cache = Substitute.For<IMemoryCache>();
