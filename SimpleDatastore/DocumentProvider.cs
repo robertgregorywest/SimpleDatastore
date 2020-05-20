@@ -46,7 +46,7 @@ namespace SimpleDatastore
         {
             using (await _mutex.LockAsync())
             {
-                await using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.OpenOrCreate);
+                await using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Create);
                 using var writer = XmlWriter.Create(stream, new XmlWriterSettings { Async = true, Indent = true });
                 await document.SaveAsync(writer, CancellationToken.None);
             }

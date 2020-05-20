@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
@@ -50,7 +48,7 @@ namespace SimpleDatastore.Tests
         {
             _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument));
             var serviceProvider = Substitute.For<IServiceProvider>();
-            _resolver = new ItemResolver<FakeObject>(serviceProvider);
+            _resolver = new ItemResolver<FakeObject>(serviceProvider, () => new FakeObject());
         
             var provider = new PersistentObjectProvider<FakeObject>(_resolver, _documentProvider);
 
@@ -102,6 +100,18 @@ namespace SimpleDatastore.Tests
         
             await _documentProvider.Received().SaveDocumentAsync(Arg.Is<XDocument>(d => d.ToString() == FakeDocuments.EmptyXDocument.ToString()));
         }
+        
+        [Test]
+        public async Task DeleteObject_should_remove_element()
+        {
+            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument));
+        
+            var provider = new PersistentObjectProvider<FakeObject>(_resolver, _documentProvider);
+        
+            await provider.DeleteObjectAsync(FakeObject.SecondInstanceIdentifier);
+        
+            await _documentProvider.Received().SaveDocumentAsync(Arg.Is<XDocument>(d => d.ToString() == FakeDocuments.SingeFakeObjectXDocument.ToString()));
+        }
 
         [Test]
         public void BuildXml_with_child_objects_should_persist_ids()
@@ -109,15 +119,5 @@ namespace SimpleDatastore.Tests
             var result = PersistentObjectProvider<FakeObject>.BuildXml(FakeObject.Instance);
             Assert.AreEqual(result.ToString(), FakeDocuments.SingleFakeObjectXElement.ToString());
         }
-
-        [Test]
-        public void GetElementById_should_return_Element()
-        {
-            var actual = PersistentObjectProvider<FakeObject>.GetElementById(FakeDocuments.SingeFakeObjectXDocument,
-                FakeObject.InstanceIdentifier);
-            
-            Assert.IsNotNull(actual);
-            Assert.AreEqual(FakeDocuments.SingleFakeObjectXElement.ToString(), actual.ToString());
-        }
-}
+    }
 }

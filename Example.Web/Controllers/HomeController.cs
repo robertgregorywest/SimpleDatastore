@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,12 @@ namespace Example.Web.Controllers
     public class HomeController : Controller
     {
         private readonly IRepository<Widget> _repo;
-
-        public HomeController(IRepository<Widget> repo)
+        private readonly IRepository<Factory> _factoryRepo;
+        
+        public HomeController(IRepository<Widget> repo, IRepository<Factory> factoryRepo)
         {
             _repo = repo;
+            _factoryRepo = factoryRepo;
         }
 
         public async Task<IActionResult> Index()
@@ -34,6 +37,19 @@ namespace Example.Web.Controllers
             }
 
             return View(model);
+        }
+
+        public async Task<IActionResult> CreateFactory([FromQuery]string name)
+        {
+            var factory = new Factory() { Name = name };
+            await _factoryRepo.SaveAsync(factory);
+            return RedirectToAction("Index");
+        }
+        
+        public async Task<IActionResult> DeleteFactory(Guid id)
+        {
+            await _factoryRepo.DeleteAsync(id);
+            return RedirectToAction("Index");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

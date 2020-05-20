@@ -2,9 +2,9 @@
 
 namespace SimpleDatastore.Extensions
 {
-    public static class StringExtensions
+    internal static class StringExtensions
     {
-        public static Guid ToGuid(this string s)
+        internal static Guid ToGuid(this string s)
         {
             try
             {

@@ -2,7 +2,6 @@
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace SimpleDatastore.Tests
 {

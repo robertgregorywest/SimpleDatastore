@@ -41,7 +41,7 @@ namespace SimpleDatastore
         {
             var doc = await _provider.GetDocumentAsync();
 
-            var element = GetElementById(doc, id);
+            var element = doc.GetElementById(id);
 
             if (element == null) return null;
 
@@ -57,7 +57,7 @@ namespace SimpleDatastore
 
             var doc = await _provider.GetDocumentAsync();
             
-            var existingElement = GetElementById(doc, instance.Id);
+            var existingElement = doc.GetElementById(instance.Id);
 
             if (existingElement != null)
             {
@@ -76,22 +76,11 @@ namespace SimpleDatastore
         {
             var doc = await _provider.GetDocumentAsync();
 
-            var element = GetElementById(doc, id);
-
-            if (element == null) return;
-
-            element.Remove();
+            doc.GetElementById(id)?.Remove();
 
             await _provider.SaveDocumentAsync(doc);
         }
-
-        internal static XElement GetElementById(XDocument doc, Guid id)
-        {
-            return doc
-                .Descendants(Constants.DataItemName)
-                .FirstOrDefault(el => el.Element(PersistentObject.Identifier)?.Value == id.ToString());
-        }
-
+        
         internal static XElement BuildXml(T instance)
         {
             var element = new XElement(Constants.DataItemName);
@@ -99,33 +88,28 @@ namespace SimpleDatastore
             foreach (var property in typeof(T).GetValidProperties())
             {
                 var attributeName = property.GetPropertyName();
+                var value = property.GetValue(instance, null);
 
                 if (attributeName == PersistentObject.Identifier)
                 {
-                    element.Add(new XElement(attributeName, property.GetValue(instance, null).ToString()));
+                    element.Add(new XElement(attributeName, value.ToString()));
+                    continue;
                 }
-                else
+                
+                if (property.PropertyType.IsAPersistentObject() && value is PersistentObject persistentObject)
                 {
-                    if (property.PropertyType.IsAPersistentObject())
-                    {
-                        if (property.GetValue(instance, null) is PersistentObject persistentObject)
-                        {
-                            element.Add(new XElement(attributeName, persistentObject.Id.ToString()));
-                        }
-                    }
-                    else if (property.PropertyType.IsAPersistentObjectEnumerable())
-                    {
-                        if (property.GetValue(instance, null) is IEnumerable<PersistentObject> persistentObjectEnumerable)
-                        {
-                            var flattenedEnumerable = string.Join(",", persistentObjectEnumerable);
-                            element.Add(new XElement(attributeName, flattenedEnumerable));
-                        }
-                    }
-                    else
-                    {
-                        element.Add(new XElement(attributeName, new XCData(property.GetValue(instance, null).ToString())));
-                    }
+                    element.Add(new XElement(attributeName, persistentObject.Id.ToString()));
+                    continue;
                 }
+                
+                if (property.PropertyType.IsAPersistentObjectEnumerable() && value is IEnumerable<PersistentObject> persistentObjectEnumerable)
+                {
+                    var flattenedEnumerable = string.Join(",", persistentObjectEnumerable);
+                    element.Add(new XElement(attributeName, flattenedEnumerable));
+                    continue;
+                }
+                
+                element.Add(new XElement(attributeName, new XCData(property.GetValue(instance, null).ToString())));
             }
             return element;
         }
