@@ -8,12 +8,12 @@ using System.Xml.Linq;
 
 namespace SimpleDatastore
 {
-    public class StorageHelper<T> : IStorageHelper<T> where T : PersistentObject
+    public class PersistentObjectProvider<T> : IPersistentObjectProvider<T> where T : PersistentObject
     {
         private readonly IItemResolver<T> _resolver;
         private readonly IDocumentProvider<T> _provider;
 
-        public StorageHelper(IItemResolver<T> resolver, IDocumentProvider<T> provider)
+        public PersistentObjectProvider(IItemResolver<T> resolver, IDocumentProvider<T> provider)
         {
             _resolver = resolver;
             _provider = provider;
