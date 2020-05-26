@@ -37,7 +37,7 @@ namespace SimpleDatastore.Tests
         {
             _storageHelper.GetCollectionAsync().Returns(Task.FromResult(FakeObject.Collection));
 
-            var repo = new BaseRepository<FakeObject>(_storageHelper, _cache,_options);
+            var repo = new BaseRepository<FakeObject>(_storageHelper, _cache, _options);
 
             var result = await repo.LoadCollectionAsync();
 
