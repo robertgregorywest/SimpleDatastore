@@ -11,31 +11,34 @@ namespace SimpleDatastore
     public class BaseRepository<T> : IRepository, IRepository<T> where T : PersistentObject
     {
         private readonly IPersistentObjectProvider<T> _persistentObjectProvider;
-        private readonly SimpleDatastoreOptions _options;
         private readonly IMemoryCache _memoryCache;
-        
-        private readonly string _keyForCollection = typeof(T).ToString();
 
+        private bool CachingIsDisabled { get; }
+        private int CacheDuration { get; }
+        private static string KeyForCollection { get; } = typeof(T).ToString();
+        
         private static string KeyForObject(Guid id) => $"{typeof(T)}.{id.ToString()}";
 
-        public BaseRepository(IPersistentObjectProvider<T> persistentObjectProvider, IOptions<SimpleDatastoreOptions> options, IMemoryCache memoryCache)
+        public BaseRepository(IPersistentObjectProvider<T> persistentObjectProvider,
+            IMemoryCache memoryCache, IOptions<SimpleDatastoreOptions> options)
         {
             _persistentObjectProvider = persistentObjectProvider;
-            _options = options.Value;
             _memoryCache = memoryCache;
+            CachingIsDisabled = !options.Value.EnableCaching;
+            CacheDuration = options.Value.CacheDuration;
         }
 
         ///<inheritdoc/>
         public async Task<T> LoadAsync(Guid id)
         {
-            if (!_options.EnableCaching)
+            if (CachingIsDisabled)
             {
                 return await _persistentObjectProvider.GetObjectAsync(id);
             }
             return await _memoryCache.GetOrCreateAsync(KeyForObject(id),
                 async (cacheEntry) =>
                 {
-                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_options.CacheDuration));
+                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(CacheDuration));
                     return await _persistentObjectProvider.GetObjectAsync(id);
                 });
         }
@@ -46,22 +49,22 @@ namespace SimpleDatastore
         }
 
         ///<inheritdoc/>
-        public async Task<IEnumerable<T>> LoadCollectionAsync()
+        public async Task<IList<T>> LoadCollectionAsync()
         {
-            if (!_options.EnableCaching)
+            if (CachingIsDisabled)
             {
                 return await _persistentObjectProvider.GetCollectionAsync();
             }
-            return await _memoryCache.GetOrCreateAsync(_keyForCollection,
+            return await _memoryCache.GetOrCreateAsync(KeyForCollection,
                 async (cacheEntry) =>
                 {
-                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_options.CacheDuration));
+                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(CacheDuration));
                     return await _persistentObjectProvider.GetCollectionAsync();
                 });
         }
 
         ///<inheritdoc/>
-        public async Task<IEnumerable<T>> LoadCollectionByIdsAsync(IEnumerable<string> persistentObjectIds)
+        public async Task<IList<T>> LoadCollectionByIdsAsync(IEnumerable<string> persistentObjectIds)
         {
             var items = new List<T>();
             foreach (var id in persistentObjectIds)
@@ -75,7 +78,7 @@ namespace SimpleDatastore
             return items;
         }
 
-        async Task<object> IRepository.LoadObjectCollectionByIdsAsync(string[] persistentObjectIds)
+        async Task<object> IRepository.LoadObjectCollectionByIdsAsync(IEnumerable<string> persistentObjectIds)
         {
             return await LoadCollectionByIdsAsync(persistentObjectIds);
         }
@@ -101,10 +104,10 @@ namespace SimpleDatastore
 
         private void PurgeCache(Guid id)
         {
-            if (!_options.EnableCaching) return;
+            if (CachingIsDisabled) return;
             
             _memoryCache.Remove(KeyForObject(id));
-            _memoryCache.Remove(_keyForCollection);
+            _memoryCache.Remove(KeyForCollection);
         }
     }
 }

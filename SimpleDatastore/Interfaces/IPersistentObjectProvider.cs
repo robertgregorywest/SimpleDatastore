@@ -13,8 +13,8 @@ namespace SimpleDatastore.Interfaces
         /// <summary>
         /// Gets all persistent objects from the XML document
         /// </summary>
-        /// <returns>An <see cref="IEnumerable{T}"/> of the persistent object type</returns>
-        Task<IEnumerable<T>> GetCollectionAsync();
+        /// <returns>An <see cref="IList{T}"/> of the persistent object type</returns>
+        Task<IList<T>> GetCollectionAsync();
         
         /// <summary>
         /// Gets a single persistent object based on the identifier from the XML document

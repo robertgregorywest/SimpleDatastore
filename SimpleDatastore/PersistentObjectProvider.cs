@@ -20,7 +20,7 @@ namespace SimpleDatastore
         }
 
         ///<inheritdoc/>
-        public async Task<IEnumerable<T>> GetCollectionAsync()
+        public async Task<IList<T>> GetCollectionAsync()
         {
             var doc = await _provider.GetDocumentAsync();
 

@@ -27,6 +27,6 @@ namespace SimpleDatastore.Tests
         public static FakeObject Instance => new FakeObject() { Id = InstanceIdentifier, Name = NameValue };
         public static Guid SecondInstanceIdentifier => new Guid(IdentifierValue2);
         public static FakeObject SecondInstance => new FakeObject() { Id = SecondInstanceIdentifier, Name = NameValue2 };
-        public static IEnumerable<FakeObject> Collection => new[] { SecondInstance, Instance };
+        public static IList<FakeObject> Collection => new List<FakeObject> { SecondInstance, Instance };
     }
 }

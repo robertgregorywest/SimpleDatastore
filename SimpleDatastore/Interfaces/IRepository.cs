@@ -8,7 +8,7 @@ namespace SimpleDatastore.Interfaces
     internal interface IRepository
     {
         Task<object> LoadObjectAsync(Guid id);
-        Task<object> LoadObjectCollectionByIdsAsync(string[] persistentObjectIds);
+        Task<object> LoadObjectCollectionByIdsAsync(IEnumerable<string> persistentObjectIds);
     }
     
     /// <summary>
@@ -30,7 +30,7 @@ namespace SimpleDatastore.Interfaces
         /// </summary>
         /// <returns>List of persistent objects</returns>
         [UsedImplicitly]
-        Task<IEnumerable<T>> LoadCollectionAsync();
+        Task<IList<T>> LoadCollectionAsync();
 
         /// <summary>
         /// Get persistent objects based on provided identifiers
@@ -38,7 +38,7 @@ namespace SimpleDatastore.Interfaces
         /// <param name="persistentObjectIds">The array of persistent object identifiers to retrieve</param>
         /// <returns>List of persistent objects</returns>
         [UsedImplicitly]
-        Task<IEnumerable<T>> LoadCollectionByIdsAsync(IEnumerable<string> persistentObjectIds);
+        Task<IList<T>> LoadCollectionByIdsAsync(IEnumerable<string> persistentObjectIds);
         
         /// <summary>
         /// Save a persistent object to the storage document
