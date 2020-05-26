@@ -15,7 +15,7 @@ namespace SimpleDatastore
     {
         private readonly IFileSystem _fileSystem;
         private readonly string _documentPath;
-        private readonly AsyncLock _mutex = new AsyncLock();
+        private readonly AsyncReaderWriterLock _lock = new AsyncReaderWriterLock();
 
         public DocumentProvider(IOptions<SimpleDatastoreOptions> options, IHostingEnvironment environment, IFileSystem fileSystem)
         {
@@ -25,7 +25,7 @@ namespace SimpleDatastore
 
         public async Task<XDocument> GetDocumentAsync()
         {
-            using (await _mutex.LockAsync())
+            using (await _lock.ReaderLockAsync())
             {
                 if (!_fileSystem.File.Exists(_documentPath))
                 {
@@ -44,7 +44,7 @@ namespace SimpleDatastore
 
         public async Task SaveDocumentAsync(XDocument document)
         {
-            using (await _mutex.LockAsync())
+            using (await _lock.WriterLockAsync())
             {
                 await using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Create);
                 using var writer = XmlWriter.Create(stream, new XmlWriterSettings { Async = true, Indent = true });
