@@ -43,10 +43,7 @@ namespace SimpleDatastore
                 });
         }
 
-        async Task<object> IRepository.LoadObjectAsync(Guid id)
-        {
-            return await LoadAsync(id);
-        }
+        async Task<object> IRepository.LoadObjectAsync(Guid id) => await LoadAsync(id);
 
         ///<inheritdoc/>
         public async Task<IList<T>> LoadCollectionAsync()
@@ -78,10 +75,8 @@ namespace SimpleDatastore
             return items;
         }
 
-        async Task<object> IRepository.LoadObjectCollectionByIdsAsync(IEnumerable<string> persistentObjectIds)
-        {
-            return await LoadCollectionByIdsAsync(persistentObjectIds);
-        }
+        async Task<object> IRepository.LoadObjectCollectionByIdsAsync(IEnumerable<string> persistentObjectIds) =>
+            await LoadCollectionByIdsAsync(persistentObjectIds);
 
         ///<inheritdoc/>
         public async Task SaveAsync(T instance)
