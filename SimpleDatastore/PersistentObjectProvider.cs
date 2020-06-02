@@ -34,9 +34,7 @@ namespace SimpleDatastore
                 tasks.Add(_resolver.GetItemFromNodeAsync(element));
             }
 
-            var results = await tasks.WhenAll();
-
-            return results.ToList();
+            return (await tasks.WhenAll()).ToList();
         }
 
         ///<inheritdoc/>
