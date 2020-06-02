@@ -59,6 +59,22 @@ namespace SimpleDatastore.Tests
                 .And.HaveCount(c => c == 2)
                 .And.ContainInOrder(FakeObject.SecondInstance, FakeObject.Instance);
         }
+        
+        [Test]
+        public async Task GetCollectionAsync_empty_document_should_return_empty_collection()
+        {
+            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyXDocument));
+            var serviceProvider = Substitute.For<IServiceProvider>();
+            _resolver = new ItemResolver<FakeObject>(serviceProvider, () => new FakeObject());
+        
+            var provider = new PersistentObjectProvider<FakeObject>(_resolver, _documentProvider);
+
+            var actual = await provider.GetCollectionAsync();
+            
+            actual.Should()
+                .NotBeNull()
+                .And.BeEmpty();
+        }
 
         [Test]
         public async Task SaveObject_should_save_document_with_empty_document()

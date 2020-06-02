@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Nito.AsyncEx;
 
 namespace SimpleDatastore
 {
@@ -23,17 +24,19 @@ namespace SimpleDatastore
         public async Task<IList<T>> GetCollectionAsync()
         {
             var doc = await _provider.GetDocumentAsync();
-
-            var list = new List<T>();
-
+            
             var elements = doc.Descendants(Constants.DataItemName);
+            
+            var tasks = new List<Task<T>>();
 
             foreach (var element in elements)
             {
-                list.Add(await _resolver.GetItemFromNodeAsync(element));
+                tasks.Add(_resolver.GetItemFromNodeAsync(element));
             }
 
-            return list;
+            var results = await tasks.WhenAll();
+
+            return results.ToList();
         }
 
         ///<inheritdoc/>
