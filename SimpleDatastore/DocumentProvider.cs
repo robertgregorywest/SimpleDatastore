@@ -20,12 +20,13 @@ namespace SimpleDatastore
         public DocumentProvider(IOptions<SimpleDatastoreOptions> options, IHostingEnvironment environment, IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
-            _documentPath = Path.Combine(environment.ContentRootPath, options.Value.DatastoreLocation, $"{typeof(T)}{Constants.FileExtension}");
+            _documentPath = Path.Combine(environment.ContentRootPath, options.Value.DatastoreLocation,
+                $"{typeof(T)}{Constants.FileExtension}");
         }
 
         public async Task<XDocument> GetDocumentAsync()
         {
-            using (await _lock.ReaderLockAsync())
+            using (await _lock.ReaderLockAsync().ConfigureAwait(false))
             {
                 if (!_fileSystem.File.Exists(_documentPath))
                 {
@@ -34,21 +35,19 @@ namespace SimpleDatastore
                         new XElement(Constants.RootElementName)
                     );
                 }
-
-                using var reader = _fileSystem.File.OpenText(_documentPath);
-                var doc = XDocument.Load(reader);
-
-                return doc;
+                await using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Open);
+                return await XDocument.LoadAsync(stream, LoadOptions.None, CancellationToken.None)
+                    .ConfigureAwait(false);
             }
         }
 
         public async Task SaveDocumentAsync(XDocument document)
         {
-            using (await _lock.WriterLockAsync())
+            using (await _lock.WriterLockAsync().ConfigureAwait(false))
             {
                 await using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Create);
                 using var writer = XmlWriter.Create(stream, new XmlWriterSettings { Async = true, Indent = true });
-                await document.SaveAsync(writer, CancellationToken.None);
+                await document.SaveAsync(writer, CancellationToken.None).ConfigureAwait(false);
             }
         }
     }

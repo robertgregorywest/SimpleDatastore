@@ -23,7 +23,7 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public async Task<IList<T>> GetCollectionAsync()
         {
-            var doc = await _provider.GetDocumentAsync();
+            var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
             
             var elements = doc.Descendants(Constants.DataItemName);
             
@@ -34,19 +34,19 @@ namespace SimpleDatastore
                 tasks.Add(_resolver.GetItemFromNodeAsync(element));
             }
 
-            return (await tasks.WhenAll()).ToList();
+            return (await tasks.WhenAll().ConfigureAwait(false)).ToList();
         }
 
         ///<inheritdoc/>
         public async Task<T> GetObjectAsync(Guid id)
         {
-            var doc = await _provider.GetDocumentAsync();
+            var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
 
             var element = doc.GetElementById(id);
 
             if (element == null) return null;
 
-            var item = await _resolver.GetItemFromNodeAsync(element);
+            var item = await _resolver.GetItemFromNodeAsync(element).ConfigureAwait(false);
 
             return item;
         }
@@ -56,7 +56,7 @@ namespace SimpleDatastore
         {
             var element = BuildXml(instance);
 
-            var doc = await _provider.GetDocumentAsync();
+            var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
             
             var existingElement = doc.GetElementById(instance.Id);
 
@@ -69,17 +69,17 @@ namespace SimpleDatastore
                 doc.Root?.Add(element);
             }
 
-            await _provider.SaveDocumentAsync(doc);
+            await _provider.SaveDocumentAsync(doc).ConfigureAwait(false);
         }
 
         ///<inheritdoc/>
         public async Task DeleteObjectAsync(Guid id)
         {
-            var doc = await _provider.GetDocumentAsync();
+            var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
 
             doc.GetElementById(id)?.Remove();
 
-            await _provider.SaveDocumentAsync(doc);
+            await _provider.SaveDocumentAsync(doc).ConfigureAwait(false);
         }
         
         internal static XElement BuildXml(T instance)

@@ -52,15 +52,20 @@ namespace SimpleDatastore
                 }
                 else if (property.PropertyType.IsAPersistentObject())
                 {
-                    await SetPersistentObjectProperty(property, instance, propertyElement.Value.ToGuid());
+                    await SetPersistentObjectProperty(property, instance, propertyElement.Value.ToGuid())
+                        .ConfigureAwait(false);
                 }
                 else if (property.PropertyType.IsAPersistentObjectEnumerable())
                 {
-                    await SetPersistentObjectEnumerableProperty(property, instance, propertyElement.Value.Split(','));
+                    await SetPersistentObjectEnumerableProperty(property,
+                            instance,
+                            propertyElement.Value.Split(','))
+                        .ConfigureAwait(false);
                 }
                 else
                 {
-                    property.SetValue(instance, Convert.ChangeType(propertyElement.Value, property.PropertyType), null);
+                    property.SetValue(instance, 
+                        Convert.ChangeType(propertyElement.Value, property.PropertyType), null);
                 }
             }
             return instance;
@@ -72,7 +77,7 @@ namespace SimpleDatastore
             var repository = _provider.GetService(repositoryType);
             if (repository is IRepository iRepository)
             {
-                var persistentObject = await iRepository.LoadObjectAsync(id);
+                var persistentObject = await iRepository.LoadObjectAsync(id).ConfigureAwait(false);
                 property.SetValue(instance, persistentObject, null);
             }
         }
@@ -84,7 +89,8 @@ namespace SimpleDatastore
             var repository = _provider.GetService(repositoryType);
             if (repository is IRepository iRepository)
             {
-                var collection = await iRepository.LoadObjectCollectionByIdsAsync(persistentObjectIds);
+                var collection = await iRepository.LoadObjectCollectionByIdsAsync(persistentObjectIds)
+                    .ConfigureAwait(false);
                 property.SetValue(instance, collection, null);
             }
         }

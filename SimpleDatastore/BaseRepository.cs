@@ -12,10 +12,9 @@ namespace SimpleDatastore
     {
         private readonly IPersistentObjectProvider<T> _persistentObjectProvider;
         private readonly IMemoryCache _memoryCache;
-
-        private bool CachingIsDisabled { get; }
-        private int CacheDuration { get; }
-        private static string KeyForCollection { get; } = typeof(T).ToString();
+        private readonly bool _cachingIsDisabled;
+        private readonly int _cacheDuration;
+        private readonly string _keyForCollection = typeof(T).ToString();
         
         private static string KeyForObject(Guid id) => $"{typeof(T)}.{id.ToString()}";
 
@@ -24,40 +23,40 @@ namespace SimpleDatastore
         {
             _persistentObjectProvider = persistentObjectProvider;
             _memoryCache = memoryCache;
-            CachingIsDisabled = !options.Value.EnableCaching;
-            CacheDuration = options.Value.CacheDuration;
+            _cachingIsDisabled = !options.Value.EnableCaching;
+            _cacheDuration = options.Value.CacheDuration;
         }
 
         ///<inheritdoc/>
         public async Task<T> LoadAsync(Guid id)
         {
-            if (CachingIsDisabled)
+            if (_cachingIsDisabled)
             {
-                return await _persistentObjectProvider.GetObjectAsync(id);
+                return await _persistentObjectProvider.GetObjectAsync(id).ConfigureAwait(false);
             }
             return await _memoryCache.GetOrCreateAsync(KeyForObject(id),
                 async (cacheEntry) =>
                 {
-                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(CacheDuration));
+                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_cacheDuration));
                     return await _persistentObjectProvider.GetObjectAsync(id);
-                });
+                }).ConfigureAwait(false);
         }
 
-        async Task<object> IRepository.LoadObjectAsync(Guid id) => await LoadAsync(id);
+        async Task<object> IRepository.LoadObjectAsync(Guid id) => await LoadAsync(id).ConfigureAwait(false);
 
         ///<inheritdoc/>
         public async Task<IList<T>> LoadCollectionAsync()
         {
-            if (CachingIsDisabled)
+            if (_cachingIsDisabled)
             {
-                return await _persistentObjectProvider.GetCollectionAsync();
+                return await _persistentObjectProvider.GetCollectionAsync().ConfigureAwait(false);
             }
-            return await _memoryCache.GetOrCreateAsync(KeyForCollection,
+            return await _memoryCache.GetOrCreateAsync(_keyForCollection,
                 async (cacheEntry) =>
                 {
-                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(CacheDuration));
+                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_cacheDuration));
                     return await _persistentObjectProvider.GetCollectionAsync();
-                });
+                }).ConfigureAwait(false);
         }
 
         ///<inheritdoc/>
@@ -66,7 +65,7 @@ namespace SimpleDatastore
             var items = new List<T>();
             foreach (var id in persistentObjectIds)
             {
-                var item = await LoadAsync(id.ToGuid());
+                var item = await LoadAsync(id.ToGuid()).ConfigureAwait(false);
                 if (item != null)
                 {
                     items.Add(item);
@@ -76,7 +75,7 @@ namespace SimpleDatastore
         }
 
         async Task<object> IRepository.LoadObjectCollectionByIdsAsync(IEnumerable<string> persistentObjectIds) =>
-            await LoadCollectionByIdsAsync(persistentObjectIds);
+            await LoadCollectionByIdsAsync(persistentObjectIds).ConfigureAwait(false);
 
         ///<inheritdoc/>
         public async Task SaveAsync(T instance)
@@ -86,23 +85,23 @@ namespace SimpleDatastore
                 instance.Id = Guid.NewGuid();
             }
 
-            await _persistentObjectProvider.SaveObjectAsync(instance);
+            await _persistentObjectProvider.SaveObjectAsync(instance).ConfigureAwait(false);
             PurgeCache(instance.Id);
         }
 
         ///<inheritdoc/>
         public async Task DeleteAsync(Guid id)
         {
-            await _persistentObjectProvider.DeleteObjectAsync(id);
+            await _persistentObjectProvider.DeleteObjectAsync(id).ConfigureAwait(false);
             PurgeCache(id);
         }
 
         private void PurgeCache(Guid id)
         {
-            if (CachingIsDisabled) return;
+            if (_cachingIsDisabled) return;
             
             _memoryCache.Remove(KeyForObject(id));
-            _memoryCache.Remove(KeyForCollection);
+            _memoryCache.Remove(_keyForCollection);
         }
     }
 }
