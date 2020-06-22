@@ -9,6 +9,8 @@ namespace SimpleDatastore.Interfaces
     {
         Task<object> LoadObjectAsync(Guid id);
         Task<object> LoadObjectCollectionByIdsAsync(IEnumerable<string> persistentObjectIds);
+        object LoadObject(Guid id);
+        object LoadObjectCollectionByIds(IEnumerable<string> persistentObjectIds);
     }
     
     /// <summary>
@@ -24,6 +26,14 @@ namespace SimpleDatastore.Interfaces
         /// <returns>Persistent object</returns>
         [UsedImplicitly]
         Task<T> LoadAsync(Guid id);
+        
+        /// <summary>
+        /// Get a single persistent object
+        /// </summary>
+        /// <param name="id">Identifier for the persistent object</param>
+        /// <returns>Persistent object</returns>
+        [UsedImplicitly]
+        T Load(Guid id);
 
         /// <summary>
         /// Get all persistent objects of generic type in the order they are stored in the storage document
@@ -31,6 +41,13 @@ namespace SimpleDatastore.Interfaces
         /// <returns>List of persistent objects</returns>
         [UsedImplicitly]
         Task<IList<T>> LoadCollectionAsync();
+        
+        /// <summary>
+        /// Get all persistent objects of generic type in the order they are stored in the storage document
+        /// </summary>
+        /// <returns>List of persistent objects</returns>
+        [UsedImplicitly]
+        IList<T> LoadCollection();
 
         /// <summary>
         /// Get persistent objects based on provided identifiers
@@ -41,6 +58,14 @@ namespace SimpleDatastore.Interfaces
         Task<IList<T>> LoadCollectionByIdsAsync(IEnumerable<string> persistentObjectIds);
         
         /// <summary>
+        /// Get persistent objects based on provided identifiers
+        /// </summary>
+        /// <param name="persistentObjectIds">The array of persistent object identifiers to retrieve</param>
+        /// <returns>List of persistent objects</returns>
+        [UsedImplicitly]
+        IList<T> LoadCollectionByIds(IEnumerable<string> persistentObjectIds);
+        
+        /// <summary>
         /// Save a persistent object to the storage document
         /// </summary>
         /// <param name="instance">Instance to save</param>
@@ -48,10 +73,24 @@ namespace SimpleDatastore.Interfaces
         Task SaveAsync(T instance);
         
         /// <summary>
+        /// Save a persistent object to the storage document
+        /// </summary>
+        /// <param name="instance">Instance to save</param>
+        [UsedImplicitly]
+        void Save(T instance);
+        
+        /// <summary>
         /// Delete a persistent object from the storage document
         /// </summary>
         /// <param name="id">Identifier to delete</param>
         [UsedImplicitly]
         Task DeleteAsync(Guid id);
+        
+        /// <summary>
+        /// Delete a persistent object from the storage document
+        /// </summary>
+        /// <param name="id">Identifier to delete</param>
+        [UsedImplicitly]
+        void Delete(Guid id);
     }
 }

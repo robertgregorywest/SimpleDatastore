@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
 
 namespace SimpleDatastore.Interfaces
@@ -17,9 +16,21 @@ namespace SimpleDatastore.Interfaces
         Task<XDocument> GetDocumentAsync();
         
         /// <summary>
+        /// Get the document for the type
+        /// </summary>
+        /// <returns>XDocument for the persistent object type</returns>
+        XDocument GetDocument();
+        
+        /// <summary>
         /// Save the storage document for the persistent object type  
         /// </summary>
         /// <param name="document">The XDocument to save</param>
         Task SaveDocumentAsync(XDocument document);
+        
+        /// <summary>
+        /// Save the storage document for the persistent object type  
+        /// </summary>
+        /// <param name="document">The XDocument to save</param>
+        void SaveDocument(XDocument document);
     }
 }

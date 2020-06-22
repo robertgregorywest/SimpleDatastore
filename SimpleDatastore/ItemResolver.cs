@@ -52,12 +52,12 @@ namespace SimpleDatastore
                 }
                 else if (property.PropertyType.IsAPersistentObject())
                 {
-                    await SetPersistentObjectProperty(property, instance, propertyElement.Value.ToGuid())
+                    await SetPersistentObjectPropertyAsync(property, instance, propertyElement.Value.ToGuid())
                         .ConfigureAwait(false);
                 }
                 else if (property.PropertyType.IsAPersistentObjectEnumerable())
                 {
-                    await SetPersistentObjectEnumerableProperty(property,
+                    await SetPersistentObjectEnumerablePropertyAsync(property,
                             instance,
                             propertyElement.Value.Split(','))
                         .ConfigureAwait(false);
@@ -70,29 +70,97 @@ namespace SimpleDatastore
             }
             return instance;
         }
-
-        private async Task SetPersistentObjectProperty(PropertyInfo property, T instance, Guid id)
+        
+        ///<inheritdoc/>
+        public T GetItemFromNode(XElement element)
         {
-            var repositoryType = typeof(IRepository<>).MakeGenericType(property.PropertyType);
-            var repository = _provider.GetService(repositoryType);
+            // Using the activator so the instance can have dependencies
+            var instance = _activator.Invoke();
+
+            foreach (var property in typeof(T).GetValidProperties())
+            {
+                var propertyElement = element.Elements(property.GetPropertyName()).First();
+                
+                if (propertyElement == null) continue;
+                
+                if (property.PropertyType == typeof(string))
+                {
+                    property.SetValue(instance, propertyElement.Value, null);
+                }
+                else if (property.PropertyType == typeof(Guid))
+                {
+                    property.SetValue(instance, new Guid(propertyElement.Value), null);
+                }
+                else if (property.PropertyType.IsAPersistentObject())
+                {
+                    SetPersistentObjectProperty(property, instance, propertyElement.Value.ToGuid());
+                }
+                else if (property.PropertyType.IsAPersistentObjectEnumerable())
+                {
+                    SetPersistentObjectEnumerableProperty(property,
+                            instance,propertyElement.Value.Split(','));
+                }
+                else
+                {
+                    property.SetValue(instance, 
+                        Convert.ChangeType(propertyElement.Value, property.PropertyType), null);
+                }
+            }
+            return instance;
+        }
+
+        private async Task SetPersistentObjectPropertyAsync(PropertyInfo property, T instance, Guid id)
+        {
+            var repository = CreateRepository(property);
             if (repository is IRepository iRepository)
             {
                 var persistentObject = await iRepository.LoadObjectAsync(id).ConfigureAwait(false);
                 property.SetValue(instance, persistentObject, null);
             }
         }
-
-        private async Task SetPersistentObjectEnumerableProperty(PropertyInfo property, T instance, string[] persistentObjectIds)
+        
+        private void SetPersistentObjectProperty(PropertyInfo property, T instance, Guid id)
         {
-            var elementType = property.PropertyType.GetGenericArguments()[0];
-            var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
-            var repository = _provider.GetService(repositoryType);
+            var repository = CreateRepository(property);
+            if (repository is IRepository iRepository)
+            {
+                var persistentObject = iRepository.LoadObject(id);
+                property.SetValue(instance, persistentObject, null);
+            }
+        }
+
+        private object CreateRepository(PropertyInfo property)
+        {
+            var repositoryType = typeof(IRepository<>).MakeGenericType(property.PropertyType);
+            return _provider.GetService(repositoryType);
+        }
+        
+        private async Task SetPersistentObjectEnumerablePropertyAsync(PropertyInfo property, T instance, string[] persistentObjectIds)
+        {
+            var repository = CreateEnumerableRepository(property);
             if (repository is IRepository iRepository)
             {
                 var collection = await iRepository.LoadObjectCollectionByIdsAsync(persistentObjectIds)
                     .ConfigureAwait(false);
                 property.SetValue(instance, collection, null);
             }
+        }
+        
+        private void SetPersistentObjectEnumerableProperty(PropertyInfo property, T instance, string[] persistentObjectIds)
+        {
+            var repository = CreateEnumerableRepository(property);
+            if (repository is IRepository iRepository)
+            {
+                var collection = iRepository.LoadObjectCollectionByIds(persistentObjectIds);
+                property.SetValue(instance, collection, null);
+            }
+        }
+        
+        private object CreateEnumerableRepository(PropertyInfo property)
+        {
+            var elementType = property.PropertyType.GetGenericArguments()[0];
+            var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
+            return _provider.GetService(repositoryType);
         }
     }
 }

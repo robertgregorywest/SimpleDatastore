@@ -36,6 +36,16 @@ namespace SimpleDatastore
 
             return (await tasks.WhenAll().ConfigureAwait(false)).ToList();
         }
+        
+        ///<inheritdoc/>
+        public IList<T> GetCollection()
+        {
+            var doc = _provider.GetDocument();
+            
+            var elements = doc.Descendants(Constants.DataItemName);
+
+            return elements.Select(element => _resolver.GetItemFromNode(element)).ToList();
+        }
 
         ///<inheritdoc/>
         public async Task<T> GetObjectAsync(Guid id)
@@ -49,6 +59,16 @@ namespace SimpleDatastore
             var item = await _resolver.GetItemFromNodeAsync(element).ConfigureAwait(false);
 
             return item;
+        }
+        
+        ///<inheritdoc/>
+        public T GetObject(Guid id)
+        {
+            var doc = _provider.GetDocument();
+
+            var element = doc.GetElementById(id);
+
+            return element == null ? null : _resolver.GetItemFromNode(element);
         }
 
         ///<inheritdoc/>
@@ -71,6 +91,27 @@ namespace SimpleDatastore
 
             await _provider.SaveDocumentAsync(doc).ConfigureAwait(false);
         }
+        
+        ///<inheritdoc/>
+        public void SaveObject(T instance)
+        {
+            var element = BuildXml(instance);
+
+            var doc = _provider.GetDocument();
+            
+            var existingElement = doc.GetElementById(instance.Id);
+
+            if (existingElement != null)
+            {
+                existingElement.ReplaceWith(element);
+            }
+            else
+            {
+                doc.Root?.Add(element);
+            }
+
+            _provider.SaveDocument(doc);
+        }
 
         ///<inheritdoc/>
         public async Task DeleteObjectAsync(Guid id)
@@ -80,6 +121,16 @@ namespace SimpleDatastore
             doc.GetElementById(id)?.Remove();
 
             await _provider.SaveDocumentAsync(doc).ConfigureAwait(false);
+        }
+        
+        ///<inheritdoc/>
+        public void DeleteObject(Guid id)
+        {
+            var doc = _provider.GetDocument();
+
+            doc.GetElementById(id)?.Remove();
+
+            _provider.SaveDocument(doc);
         }
         
         internal static XElement BuildXml(T instance)

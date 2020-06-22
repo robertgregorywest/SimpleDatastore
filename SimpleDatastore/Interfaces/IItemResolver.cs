@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Xml.XPath;
 
 namespace SimpleDatastore.Interfaces
 {
@@ -16,5 +15,12 @@ namespace SimpleDatastore.Interfaces
         /// <param name="element">The XElement containing the persistent object data</param>
         /// <returns>Hydrated persistent object</returns>
         Task<T> GetItemFromNodeAsync(XElement element);
+        
+        /// <summary>
+        /// Creates an instance of <see cref="T"/> from the <see cref="XElement"/>
+        /// </summary>
+        /// <param name="element">The XElement containing the persistent object data</param>
+        /// <returns>Hydrated persistent object</returns>
+        T GetItemFromNode(XElement element);
     }
 }
