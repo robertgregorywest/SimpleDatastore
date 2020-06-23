@@ -44,7 +44,7 @@ namespace SimpleDatastore
             
             var elements = doc.Descendants(Constants.DataItemName);
 
-            return elements.Select(element => _resolver.GetItemFromNode(element)).ToList();
+            return elements.AsParallel().Select(element => _resolver.GetItemFromNode(element)).ToList();
         }
 
         ///<inheritdoc/>

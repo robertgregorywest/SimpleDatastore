@@ -15,16 +15,19 @@ namespace SimpleDatastore
     {
         private readonly IFileSystem _fileSystemAsync;
         private readonly IFileSystem _fileSystem;
-        
         private readonly string _documentPath;
+        
         private readonly AsyncReaderWriterLock _lockAsync = new AsyncReaderWriterLock();
         private readonly object _lock = new object();
 
-        public DocumentProvider(IOptions<SimpleDatastoreOptions> options, IHostingEnvironment environment, IFileSystem fileSystem)
+        public DocumentProvider(IOptions<SimpleDatastoreOptions> options, IHostingEnvironment environment,
+            IFileSystem fileSystem)
         {
             _fileSystemAsync = fileSystem;
             _fileSystem = fileSystem;
-            _documentPath = Path.Combine(environment.ContentRootPath, options.Value.DatastoreLocation,
+            _documentPath = Path.Combine(
+                environment.ContentRootPath,
+                options.Value.DatastoreLocation,
                 $"{typeof(T)}{Constants.FileExtension}");
         }
 
@@ -34,31 +37,35 @@ namespace SimpleDatastore
             {
                 if (!_fileSystemAsync.File.Exists(_documentPath))
                 {
-                    return new XDocument(
-                        new XDeclaration("1.0", "utf-8", null),
-                        new XElement(Constants.RootElementName)
-                    );
+                    return EmptyDocument();
                 }
+
                 await using var stream = _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Open);
                 return await XDocument.LoadAsync(stream, LoadOptions.None, CancellationToken.None)
                     .ConfigureAwait(false);
             }
         }
-        
+
         public XDocument GetDocument()
         {
             lock (_lock)
             {
                 if (!_fileSystem.File.Exists(_documentPath))
                 {
-                    return new XDocument(
-                        new XDeclaration("1.0", "utf-8", null),
-                        new XElement(Constants.RootElementName)
-                    );
+                    return EmptyDocument();
                 }
+
                 using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Open);
                 return XDocument.Load(stream, LoadOptions.None);
             }
+        }
+
+        private static XDocument EmptyDocument()
+        {
+            return new XDocument(
+                new XDeclaration("1.0", "utf-8", null),
+                new XElement(Constants.RootElementName)
+            );
         }
 
         public async Task SaveDocumentAsync(XDocument document)
@@ -66,17 +73,17 @@ namespace SimpleDatastore
             using (await _lockAsync.WriterLockAsync().ConfigureAwait(false))
             {
                 await using var stream = _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Create);
-                using var writer = XmlWriter.Create(stream, new XmlWriterSettings { Async = true, Indent = true });
+                using var writer = XmlWriter.Create(stream, new XmlWriterSettings {Async = true, Indent = true});
                 await document.SaveAsync(writer, CancellationToken.None).ConfigureAwait(false);
             }
         }
-        
+
         public void SaveDocument(XDocument document)
         {
             lock (_lock)
             {
                 using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Create);
-                using var writer = XmlWriter.Create(stream, new XmlWriterSettings { Async = true, Indent = true });
+                using var writer = XmlWriter.Create(stream, new XmlWriterSettings {Async = true, Indent = true});
                 document.Save(writer);
             }
         }
