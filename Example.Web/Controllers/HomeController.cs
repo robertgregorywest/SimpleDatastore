@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Example.Web.Models;
@@ -12,18 +11,18 @@ namespace Example.Web.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IRepository<Widget> _repo;
+        private readonly IRepository<Widget> _widgetRepo;
         private readonly IRepository<Factory> _factoryRepo;
         
-        public HomeController(IRepository<Widget> repo, IRepository<Factory> factoryRepo)
+        public HomeController(IRepository<Widget> widgetRepo, IRepository<Factory> factoryRepo)
         {
-            _repo = repo;
+            _widgetRepo = widgetRepo;
             _factoryRepo = factoryRepo;
         }
 
         public async Task<IActionResult> Index()
         {
-            var widgets = await _repo.LoadCollectionAsync();
+            var widgets = await _widgetRepo.LoadCollectionAsync();
 
             var model = new List<WidgetModel>();
 
@@ -40,19 +39,13 @@ namespace Example.Web.Controllers
             return View(model);
         }
         
-        private static readonly Random Random = new Random();
-        private static string RandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[Random.Next(s.Length)]).ToArray());
-        }
-
         private async Task CreateTestData()
         {
+            var widget = await _widgetRepo.LoadAsync(Guid.Parse("6ea4ad00-08ba-4ac1-8e52-54a890eca0e0"));
+            var widgets = new List<Widget> {widget};
             for (var i = 0; i < 1000; i++)
             {
-                var factory = new Factory() {Name = RandomString(8)};
+                var factory = new Factory() {Name = Helpers.RandomString(8), Widgets = widgets};
                 await _factoryRepo.SaveAsync(factory);
             }
         }
@@ -78,9 +71,6 @@ namespace Example.Web.Controllers
         
         public async Task<IActionResult> TimingTest()
         {
-            // Get list of factories to work with
-            
-            
             var stopwatch = new Stopwatch();
             
             stopwatch.Start();

@@ -5,14 +5,6 @@ using JetBrains.Annotations;
 
 namespace SimpleDatastore.Interfaces
 {
-    internal interface IRepository
-    {
-        Task<object> LoadObjectAsync(Guid id);
-        Task<object> LoadObjectCollectionByIdsAsync(IEnumerable<string> persistentObjectIds);
-        object LoadObject(Guid id);
-        object LoadObjectCollectionByIds(IEnumerable<string> persistentObjectIds);
-    }
-    
     /// <summary>
     /// Provides e=methods to retrieve persistent objects from storage documents
     /// </summary>
