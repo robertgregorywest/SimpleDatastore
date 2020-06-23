@@ -38,17 +38,6 @@ namespace Example.Web.Controllers
 
             return View(model);
         }
-        
-        private async Task CreateTestData()
-        {
-            var widget = await _widgetRepo.LoadAsync(Guid.Parse("6ea4ad00-08ba-4ac1-8e52-54a890eca0e0"));
-            var widgets = new List<Widget> {widget};
-            for (var i = 0; i < 1000; i++)
-            {
-                var factory = new Factory() {Name = Helpers.RandomString(8), Widgets = widgets};
-                await _factoryRepo.SaveAsync(factory);
-            }
-        }
 
         public async Task<IActionResult> CreateFactory([FromQuery]string name)
         {
@@ -60,6 +49,18 @@ namespace Example.Web.Controllers
         public async Task<IActionResult> DeleteFactory(Guid id)
         {
             await _factoryRepo.DeleteAsync(id);
+            return RedirectToAction("Index");
+        }
+        
+        public async Task<IActionResult> CreateTestData()
+        {
+            var widget = await _widgetRepo.LoadAsync(Guid.Parse("6ea4ad00-08ba-4ac1-8e52-54a890eca0e0"));
+            var widgets = new List<Widget> {widget};
+            for (var i = 0; i < 1000; i++)
+            {
+                var factory = new Factory() {Name = Helpers.RandomString(8), Widgets = widgets};
+                await _factoryRepo.SaveAsync(factory);
+            }
             return RedirectToAction("Index");
         }
 
