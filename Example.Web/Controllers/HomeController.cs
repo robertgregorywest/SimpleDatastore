@@ -135,5 +135,52 @@ namespace Example.Web.Controllers
             
             return View(model);
         }
+        
+        public async Task<IActionResult> StressTestAsync()
+        {
+            var factories = await _factoryRepo.LoadCollectionAsync();
+            
+            var itemsAsync = new List<Factory>();
+
+            foreach (var factory in factories)
+            {
+                itemsAsync.Add(await _factoryRepo.LoadAsync(factory.Id));
+            }
+            
+            var model = new StressTestAsyncModel
+            {
+                Factories = itemsAsync
+            };
+            
+            return View(model);
+        }
+        
+        public IActionResult StressTestSync()
+        {
+            var factories = _factoryRepo.LoadCollection();
+            
+            var batchSize = 20;
+            int numberOfBatches = (int)Math.Ceiling((double)factories.Count / batchSize);
+            
+            var items = new List<Factory>();
+            
+            for (var i = 0; i < numberOfBatches; i++)
+            {
+                //var currentIds = userIds.Skip(i * batchSize).Take(batchSize);
+                
+            }
+
+            foreach (var factory in factories)
+            {
+                items.Add(_factoryRepo.Load(factory.Id));
+            }
+            
+            var model = new StressTestSyncModel
+            {
+                Factories = items
+            };
+            
+            return View(model);
+        }
     }
 }
