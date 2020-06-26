@@ -112,46 +112,55 @@ namespace SimpleDatastore
         private async Task SetPersistentObjectPropertyAsync(PropertyInfo property, T instance, Guid id)
         {
             var repository = CreateRepository(property);
-            var persistentObject = await repository.LoadAsync(id).ConfigureAwait(false);
-            property.SetValue(instance, persistentObject, null);
+            if (repository is IRepository iRepository)
+            {
+                var persistentObject = await iRepository.LoadObjectAsync(id).ConfigureAwait(false);
+                property.SetValue(instance, persistentObject, null);
+            }
         }
         
         private void SetPersistentObjectProperty(PropertyInfo property, T instance, Guid id)
         {
             var repository = CreateRepository(property);
-            var persistentObject = repository.Load(id);
-            property.SetValue(instance, persistentObject, null);
-            
+            if (repository is IRepository iRepository)
+            {
+                var persistentObject = iRepository.LoadObject(id);
+                property.SetValue(instance, persistentObject, null);
+            }
         }
 
-        private dynamic CreateRepository(PropertyInfo property)
+        private object CreateRepository(PropertyInfo property)
         {
             var repositoryType = typeof(IRepository<>).MakeGenericType(property.PropertyType);
-            dynamic repository = _provider.GetService(repositoryType);
-            return repository;
+            return _provider.GetService(repositoryType);
         }
         
         private async Task SetPersistentObjectEnumerablePropertyAsync(PropertyInfo property, T instance, string[] persistentObjectIds)
         {
             var repository = CreateEnumerableRepository(property);
-            var collection = await repository.LoadCollectionByIdsAsync(persistentObjectIds)
-                .ConfigureAwait(false);
-            property.SetValue(instance, collection, null);
+            if (repository is IRepository iRepository)
+            {
+                var collection = await iRepository.LoadObjectCollectionByIdsAsync(persistentObjectIds)
+                    .ConfigureAwait(false);
+                property.SetValue(instance, collection, null);
+            }
         }
         
         private void SetPersistentObjectEnumerableProperty(PropertyInfo property, T instance, string[] persistentObjectIds)
         {
             var repository = CreateEnumerableRepository(property);
-            var collection = repository.LoadCollectionByIds(persistentObjectIds);
-            property.SetValue(instance, collection, null);
+            if (repository is IRepository iRepository)
+            {
+                var collection = iRepository.LoadObjectCollectionByIds(persistentObjectIds);
+                property.SetValue(instance, collection, null);
+            }
         }
         
-        private dynamic CreateEnumerableRepository(PropertyInfo property)
+        private object CreateEnumerableRepository(PropertyInfo property)
         {
             var elementType = property.PropertyType.GetGenericArguments()[0];
             var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
-            dynamic repository = _provider.GetService(repositoryType);
-            return repository;
+            return _provider.GetService(repositoryType);
         }
     }
 }

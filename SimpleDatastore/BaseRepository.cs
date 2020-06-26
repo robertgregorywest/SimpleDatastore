@@ -9,7 +9,7 @@ using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore
 {
-    public class BaseRepository<T> : IRepository<T> where T : PersistentObject
+    public class BaseRepository<T> : IRepository, IRepository<T> where T : PersistentObject
     {
         private readonly IPersistentObjectProvider<T> _persistentObjectProvider;
         private readonly IMemoryCache _memoryCache;
@@ -57,6 +57,10 @@ namespace SimpleDatastore
                     return _persistentObjectProvider.GetObject(id);
                 });
         }
+
+        async Task<object> IRepository.LoadObjectAsync(Guid id) => await LoadAsync(id).ConfigureAwait(false);
+        
+        object IRepository.LoadObject(Guid id) => Load(id);
 
         ///<inheritdoc/>
         public async Task<IList<T>> LoadCollectionAsync()
@@ -108,6 +112,12 @@ namespace SimpleDatastore
         {
             return persistentObjectIds.Select(id => Load(id.ToGuid())).Where(item => item != null).ToList();
         }
+        
+        async Task<object> IRepository.LoadObjectCollectionByIdsAsync(IEnumerable<string> persistentObjectIds) =>
+            await LoadCollectionByIdsAsync(persistentObjectIds).ConfigureAwait(false);
+        
+        object IRepository.LoadObjectCollectionByIds(IEnumerable<string> persistentObjectIds) =>
+            LoadCollectionByIds(persistentObjectIds);
 
         ///<inheritdoc/>
         public async Task SaveAsync(T instance)
