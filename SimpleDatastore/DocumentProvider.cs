@@ -40,7 +40,7 @@ namespace SimpleDatastore
                     return EmptyDocument();
                 }
 
-                await using var stream = _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Open);
+                using var stream = _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 return await XDocument.LoadAsync(stream, LoadOptions.None, CancellationToken.None)
                     .ConfigureAwait(false);
             }
@@ -55,7 +55,7 @@ namespace SimpleDatastore
                     return EmptyDocument();
                 }
 
-                using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Open);
+                using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 return XDocument.Load(stream, LoadOptions.None);
             }
         }
