@@ -30,7 +30,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public async Task GetObjectAsync_should_send_element_to_resolver()
         {
-            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.SingeFakeObjectXDocument));
+            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.SingeFakeObjectXDocument.ToString()));
             _resolver.GetItemFromNodeAsync(null).ReturnsForAnyArgs(FakeObject.Instance);
         
             var provider = new PersistentObjectProvider<FakeObject>(_resolver, _documentProvider);
@@ -46,7 +46,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public async Task GetCollectionAsync_should_return_collection()
         {
-            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument));
+            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument.ToString()));
             var serviceProvider = Substitute.For<IServiceProvider>();
             _resolver = new ItemResolver<FakeObject>(serviceProvider, () => new FakeObject());
         
@@ -63,7 +63,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public async Task GetCollectionAsync_empty_document_should_return_empty_collection()
         {
-            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyXDocument));
+            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyXDocument.ToString()));
             var serviceProvider = Substitute.For<IServiceProvider>();
             _resolver = new ItemResolver<FakeObject>(serviceProvider, () => new FakeObject());
         
@@ -79,19 +79,19 @@ namespace SimpleDatastore.Tests
         [Test]
         public async Task SaveObject_should_save_document_with_empty_document()
         {
-            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyXDocument));
+            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyXDocument.ToString()));
         
             var provider = new PersistentObjectProvider<FakeObject>(_resolver, _documentProvider);
         
             await provider.SaveObjectAsync(FakeObject.Instance);
         
-            await _documentProvider.Received().SaveDocumentAsync(Arg.Is<XDocument>(d => d.ToString() == FakeDocuments.SingeFakeObjectXDocument.ToString()));
+            await _documentProvider.Received().SaveDocumentAsync(Arg.Is<string>(d => d == FakeDocuments.SingeFakeObjectXDocument.ToString()));
         }
         
         [Test]
         public async Task SaveObject_should_update_existing_object()
         {
-            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument));
+            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument.ToString()));
             var serviceProvider = Substitute.For<IServiceProvider>();
             _resolver = new ItemResolver<FakeObject>(serviceProvider);
         
@@ -102,31 +102,31 @@ namespace SimpleDatastore.Tests
         
             await provider.SaveObjectAsync(actual);
         
-            await _documentProvider.Received().SaveDocumentAsync(Arg.Is<XDocument>(d => d.ToString() == FakeDocuments.CollectionFakeObjectXDocumentUpdated.ToString()));
+            await _documentProvider.Received().SaveDocumentAsync(Arg.Is<string>(d => d == FakeDocuments.CollectionFakeObjectXDocumentUpdated.ToString()));
         }
         
         [Test]
         public async Task DeleteObject_should_save_empty_document()
         {
-            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.SingeFakeObjectXDocument));
+            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.SingeFakeObjectXDocument.ToString()));
         
             var provider = new PersistentObjectProvider<FakeObject>(_resolver, _documentProvider);
         
             await provider.DeleteObjectAsync(FakeObject.InstanceIdentifier);
         
-            await _documentProvider.Received().SaveDocumentAsync(Arg.Is<XDocument>(d => d.ToString() == FakeDocuments.EmptyXDocument.ToString()));
+            await _documentProvider.Received().SaveDocumentAsync(Arg.Is<string>(d => d == FakeDocuments.EmptyXDocument.ToString()));
         }
         
         [Test]
         public async Task DeleteObject_should_remove_element()
         {
-            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument));
+            _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument.ToString()));
         
             var provider = new PersistentObjectProvider<FakeObject>(_resolver, _documentProvider);
         
             await provider.DeleteObjectAsync(FakeObject.SecondInstanceIdentifier);
         
-            await _documentProvider.Received().SaveDocumentAsync(Arg.Is<XDocument>(d => d.ToString() == FakeDocuments.SingeFakeObjectXDocument.ToString()));
+            await _documentProvider.Received().SaveDocumentAsync(Arg.Is<string>(d => d == FakeDocuments.SingeFakeObjectXDocument.ToString()));
         }
 
         [Test]

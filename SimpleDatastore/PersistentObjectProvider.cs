@@ -2,7 +2,9 @@
 using SimpleDatastore.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Nito.AsyncEx;
@@ -24,15 +26,12 @@ namespace SimpleDatastore
         public async Task<IList<T>> GetCollectionAsync()
         {
             var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
-            
-            var elements = doc.Descendants(Constants.DataItemName);
-            
-            var tasks = new List<Task<T>>();
 
-            foreach (var element in elements)
-            {
-                tasks.Add(_resolver.GetItemFromNodeAsync(element));
-            }
+            var xDoc = await ParseDocAsync(doc).ConfigureAwait(false);
+
+            var elements = xDoc.Descendants(Constants.DataItemName);
+            
+            var tasks = elements.Select(element => _resolver.GetItemFromNodeAsync(element)).ToList();
 
             return (await tasks.WhenAll().ConfigureAwait(false)).ToList();
         }
@@ -40,9 +39,7 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public IList<T> GetCollection()
         {
-            var doc = _provider.GetDocument();
-            
-            var elements = doc.Descendants(Constants.DataItemName);
+            var elements = XDocument.Parse(_provider.GetDocument()).Descendants(Constants.DataItemName);
 
             return elements.AsParallel().Select(element => _resolver.GetItemFromNode(element)).ToList();
         }
@@ -51,23 +48,18 @@ namespace SimpleDatastore
         public async Task<T> GetObjectAsync(Guid id)
         {
             var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
+            
+            var xDoc = await ParseDocAsync(doc).ConfigureAwait(false);
 
-            var element = doc.GetElementById(id);
+            var element = xDoc.GetElementById(id);
 
-            if (element == null) return null;
-
-            var item = await _resolver.GetItemFromNodeAsync(element).ConfigureAwait(false);
-
-            return item;
+            return element == null ? null : await _resolver.GetItemFromNodeAsync(element).ConfigureAwait(false);
         }
-        
+
         ///<inheritdoc/>
         public T GetObject(Guid id)
         {
-            var doc = _provider.GetDocument();
-
-            var element = doc.GetElementById(id);
-
+            var element = XDocument.Parse(_provider.GetDocument()).GetElementById(id);
             return element == null ? null : _resolver.GetItemFromNode(element);
         }
 
@@ -77,8 +69,10 @@ namespace SimpleDatastore
             var element = BuildXml(instance);
 
             var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
+
+            var xDoc = await ParseDocAsync(doc).ConfigureAwait(false);
             
-            var existingElement = doc.GetElementById(instance.Id);
+            var existingElement = xDoc.GetElementById(instance.Id);
 
             if (existingElement != null)
             {
@@ -86,20 +80,20 @@ namespace SimpleDatastore
             }
             else
             {
-                doc.Root?.Add(element);
+                xDoc.Root?.Add(element);
             }
 
-            await _provider.SaveDocumentAsync(doc).ConfigureAwait(false);
+            await _provider.SaveDocumentAsync(xDoc.ToString(SaveOptions.None)).ConfigureAwait(false);
         }
         
         ///<inheritdoc/>
         public void SaveObject(T instance)
         {
             var element = BuildXml(instance);
-
-            var doc = _provider.GetDocument();
             
-            var existingElement = doc.GetElementById(instance.Id);
+            var xDoc = XDocument.Parse(_provider.GetDocument());
+            
+            var existingElement = xDoc.GetElementById(instance.Id);
 
             if (existingElement != null)
             {
@@ -107,10 +101,10 @@ namespace SimpleDatastore
             }
             else
             {
-                doc.Root?.Add(element);
+                xDoc.Root?.Add(element);
             }
 
-            _provider.SaveDocument(doc);
+            _provider.SaveDocument(xDoc.ToString(SaveOptions.None));
         }
 
         ///<inheritdoc/>
@@ -118,19 +112,21 @@ namespace SimpleDatastore
         {
             var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
 
-            doc.GetElementById(id)?.Remove();
+            var xDoc = await ParseDocAsync(doc).ConfigureAwait(false);
 
-            await _provider.SaveDocumentAsync(doc).ConfigureAwait(false);
+            xDoc.GetElementById(id)?.Remove();
+            
+            await _provider.SaveDocumentAsync(xDoc.ToString(SaveOptions.None)).ConfigureAwait(false);
         }
         
         ///<inheritdoc/>
         public void DeleteObject(Guid id)
         {
-            var doc = _provider.GetDocument();
+            var xDoc = XDocument.Parse(_provider.GetDocument());
 
-            doc.GetElementById(id)?.Remove();
+            xDoc.GetElementById(id)?.Remove();
 
-            _provider.SaveDocument(doc);
+            _provider.SaveDocument(xDoc.ToString(SaveOptions.None));
         }
         
         internal static XElement BuildXml(T instance)
@@ -164,6 +160,12 @@ namespace SimpleDatastore
                 element.Add(new XElement(attributeName, new XCData(property.GetValue(instance, null).ToString())));
             }
             return element;
+        }
+        
+        private static async Task<XDocument> ParseDocAsync(string doc)
+        {
+            using TextReader tr = new StringReader(doc);
+            return await XDocument.LoadAsync(tr, LoadOptions.None, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

@@ -12,25 +12,25 @@ namespace SimpleDatastore.Interfaces
         /// <summary>
         /// Get the document for the type
         /// </summary>
-        /// <returns>XDocument for the persistent object type</returns>
-        Task<XDocument> GetDocumentAsync();
+        /// <returns>Document for the persistent object type</returns>
+        Task<string> GetDocumentAsync();
         
         /// <summary>
         /// Get the document for the type
         /// </summary>
-        /// <returns>XDocument for the persistent object type</returns>
-        XDocument GetDocument();
+        /// <returns>Document for the persistent object type</returns>
+        string GetDocument();
         
         /// <summary>
         /// Save the storage document for the persistent object type  
         /// </summary>
-        /// <param name="document">The XDocument to save</param>
-        Task SaveDocumentAsync(XDocument document);
+        /// <param name="document">The document to save</param>
+        Task SaveDocumentAsync(string document);
         
         /// <summary>
         /// Save the storage document for the persistent object type  
         /// </summary>
-        /// <param name="document">The XDocument to save</param>
-        void SaveDocument(XDocument document);
+        /// <param name="document">The document to save</param>
+        void SaveDocument(string document);
     }
 }

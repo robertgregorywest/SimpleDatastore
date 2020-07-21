@@ -1,8 +1,6 @@
 ﻿using SimpleDatastore.Interfaces;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
 using System.IO.Abstractions;
 using Microsoft.AspNetCore.Hosting;
@@ -31,7 +29,7 @@ namespace SimpleDatastore
                 $"{typeof(T)}{Constants.FileExtension}");
         }
 
-        public async Task<XDocument> GetDocumentAsync()
+        public async Task<string> GetDocumentAsync()
         {
             using (await _lockAsync.ReaderLockAsync().ConfigureAwait(false))
             {
@@ -40,51 +38,39 @@ namespace SimpleDatastore
                     return EmptyDocument();
                 }
 
-                await using var stream = _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return await XDocument.LoadAsync(stream, LoadOptions.None, CancellationToken.None)
-                    .ConfigureAwait(false);
+                return await _fileSystemAsync.File.ReadAllTextAsync(_documentPath).ConfigureAwait(false);
             }
         }
 
-        public XDocument GetDocument()
+        public string GetDocument()
         {
             lock (_lock)
             {
-                if (!_fileSystem.File.Exists(_documentPath))
-                {
-                    return EmptyDocument();
-                }
-
-                using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return XDocument.Load(stream, LoadOptions.None);
+                return !_fileSystem.File.Exists(_documentPath) ? EmptyDocument() : _fileSystem.File.ReadAllText(_documentPath);
             }
         }
 
-        private static XDocument EmptyDocument()
+        private static string EmptyDocument()
         {
             return new XDocument(
                 new XDeclaration("1.0", "utf-8", null),
                 new XElement(Constants.RootElementName)
-            );
+            ).ToString(SaveOptions.None);
         }
 
-        public async Task SaveDocumentAsync(XDocument document)
+        public async Task SaveDocumentAsync(string document)
         {
             using (await _lockAsync.WriterLockAsync().ConfigureAwait(false))
             {
-                await using var stream = _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Create);
-                using var writer = XmlWriter.Create(stream, new XmlWriterSettings {Async = true, Indent = true});
-                await document.SaveAsync(writer, CancellationToken.None).ConfigureAwait(false);
+                await _fileSystemAsync.File.WriteAllTextAsync(_documentPath, document);
             }
         }
 
-        public void SaveDocument(XDocument document)
+        public void SaveDocument(string document)
         {
             lock (_lock)
             {
-                using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Create);
-                using var writer = XmlWriter.Create(stream, new XmlWriterSettings {Async = true, Indent = true});
-                document.Save(writer);
+                _fileSystem.File.WriteAllText(_documentPath, document);
             }
         }
     }

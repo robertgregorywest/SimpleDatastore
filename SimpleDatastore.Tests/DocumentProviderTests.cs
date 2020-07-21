@@ -45,20 +45,18 @@ namespace SimpleDatastore.Tests
 
             var doc = await provider.GetDocumentAsync();
 
-            Assert.AreEqual(doc.ToString(), FakeDocuments.EmptyXDocument.ToString());
+            Assert.AreEqual(doc, FakeDocuments.EmptyXDocument.ToString());
         }
         
         public async Task Save_document_with_existing_content_should_replace()
         {
-            var document = Substitute.For<XDocument>();
-
             await using var stream = GenerateStreamFromString(FakeDocuments.CollectionFakeObjectXDocument.ToString());
             
             _fileSystem.FileStream.Create("", FileMode.Create).ReturnsForAnyArgs(stream);
             
             var provider = new DocumentProvider<FakeObject>(_options, _hostingEnvironment, _fileSystem);
 
-            await provider.SaveDocumentAsync(document);
+            await provider.SaveDocumentAsync(FakeDocuments.CollectionFakeObjectXDocumentUpdated.ToString());
 
             // TODO: verify the correct content was persisted
         }
