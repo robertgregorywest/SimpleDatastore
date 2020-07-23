@@ -9,7 +9,7 @@ using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore
 {
-    public class BaseRepository<T> : IRepository<T> where T : PersistentObject
+    public class Repository<T> : IRepository<T> where T : PersistentObject
     {
         private readonly IPersistentObjectProvider<T> _persistentObjectProvider;
         private readonly IMemoryCache _memoryCache;
@@ -19,7 +19,7 @@ namespace SimpleDatastore
         
         private static string KeyForObject(Guid id) => $"{typeof(T)}.{id.ToString()}";
 
-        public BaseRepository(IPersistentObjectProvider<T> persistentObjectProvider,
+        public Repository(IPersistentObjectProvider<T> persistentObjectProvider,
             IMemoryCache memoryCache, IOptions<SimpleDatastoreOptions> options)
         {
             _persistentObjectProvider = persistentObjectProvider;

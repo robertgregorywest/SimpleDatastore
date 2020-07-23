@@ -2,21 +2,19 @@
 using SimpleDatastore.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Nito.AsyncEx;
 
 namespace SimpleDatastore
 {
-    public class PersistentObjectProvider<T> : IPersistentObjectProvider<T> where T : PersistentObject
+    public class PersistentObjectProviderXml<T> : IPersistentObjectProvider<T> where T : PersistentObject
     {
-        private readonly IItemResolver<T> _resolver;
-        private readonly IDocumentProvider<T> _provider;
+        private readonly IItemResolverXml<T> _resolver;
+        private readonly IDocumentProviderXml<T> _provider;
 
-        public PersistentObjectProvider(IItemResolver<T> resolver, IDocumentProvider<T> provider)
+        public PersistentObjectProviderXml(IItemResolverXml<T> resolver, IDocumentProviderXml<T> provider)
         {
             _resolver = resolver;
             _provider = provider;
@@ -27,9 +25,7 @@ namespace SimpleDatastore
         {
             var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
 
-            var xDoc = await ParseDocAsync(doc).ConfigureAwait(false);
-
-            var elements = xDoc.Descendants(Constants.DataItemName);
+            var elements = doc.Descendants(PersistentObject.DataItemName);
             
             var tasks = elements.Select(element => _resolver.GetItemFromNodeAsync(element)).ToList();
 
@@ -39,8 +35,8 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public IList<T> GetCollection()
         {
-            var elements = XDocument.Parse(_provider.GetDocument()).Descendants(Constants.DataItemName);
-
+            var elements = _provider.GetDocument().Descendants(PersistentObject.DataItemName);
+            
             return elements.AsParallel().Select(element => _resolver.GetItemFromNode(element)).ToList();
         }
 
@@ -49,9 +45,7 @@ namespace SimpleDatastore
         {
             var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
             
-            var xDoc = await ParseDocAsync(doc).ConfigureAwait(false);
-
-            var element = xDoc.GetElementById(id);
+            var element = doc.GetElementById(id);
 
             return element == null ? null : await _resolver.GetItemFromNodeAsync(element).ConfigureAwait(false);
         }
@@ -59,7 +53,7 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public T GetObject(Guid id)
         {
-            var element = XDocument.Parse(_provider.GetDocument()).GetElementById(id);
+            var element = _provider.GetDocument().GetElementById(id);
             return element == null ? null : _resolver.GetItemFromNode(element);
         }
 
@@ -70,9 +64,7 @@ namespace SimpleDatastore
 
             var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
 
-            var xDoc = await ParseDocAsync(doc).ConfigureAwait(false);
-            
-            var existingElement = xDoc.GetElementById(instance.Id);
+            var existingElement = doc.GetElementById(instance.Id);
 
             if (existingElement != null)
             {
@@ -80,10 +72,10 @@ namespace SimpleDatastore
             }
             else
             {
-                xDoc.Root?.Add(element);
+                doc.Root?.Add(element);
             }
 
-            await _provider.SaveDocumentAsync(xDoc.ToString(SaveOptions.None)).ConfigureAwait(false);
+            await _provider.SaveDocumentAsync(doc).ConfigureAwait(false);
         }
         
         ///<inheritdoc/>
@@ -91,9 +83,9 @@ namespace SimpleDatastore
         {
             var element = BuildXml(instance);
             
-            var xDoc = XDocument.Parse(_provider.GetDocument());
+            var doc = _provider.GetDocument();
             
-            var existingElement = xDoc.GetElementById(instance.Id);
+            var existingElement = doc.GetElementById(instance.Id);
 
             if (existingElement != null)
             {
@@ -101,10 +93,10 @@ namespace SimpleDatastore
             }
             else
             {
-                xDoc.Root?.Add(element);
+                doc.Root?.Add(element);
             }
 
-            _provider.SaveDocument(xDoc.ToString(SaveOptions.None));
+            _provider.SaveDocument(doc);
         }
 
         ///<inheritdoc/>
@@ -112,26 +104,24 @@ namespace SimpleDatastore
         {
             var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
 
-            var xDoc = await ParseDocAsync(doc).ConfigureAwait(false);
-
-            xDoc.GetElementById(id)?.Remove();
+            doc.GetElementById(id)?.Remove();
             
-            await _provider.SaveDocumentAsync(xDoc.ToString(SaveOptions.None)).ConfigureAwait(false);
+            await _provider.SaveDocumentAsync(doc).ConfigureAwait(false);
         }
         
         ///<inheritdoc/>
         public void DeleteObject(Guid id)
         {
-            var xDoc = XDocument.Parse(_provider.GetDocument());
+            var doc = _provider.GetDocument();
 
-            xDoc.GetElementById(id)?.Remove();
+            doc.GetElementById(id)?.Remove();
 
-            _provider.SaveDocument(xDoc.ToString(SaveOptions.None));
+            _provider.SaveDocument(doc);
         }
         
         internal static XElement BuildXml(T instance)
         {
-            var element = new XElement(Constants.DataItemName);
+            var element = new XElement(PersistentObject.DataItemName);
             
             foreach (var property in typeof(T).GetValidProperties())
             {
@@ -160,12 +150,6 @@ namespace SimpleDatastore
                 element.Add(new XElement(attributeName, new XCData(property.GetValue(instance, null).ToString())));
             }
             return element;
-        }
-        
-        private static async Task<XDocument> ParseDocAsync(string doc)
-        {
-            using TextReader tr = new StringReader(doc);
-            return await XDocument.LoadAsync(tr, LoadOptions.None, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

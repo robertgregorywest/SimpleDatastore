@@ -7,19 +7,19 @@ namespace SimpleDatastore.Interfaces
     /// Responsible for resolving a PersistentObject from an XElement
     /// </summary>
     /// <typeparam name="T">PersistentObject type to resolve</typeparam>
-    public interface IItemResolver<T> where T : PersistentObject
+    public interface IItemResolverXml<T> where T : PersistentObject
     {
         /// <summary>
         /// Creates an instance of <see cref="T"/> from the <see cref="XElement"/>
         /// </summary>
-        /// <param name="element">The XElement containing the persistent object data</param>
+        /// <param name="element">The <see cref="XElement"/> containing the persistent object data</param>
         /// <returns>Hydrated persistent object</returns>
         Task<T> GetItemFromNodeAsync(XElement element);
         
         /// <summary>
         /// Creates an instance of <see cref="T"/> from the <see cref="XElement"/>
         /// </summary>
-        /// <param name="element">The XElement containing the persistent object data</param>
+        /// <param name="element">The <see cref="XElement"/> containing the persistent object data</param>
         /// <returns>Hydrated persistent object</returns>
         T GetItemFromNode(XElement element);
     }

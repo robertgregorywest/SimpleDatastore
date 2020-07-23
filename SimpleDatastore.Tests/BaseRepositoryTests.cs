@@ -37,7 +37,7 @@ namespace SimpleDatastore.Tests
         {
             _storageHelper.GetCollectionAsync().Returns(Task.FromResult(FakeObject.Collection));
 
-            var repo = new BaseRepository<FakeObject>(_storageHelper, _cache, _options);
+            var repo = new Repository<FakeObject>(_storageHelper, _cache, _options);
 
             var result = await repo.LoadCollectionAsync();
 
@@ -47,7 +47,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public async Task Save_expect_call_StorageHelper_SaveObject()
         {
-            var repo = new BaseRepository<FakeObject>(_storageHelper, _cache, _options);
+            var repo = new Repository<FakeObject>(_storageHelper, _cache, _options);
 
             await repo.SaveAsync(FakeObject.Instance);
 
@@ -59,7 +59,7 @@ namespace SimpleDatastore.Tests
         {
             var newInstance = new FakeObject();
 
-            var repo = new BaseRepository<FakeObject>(_storageHelper, _cache, _options);
+            var repo = new Repository<FakeObject>(_storageHelper, _cache, _options);
 
             await repo.SaveAsync(newInstance);
 
@@ -69,7 +69,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public async Task Delete_expect_call_helper_delete_object()
         {
-            var repo = new BaseRepository<FakeObject>(_storageHelper, _cache, _options);
+            var repo = new Repository<FakeObject>(_storageHelper, _cache, _options);
 
             await repo.DeleteAsync(FakeObject.InstanceIdentifier);
 
@@ -81,7 +81,7 @@ namespace SimpleDatastore.Tests
         {
             _options.Value.Returns(new SimpleDatastoreOptions() { EnableCaching = true });
 
-            var repo = new BaseRepository<FakeObject>(_storageHelper, _cache, _options);
+            var repo = new Repository<FakeObject>(_storageHelper, _cache, _options);
 
             await repo.DeleteAsync(FakeObject.InstanceIdentifier);
 

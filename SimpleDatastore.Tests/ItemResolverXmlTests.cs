@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SimpleDatastore.Tests
 {
-    public class ItemResolverTests
+    public class ItemResolverXmlTests
     {
         private IServiceProvider _provider;
 
@@ -24,7 +24,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public async Task GetItemFromNode_Should_Return_Object()
         {
-            var resolver = new ItemResolver<FakeObject>(_provider, () => new FakeObject());
+            var resolver = new ItemResolverXml<FakeObject>(_provider, () => new FakeObject());
 
             var result = await resolver.GetItemFromNodeAsync(FakeDocuments.SingleFakeObjectXElement);
         

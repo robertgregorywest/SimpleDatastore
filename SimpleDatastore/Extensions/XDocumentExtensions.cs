@@ -9,7 +9,7 @@ namespace SimpleDatastore.Extensions
         internal static XElement GetElementById(this XDocument doc, Guid id)
         {
             return doc
-                .Descendants(Constants.DataItemName)
+                .Descendants(PersistentObject.DataItemName)
                 .FirstOrDefault(el => el.Element(PersistentObject.Identifier)?.Value == id.ToString());
         }
     }

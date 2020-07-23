@@ -10,19 +10,38 @@ namespace SimpleDatastore
     public static class ServiceCollectionExtensions
     {
         [UsedImplicitly]
-        public static IServiceCollection AddSimpleDatastore(this IServiceCollection services, Action<SimpleDatastoreOptions> options = null)
+        public static IServiceCollection AddSimpleDatastore(this IServiceCollection services, Action<SimpleDatastoreOptions> options = null) 
+            => services.AddSimpleDatastore(true, options);
+        
+        [UsedImplicitly]
+        public static IServiceCollection AddSimpleDatastoreWithXml(this IServiceCollection services, Action<SimpleDatastoreOptions> options = null) 
+            => services.AddSimpleDatastore(true, options);
+        
+        [UsedImplicitly]
+        public static IServiceCollection AddSimpleDatastoreWithJson(this IServiceCollection services, Action<SimpleDatastoreOptions> options = null) 
+            => services.AddSimpleDatastore(false, options);
+
+        private static IServiceCollection AddSimpleDatastore(this IServiceCollection services, bool useXml, Action<SimpleDatastoreOptions> options = null)
         {
             if (options != null)
             {
                 services.Configure(options);
             }
 
-            services.AddSingleton(typeof(IRepository<>), typeof(BaseRepository<>));
-            services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProvider<>));
-            services.AddSingleton(typeof(IDocumentProvider<>), typeof(DocumentProvider<>));
-            services.AddSingleton(typeof(IItemResolver<>), typeof(ItemResolver<>));
+            services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
             services.AddSingleton<IFileSystem, FileSystem>();
             services.AddMemoryCache();
+
+            if (useXml)
+            {
+                services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderXml<>)); 
+                services.AddSingleton(typeof(IDocumentProviderXml<>), typeof(DocumentProviderXml<>));
+                services.AddSingleton(typeof(IItemResolverXml<>), typeof(ItemResolverXml<>));
+            }
+            else
+            {
+                
+            }
 
             return services;
         }

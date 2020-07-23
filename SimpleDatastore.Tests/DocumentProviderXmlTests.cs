@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace SimpleDatastore.Tests
 {
     [TestFixture]
-    public class DocumentProviderTests
+    public class DocumentProviderXmlTests
     {
         private IOptions<SimpleDatastoreOptions> _options;
         private IHostingEnvironment _hostingEnvironment;
@@ -41,11 +41,11 @@ namespace SimpleDatastore.Tests
         {
             _fileSystem.File.Exists("").ReturnsForAnyArgs(false);
             
-            var provider = new DocumentProvider<FakeObject>(_options, _hostingEnvironment, _fileSystem);
+            var provider = new DocumentProviderXml<FakeObject>(_options, _hostingEnvironment, _fileSystem);
 
             var doc = await provider.GetDocumentAsync();
 
-            Assert.AreEqual(doc, FakeDocuments.EmptyXDocument.ToString());
+            Assert.AreEqual(doc.ToString(), FakeDocuments.EmptyXDocument.ToString());
         }
         
         public async Task Save_document_with_existing_content_should_replace()
@@ -54,9 +54,9 @@ namespace SimpleDatastore.Tests
             
             _fileSystem.FileStream.Create("", FileMode.Create).ReturnsForAnyArgs(stream);
             
-            var provider = new DocumentProvider<FakeObject>(_options, _hostingEnvironment, _fileSystem);
+            var provider = new DocumentProviderXml<FakeObject>(_options, _hostingEnvironment, _fileSystem);
 
-            await provider.SaveDocumentAsync(FakeDocuments.CollectionFakeObjectXDocumentUpdated.ToString());
+            await provider.SaveDocumentAsync(FakeDocuments.CollectionFakeObjectXDocumentUpdated);
 
             // TODO: verify the correct content was persisted
         }
