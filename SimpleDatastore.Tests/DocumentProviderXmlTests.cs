@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
+using SimpleDatastore.Extensions;
 
 namespace SimpleDatastore.Tests
 {
@@ -50,7 +51,7 @@ namespace SimpleDatastore.Tests
         
         public async Task Save_document_with_existing_content_should_replace()
         {
-            await using var stream = GenerateStreamFromString(FakeDocuments.CollectionFakeObjectXDocument.ToString());
+            await using var stream = FakeDocuments.CollectionFakeObjectXDocument.ToString().CreateStream();
             
             _fileSystem.FileStream.Create("", FileMode.Create).ReturnsForAnyArgs(stream);
             
@@ -59,16 +60,6 @@ namespace SimpleDatastore.Tests
             await provider.SaveDocumentAsync(FakeDocuments.CollectionFakeObjectXDocumentUpdated);
 
             // TODO: verify the correct content was persisted
-        }
-        
-        private static Stream GenerateStreamFromString(string s)
-        {
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream);
-            writer.Write(s);
-            writer.Flush();
-            stream.Position = 0;
-            return stream;
         }
     }
 }

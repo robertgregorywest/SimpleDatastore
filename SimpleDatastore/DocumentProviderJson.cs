@@ -3,9 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using System.IO.Abstractions;
 using System.Text.Json;
-using System.Threading;
-using System.Xml;
-using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
@@ -86,7 +83,7 @@ namespace SimpleDatastore
 
         private static JsonDocument EmptyDocument()
         {
-            return JsonDocument.Parse($"{{\"{PersistentObject.RootElementName}\": []}}");
+            return JsonDocument.Parse("[]");
         }
     }
 }
