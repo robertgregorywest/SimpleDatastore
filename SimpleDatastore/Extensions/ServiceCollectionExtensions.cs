@@ -40,7 +40,8 @@ namespace SimpleDatastore
             }
             else
             {
-                
+                services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderJson<>)); 
+                services.AddSingleton(typeof(IDocumentProviderJson<>), typeof(DocumentProviderJson<>));
             }
 
             return services;

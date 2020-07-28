@@ -13,24 +13,24 @@ namespace SimpleDatastore.Interfaces
         /// Get the document for the type
         /// </summary>
         /// <returns>Document for the persistent object type</returns>
-        Task<JsonDocument> GetDocumentAsync();
+        Task<string> GetDocumentAsync();
         
         /// <summary>
         /// Get the document for the type
         /// </summary>
         /// <returns>Document for the persistent object type</returns>
-        JsonDocument GetDocument();
+        string GetDocument();
         
         /// <summary>
         /// Save the storage document for the persistent object type  
         /// </summary>
         /// <param name="document">The document to save</param>
-        Task SaveDocumentAsync(JsonDocument document);
+        Task SaveDocumentAsync(string document);
         
         /// <summary>
         /// Save the storage document for the persistent object type  
         /// </summary>
         /// <param name="document">The document to save</param>
-        void SaveDocument(JsonDocument document);
+        void SaveDocument(string document);
     }
 }

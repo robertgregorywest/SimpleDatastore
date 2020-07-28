@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using SimpleDatastore.Extensions;
 using SimpleDatastore.Interfaces;
@@ -23,68 +20,80 @@ namespace SimpleDatastore
         {
             var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
 
-            var e = doc.RootElement.EnumerateArray().Select(e => e.Clone()).ToList();
-            
-            return JsonSerializer.Deserialize<IList<T>>(doc.ToString());
+            var dictionary = JsonSerializer.Deserialize<List<T>>(doc);
+
+            return dictionary;
         }
 
         public IList<T> GetCollection()
         {
-            throw new NotImplementedException();
+            var doc = _provider.GetDocument();
+
+            var dictionary = JsonSerializer.Deserialize<List<T>>(doc);
+
+            return dictionary;
         }
 
-        public Task<T> GetObjectAsync(Guid id)
+        public async Task<T> GetObjectAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
+
+            var dictionary = JsonSerializer.Deserialize<List<T>>(doc);
+
+            return dictionary.Find(o => o.Id == id);
         }
 
         public T GetObject(Guid id)
         {
-            throw new NotImplementedException();
+            var doc = _provider.GetDocument();
+
+            var dictionary = JsonSerializer.Deserialize<List<T>>(doc);
+
+            return dictionary.Find(o => o.Id == id);
         }
 
-        public Task SaveObjectAsync(T instance)
+        public async Task SaveObjectAsync(T instance)
         {
-            throw new NotImplementedException();
+            var doc = await _provider.GetDocumentAsync();
+
+            var collection = JsonSerializer.Deserialize<List<T>>(doc);
+
+            collection.AddOrReplace(instance);
+
+            await _provider.SaveDocumentAsync(JsonSerializer.Serialize(collection));
         }
 
         public void SaveObject(T instance)
         {
-            using var doc = _provider.GetDocument();
+            var doc = _provider.GetDocument();
 
-            var dictionary = JsonSerializer.Deserialize<ConcurrentDictionary<Guid,T>>(doc.ToString());
+            var collection = JsonSerializer.Deserialize<List<T>>(doc);
 
-            dictionary.AddOrUpdate(instance.Id, instance, (key, oldValue) => instance);
+            collection.AddOrReplace(instance);
 
-            var result = JsonSerializer.Serialize(dictionary);
-
-            _provider.SaveDocument(JsonDocument.Parse(result));
+            _provider.SaveDocument(JsonSerializer.Serialize(collection));
         }
 
         public async Task DeleteObjectAsync(Guid id)
         {
-            using var doc = await _provider.GetDocumentAsync();
+            var doc = await _provider.GetDocumentAsync();
 
-            var updatedContent = doc.RootElement.EnumerateArray()
-                .Where(el => el.GetProperty(PersistentObject.Identifier).GetGuid() != id)
-                .Select(e => e.Clone()).ToString();
+            var collection = await JsonSerializer.DeserializeAsync<List<T>>(doc.CreateStream());
 
-            using var updatedDoc = await JsonDocument.ParseAsync(updatedContent.CreateStream());
-            
-            await _provider.SaveDocumentAsync(updatedDoc);
+            collection.RemoveAll(o => o.Id == id);
+
+            await _provider.SaveDocumentAsync(JsonSerializer.Serialize(collection));
         }
 
         public void DeleteObject(Guid id)
         {
-            using var doc = _provider.GetDocument();
+            var doc = _provider.GetDocument();
 
-            var updatedContent = doc.RootElement.EnumerateArray()
-                .Where(el => el.GetProperty(PersistentObject.Identifier).GetGuid() != id)
-                .Select(e => e.Clone()).ToString();
+            var collection = JsonSerializer.Deserialize<List<T>>(doc);
 
-            using var updatedDoc = JsonDocument.Parse(updatedContent);
-            
-            _provider.SaveDocument(updatedDoc);
+            collection.RemoveAll(o => o.Id == id);
+
+            _provider.SaveDocument(JsonSerializer.Serialize(collection));
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using SimpleDatastore.Interfaces;
 using System.IO;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace SimpleDatastore
                 $"{typeof(T)}.json");
         }
 
-        public async Task<JsonDocument> GetDocumentAsync()
+        public async Task<string> GetDocumentAsync()
         {
             using (await _lockAsync.ReaderLockAsync().ConfigureAwait(false))
             {
@@ -35,11 +36,13 @@ namespace SimpleDatastore
 
                 await using var stream =
                     _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return await JsonDocument.ParseAsync(stream);
+
+                using var reader = new StreamReader(stream);
+                return await reader.ReadToEndAsync();
             }
         }
 
-        public JsonDocument GetDocument()
+        public string GetDocument()
         {
             lock (_lock)
             {
@@ -47,43 +50,35 @@ namespace SimpleDatastore
 
                 using var stream =
                     _fileSystem.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return JsonDocument.Parse(stream);
+                
+                using var reader = new StreamReader(stream);
+                return reader.ReadToEnd();
             }
         }
 
-        public async Task SaveDocumentAsync(JsonDocument document)
+        public async Task SaveDocumentAsync(string document)
         {
             using (await _lockAsync.WriterLockAsync().ConfigureAwait(false))
             {
-                var writerOptions = new JsonWriterOptions
-                {
-                    Indented = true
-                };
-                
                 await using var stream = _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Create);
-                using var writer = new Utf8JsonWriter(stream, options: writerOptions);
-                document.WriteTo(writer);
+                await using var sr = new StreamWriter(stream);
+                await sr.WriteAsync(document);
             }
         }
 
-        public void SaveDocument(JsonDocument document)
+        public void SaveDocument(string document)
         {
             lock (_lock)
             {
-                var writerOptions = new JsonWriterOptions
-                {
-                    Indented = true
-                };
-                
                 using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Create);
-                using var writer = new Utf8JsonWriter(stream, options: writerOptions);
-                document.WriteTo(writer);
+                using var sr = new StreamWriter(stream);
+                sr.Write(document);
             }
         }
 
-        private static JsonDocument EmptyDocument()
+        private static string EmptyDocument()
         {
-            return JsonDocument.Parse("[]");
+            return JsonSerializer.Serialize(new List<T>());
         }
     }
 }

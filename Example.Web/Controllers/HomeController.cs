@@ -12,12 +12,12 @@ namespace Example.Web.Controllers
     public class HomeController : Controller
     {
         private readonly IRepository<Widget> _widgetRepo;
+        private readonly IRepository<Part> _partsRepo;
         private readonly IRepository<Factory> _factoryRepo;
         
-        public HomeController(IRepository<Widget> widgetRepo, IRepository<Factory> factoryRepo)
+        public HomeController(IRepository<Widget> widgetRepo, IRepository<Part> partsRepo, IRepository<Factory> factoryRepo)
         {
-            _widgetRepo = widgetRepo;
-            _factoryRepo = factoryRepo;
+            (_widgetRepo, _partsRepo, _factoryRepo) = (widgetRepo, partsRepo, factoryRepo);
         }
 
         public async Task<IActionResult> Index()
@@ -54,8 +54,47 @@ namespace Example.Web.Controllers
         
         public async Task<IActionResult> CreateTestData()
         {
-            var widget = await _widgetRepo.LoadAsync(Guid.Parse("6ea4ad00-08ba-4ac1-8e52-54a890eca0e0"));
-            var widgets = new List<Widget> {widget};
+            var part1 = new Part
+            {
+                Id = Guid.Parse("47ee8994-7a72-463f-ad8f-1a4b0f61ae16"),
+                Name = "Some widget part A"
+            };
+            await _partsRepo.SaveAsync(part1);
+
+            var part2 = new Part
+            {
+                Id = Guid.Parse("90397722-a7e2-4615-951b-742662630fcf"),
+                Name = "Some widget part B"
+            };
+            await _partsRepo.SaveAsync(part2);
+
+            var part3 = new Part
+            {
+                Id = Guid.Parse("dd9bec1b-73ed-4ba7-bfde-2de6b2cc8ae0"),
+                Name = "Another widget part A"
+            };
+            await _partsRepo.SaveAsync(part3);
+
+            var widget1 = new Widget()
+            {
+                Id = Guid.Parse("6ea4ad00-08ba-4ac1-8e52-54a890eca0e0"),
+                Name = "Some Widget",
+                MainPart = part3,
+                Parts = new List<Part>{part1, part2}
+            };
+            await _widgetRepo.SaveAsync(widget1);
+
+            var widget2 = new Widget()
+            {
+                Id = Guid.Parse("f0d91008-a34c-48ce-acf6-8f89ff106607"),
+                Name = "Another Widget",
+                MainPart = part3,
+                Parts = new List<Part>{part3}
+            };
+            await _widgetRepo.SaveAsync(widget2);
+            
+            var widgets = new List<Widget>{widget1, widget2};
+            
             for (var i = 0; i < 1000; i++)
             {
                 var factory = new Factory() {Name = Helpers.RandomString(8), Widgets = widgets};
