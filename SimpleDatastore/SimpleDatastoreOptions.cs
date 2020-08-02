@@ -13,5 +13,7 @@
             Xml,
             Json
         }
+
+        public bool PersistChildren { get; set; } = true;
     }
 }

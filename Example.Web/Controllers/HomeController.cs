@@ -12,12 +12,11 @@ namespace Example.Web.Controllers
     public class HomeController : Controller
     {
         private readonly IRepository<Widget> _widgetRepo;
-        private readonly IRepository<Part> _partsRepo;
         private readonly IRepository<Factory> _factoryRepo;
         
-        public HomeController(IRepository<Widget> widgetRepo, IRepository<Part> partsRepo, IRepository<Factory> factoryRepo)
+        public HomeController(IRepository<Widget> widgetRepo, IRepository<Factory> factoryRepo)
         {
-            (_widgetRepo, _partsRepo, _factoryRepo) = (widgetRepo, partsRepo, factoryRepo);
+            (_widgetRepo, _factoryRepo) = (widgetRepo, factoryRepo);
         }
 
         public async Task<IActionResult> Index()
@@ -57,23 +56,20 @@ namespace Example.Web.Controllers
             var part1 = new Part
             {
                 Id = Guid.Parse("47ee8994-7a72-463f-ad8f-1a4b0f61ae16"),
-                Name = "Some widget part A"
+                Name = "Part A"
             };
-            await _partsRepo.SaveAsync(part1);
 
             var part2 = new Part
             {
                 Id = Guid.Parse("90397722-a7e2-4615-951b-742662630fcf"),
-                Name = "Some widget part B"
+                Name = "Part B"
             };
-            await _partsRepo.SaveAsync(part2);
 
             var part3 = new Part
             {
                 Id = Guid.Parse("dd9bec1b-73ed-4ba7-bfde-2de6b2cc8ae0"),
-                Name = "Another widget part A"
+                Name = "Part C"
             };
-            await _partsRepo.SaveAsync(part3);
 
             var widget1 = new Widget()
             {
@@ -100,6 +96,7 @@ namespace Example.Web.Controllers
                 var factory = new Factory() {Name = Helpers.RandomString(8), Widgets = widgets};
                 await _factoryRepo.SaveAsync(factory);
             }
+            
             return RedirectToAction("Index");
         }
 
