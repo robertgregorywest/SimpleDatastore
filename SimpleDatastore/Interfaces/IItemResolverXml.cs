@@ -18,7 +18,7 @@ namespace SimpleDatastore.Interfaces
         /// <param name="repoProvider">Func to create instances of repositories</param>
         /// <param name="persistChildren">Whether to persist child <see cref="PersistentObject"/> instances locally or in the type storage document</param>
         /// <returns>Hydrated persistent object</returns>
-        Task<T> GetItemFromNodeAsync(XElement element, Func<T> activator, Func<Type, dynamic> repoProvider, bool persistChildren);
+        Task<T> GetItemFromNodeAsync(XElement element, Func<Type, object> activator, Func<Type, dynamic> repoProvider, bool persistChildren);
 
         /// <summary>
         /// Creates an instance of <see cref="T"/> from the <see cref="XElement"/>
@@ -28,6 +28,6 @@ namespace SimpleDatastore.Interfaces
         /// <param name="repoProvider">Func to create instances of repositories</param>
         /// <param name="persistChildren">Whether to persist child <see cref="PersistentObject"/> instances locally or in the type storage document</param>
         /// <returns>Hydrated persistent object</returns>
-        T GetItemFromNode(XElement element, Func<T> activator, Func<Type, dynamic> repoProvider, bool persistChildren);
+        T GetItemFromNode(XElement element, Func<Type, object> activator, Func<Type, dynamic> repoProvider, bool persistChildren);
     }
 }

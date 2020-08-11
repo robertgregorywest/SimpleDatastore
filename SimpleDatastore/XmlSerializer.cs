@@ -29,7 +29,7 @@ namespace SimpleDatastore
                     if (persistChildren)
                     {
                         var repositoryType = typeof(IRepository<>).MakeGenericType(property.PropertyType);
-                        var repository = repoProvider.Invoke(repositoryType);
+                        var repository = repoProvider(repositoryType);
                         repository.Save((dynamic) persistentObject);
                         element.Add(new XElement(attributeName, persistentObject.Id.ToString()));
                     }
@@ -49,7 +49,7 @@ namespace SimpleDatastore
                     {
                         var elementType = property.PropertyType.GetGenericArguments()[0];
                         var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
-                        var repository = repoProvider.Invoke(repositoryType);
+                        var repository = repoProvider(repositoryType);
 
                         foreach (var item in list)
                         {

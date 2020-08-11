@@ -16,7 +16,7 @@ namespace SimpleDatastore
         private readonly IItemResolverXml<T> _resolver;
         private readonly IDocumentProviderXml<T> _documentProvider;
         private readonly bool _persistChildren;
-        private readonly Func<T> _activator;
+        private readonly Func<Type, object> _activator;
         private readonly Func<Type, dynamic> _repoProvider;
 
         public PersistentObjectProviderXml(IItemResolverXml<T> resolver,
@@ -27,7 +27,7 @@ namespace SimpleDatastore
             _resolver = resolver;
             _documentProvider = documentProvider;
             _persistChildren = options.Value.PersistChildren;
-            _activator = () => ActivatorUtilities.CreateInstance<T>(serviceProvider);
+            _activator = t => ActivatorUtilities.CreateInstance(serviceProvider, t);
             _repoProvider = t => serviceProvider.GetService(t);
         }
 

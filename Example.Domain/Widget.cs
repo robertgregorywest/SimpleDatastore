@@ -13,7 +13,7 @@ namespace Example.Domain
         public Part MainPart { get; set; }
 
         [DataMember(Name = "parts")]
-        public IList<Part> Parts { get; set; }
+        public IList<Part> Parts { get; set; } = new List<Part>();
         
         public Part NonPersistedProperty { get; set; }
     }
