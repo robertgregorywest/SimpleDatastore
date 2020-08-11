@@ -4,9 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
+using static SimpleDatastore.XmlSerializer;
 
 namespace SimpleDatastore
 {
@@ -14,8 +15,9 @@ namespace SimpleDatastore
     {
         private readonly IItemResolverXml<T> _resolver;
         private readonly IDocumentProviderXml<T> _documentProvider;
-        private readonly IServiceProvider _serviceProvider;
         private readonly bool _persistChildren;
+        private readonly Func<T> _activator;
+        private readonly Func<Type, dynamic> _repoProvider;
 
         public PersistentObjectProviderXml(IItemResolverXml<T> resolver,
             IDocumentProviderXml<T> documentProvider,
@@ -24,8 +26,9 @@ namespace SimpleDatastore
         {
             _resolver = resolver;
             _documentProvider = documentProvider;
-            _serviceProvider = serviceProvider;
             _persistChildren = options.Value.PersistChildren;
+            _activator = () => ActivatorUtilities.CreateInstance<T>(serviceProvider);
+            _repoProvider = t => serviceProvider.GetService(t);
         }
 
         ///<inheritdoc/>
@@ -33,9 +36,12 @@ namespace SimpleDatastore
         {
             var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
-            var elements = doc.Descendants(PersistentObject.DataItemName);
+            if (doc.Root == null) return new List<T>();
+            
+            var elements = doc.Root.Elements(PersistentObject.DataItemName);
 
-            var tasks = elements.Select(element => _resolver.GetItemFromNodeAsync(element)).ToList();
+            var tasks = elements.Select(element =>
+                _resolver.GetItemFromNodeAsync(element, _activator, _repoProvider, _persistChildren)).ToList();
 
             return (await tasks.WhenAll().ConfigureAwait(false)).ToList();
         }
@@ -43,9 +49,14 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public IList<T> GetCollection()
         {
-            var elements = _documentProvider.GetDocument().Descendants(PersistentObject.DataItemName);
+            var xElement = _documentProvider.GetDocument().Root;
+            
+            if (xElement == null) return new List<T>();
+            
+            var elements = xElement.Elements(PersistentObject.DataItemName);
 
-            return elements.AsParallel().Select(element => _resolver.GetItemFromNode(element)).ToList();
+            return elements.AsParallel().Select(element =>
+                _resolver.GetItemFromNode(element, _activator, _repoProvider, _persistChildren)).ToList();
         }
 
         ///<inheritdoc/>
@@ -55,20 +66,25 @@ namespace SimpleDatastore
 
             var element = doc.GetElementById(id);
 
-            return element == null ? null : await _resolver.GetItemFromNodeAsync(element).ConfigureAwait(false);
+            return element == null
+                ? null
+                : await _resolver.GetItemFromNodeAsync(element, _activator, _repoProvider, _persistChildren)
+                    .ConfigureAwait(false);
         }
 
         ///<inheritdoc/>
         public T GetObject(Guid id)
         {
             var element = _documentProvider.GetDocument().GetElementById(id);
-            return element == null ? null : _resolver.GetItemFromNode(element);
+            return element == null
+                ? null
+                : _resolver.GetItemFromNode(element, _activator, _repoProvider, _persistChildren);
         }
 
         ///<inheritdoc/>
         public async Task SaveObjectAsync(T instance)
         {
-            var element = BuildXml(instance);
+            var element = Write(instance, _repoProvider, _persistChildren);
 
             var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
@@ -89,7 +105,7 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public void SaveObject(T instance)
         {
-            var element = BuildXml(instance);
+            var element = Write(instance, _repoProvider, _persistChildren);
 
             var doc = _documentProvider.GetDocument();
 
@@ -125,62 +141,6 @@ namespace SimpleDatastore
             doc.GetElementById(id)?.Remove();
 
             _documentProvider.SaveDocument(doc);
-        }
-
-        internal XElement BuildXml(T instance)
-        {
-            var element = new XElement(PersistentObject.DataItemName);
-
-            foreach (var property in typeof(T).GetValidProperties())
-            {
-                var attributeName = property.GetPropertyName();
-                var value = property.GetValue(instance, null);
-
-                if (attributeName == PersistentObject.Identifier)
-                {
-                    element.Add(new XElement(attributeName, value.ToString()));
-                    continue;
-                }
-
-                if (property.PropertyType.IsAPersistentObject() && value is PersistentObject persistentObject)
-                {
-                    if (_persistChildren)
-                    {
-                        var repositoryType = typeof(IRepository<>).MakeGenericType(property.PropertyType);
-                        dynamic repository = _serviceProvider.GetService(repositoryType);
-                        repository.Save((dynamic) persistentObject);
-                    }
-
-                    element.Add(new XElement(attributeName, persistentObject.Id.ToString()));
-                    continue;
-                }
-
-                if (property.PropertyType.IsAPersistentObjectEnumerable() &&
-                    value is IEnumerable<PersistentObject> persistentObjectEnumerable)
-                {
-                    var list = persistentObjectEnumerable.ToList();
-
-                    if (_persistChildren)
-                    {
-                        var elementType = property.PropertyType.GetGenericArguments()[0];
-                        var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
-                        dynamic repository = _serviceProvider.GetService(repositoryType);
-
-                        foreach (var item in list)
-                        {
-                            repository.Save((dynamic) item);
-                        }
-                    }
-
-                    var flattenedEnumerable = string.Join(",", list);
-                    element.Add(new XElement(attributeName, flattenedEnumerable));
-                    continue;
-                }
-
-                element.Add(new XElement(attributeName, new XCData(property.GetValue(instance, null).ToString())));
-            }
-
-            return element;
         }
     }
 }
