@@ -15,6 +15,7 @@ namespace SimpleDatastore.Tests
         private IDocumentProviderXml<FakeObject> _documentProvider;
         private IServiceProvider _serviceProvider;
         private IOptions<SimpleDatastoreOptions> _options;
+        private Func<Type, object> _activator = Activator.CreateInstance;
 
         [SetUp]
         public void Setup()
@@ -38,7 +39,7 @@ namespace SimpleDatastore.Tests
         public async Task GetObjectAsync_should_send_element_to_resolver()
         {
             _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.SingeFakeObjectXDocument));
-            _resolver.GetItemFromNodeAsync(null).ReturnsForAnyArgs(FakeObject.Instance);
+            _resolver.GetItemFromNodeAsync(null, null, null, true).ReturnsForAnyArgs(FakeObject.Instance);
         
             var provider = new PersistentObjectProviderXml<FakeObject>(_resolver, _documentProvider, _serviceProvider, _options);
 
@@ -47,7 +48,9 @@ namespace SimpleDatastore.Tests
             Assert.IsNotNull(actual);
 
             await _resolver.Received()
-                .GetItemFromNodeAsync(Arg.Is<XElement>(e => e.ToString() == FakeDocuments.SingleFakeObjectXElement.ToString()));
+                .GetItemFromNodeAsync(
+                    Arg.Is<XElement>(e => e.ToString() == FakeDocuments.SingleFakeObjectXElement.ToString())
+                    , null, null, true);
         }
         
         [Test]
@@ -55,7 +58,7 @@ namespace SimpleDatastore.Tests
         {
             _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument));
             var serviceProvider = Substitute.For<IServiceProvider>();
-            _resolver = new ItemResolverXml<FakeObject>(serviceProvider, _options);
+            _resolver = new ItemResolverXml<FakeObject>();
         
             var provider = new PersistentObjectProviderXml<FakeObject>(_resolver, _documentProvider, _serviceProvider, _options);
 
@@ -72,7 +75,7 @@ namespace SimpleDatastore.Tests
         {
             _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.EmptyXDocument));
             var serviceProvider = Substitute.For<IServiceProvider>();
-            _resolver = new ItemResolverXml<FakeObject>(serviceProvider, _options);
+            _resolver = new ItemResolverXml<FakeObject>();
         
             var provider = new PersistentObjectProviderXml<FakeObject>(_resolver, _documentProvider, _serviceProvider, _options);
 
@@ -99,7 +102,7 @@ namespace SimpleDatastore.Tests
         public async Task SaveObject_should_update_existing_object()
         {
             _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument));
-            _resolver = new ItemResolverXml<FakeObject>(_serviceProvider, _options);
+            _resolver = new ItemResolverXml<FakeObject>();
         
             var provider = new PersistentObjectProviderXml<FakeObject>(_resolver, _documentProvider, _serviceProvider, _options);
             

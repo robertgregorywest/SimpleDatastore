@@ -18,7 +18,7 @@ namespace SimpleDatastore
             return (T)instance;
         }
 
-        private static async Task<object> GetObjectFromNodeAsync(XElement element, Type t, Func<Type, object> activator,
+        internal static async Task<object> GetObjectFromNodeAsync(XElement element, Type t, Func<Type, object> activator,
             Func<Type, dynamic> repoProvider, bool persistChildren = false)
         {
             // Using the activator so the instance can have dependencies
@@ -57,9 +57,9 @@ namespace SimpleDatastore
                 }
                 else if (property.PropertyType.IsAPersistentObjectEnumerable())
                 {
-                    var persistentObjectIds = propertyElement.Value.Split(',');
                     if (persistChildren)
                     {
+                        var persistentObjectIds = propertyElement.Value.Split(',');
                         var repository = CreateEnumerableRepository(property, repoProvider);
                         var collection = await repository.LoadCollectionByIdsAsync(persistentObjectIds)
                             .ConfigureAwait(false);

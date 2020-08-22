@@ -24,7 +24,8 @@ namespace SimpleDatastore.Tests
         [Test]
         public void Write_persistChildren_false_with_child_objects_should_persist_ids()
         {
-            var result = XmlSerializer.Write(FakeObject.Instance, _provider, false);
+            dynamic RepoProvider(Type t) => _provider;
+            var result = XmlSerializer.Write(FakeObject.Instance, RepoProvider, false);
             Assert.AreEqual(result.ToString(), FakeDocuments.SingleFakeObjectXElement.ToString());
         }
     }

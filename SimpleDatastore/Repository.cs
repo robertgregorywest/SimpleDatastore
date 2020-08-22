@@ -15,9 +15,10 @@ namespace SimpleDatastore
         private readonly IMemoryCache _memoryCache;
         private readonly bool _cachingIsDisabled;
         private readonly int _cacheDuration;
-        private readonly string _keyForCollection = typeof(T).ToString();
         
-        private static string KeyForObject(Guid id) => $"{typeof(T)}.{id.ToString()}";
+        private const string KeyForType = nameof(T);
+
+        private static string KeyForInstance(Guid id) => $"{KeyForType}.{id.ToString()}";
 
         public Repository(IPersistentObjectProvider<T> persistentObjectProvider,
             IMemoryCache memoryCache, IOptions<SimpleDatastoreOptions> options)
@@ -35,7 +36,7 @@ namespace SimpleDatastore
             {
                 return await _persistentObjectProvider.GetObjectAsync(id).ConfigureAwait(false);
             }
-            return await _memoryCache.GetOrCreateAsync(KeyForObject(id),
+            return await _memoryCache.GetOrCreateAsync(KeyForInstance(id),
                 async (cacheEntry) =>
                 {
                     cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_cacheDuration));
@@ -50,7 +51,7 @@ namespace SimpleDatastore
             {
                 return _persistentObjectProvider.GetObject(id);
             }
-            return _memoryCache.GetOrCreate(KeyForObject(id),
+            return _memoryCache.GetOrCreate(KeyForInstance(id),
                 (cacheEntry) =>
                 {
                     cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_cacheDuration));
@@ -65,7 +66,7 @@ namespace SimpleDatastore
             {
                 return await _persistentObjectProvider.GetCollectionAsync().ConfigureAwait(false);
             }
-            return await _memoryCache.GetOrCreateAsync(_keyForCollection,
+            return await _memoryCache.GetOrCreateAsync(KeyForType,
                 async (cacheEntry) =>
                 {
                     cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_cacheDuration));
@@ -80,7 +81,7 @@ namespace SimpleDatastore
             {
                 return _persistentObjectProvider.GetCollection();
             }
-            return _memoryCache.GetOrCreate(_keyForCollection,
+            return _memoryCache.GetOrCreate(KeyForType,
                  (cacheEntry) =>
                 {
                     cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_cacheDuration));
@@ -112,11 +113,7 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public async Task SaveAsync(T instance)
         {
-            if (instance.Id == Guid.Empty)
-            {
-                instance.Id = Guid.NewGuid();
-            }
-
+            instance.EnsureValidGuid();
             await _persistentObjectProvider.SaveObjectAsync(instance).ConfigureAwait(false);
             PurgeCache(instance.Id);
         }
@@ -124,11 +121,7 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public void Save(T instance)
         {
-            if (instance.Id == Guid.Empty)
-            {
-                instance.Id = Guid.NewGuid();
-            }
-
+            instance.EnsureValidGuid();
             _persistentObjectProvider.SaveObject(instance);
             PurgeCache(instance.Id);
         }
@@ -151,8 +144,8 @@ namespace SimpleDatastore
         {
             if (_cachingIsDisabled) return;
             
-            _memoryCache.Remove(KeyForObject(id));
-            _memoryCache.Remove(_keyForCollection);
+            _memoryCache.Remove(KeyForInstance(id));
+            _memoryCache.Remove(KeyForType);
         }
     }
 }
