@@ -13,7 +13,7 @@ namespace SimpleDatastore
         {
             var element = new XElement(PersistentObject.DataItemName);
 
-            foreach (var property in instance.GetType().GetValidProperties())
+            foreach (var property in instance.GetType().PersistedProperties())
             {
                 var attributeName = property.GetPropertyName();
                 var value = property.GetValue(instance, null);
@@ -24,7 +24,7 @@ namespace SimpleDatastore
                     continue;
                 }
 
-                if (property.PropertyType.IsAPersistentObject() && value is PersistentObject persistentObject)
+                if (property.PropertyType.IsPersistentObject() && value is PersistentObject persistentObject)
                 {
                     if (persistChildren)
                     {
@@ -40,7 +40,7 @@ namespace SimpleDatastore
                     continue;
                 }
 
-                if (property.PropertyType.IsAPersistentObjectEnumerable() &&
+                if (property.PropertyType.IsPersistentObjectEnumerable() &&
                     value is IEnumerable<PersistentObject> persistentObjectEnumerable)
                 {
                     var list = persistentObjectEnumerable.ToList();

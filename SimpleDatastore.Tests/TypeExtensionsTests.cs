@@ -12,7 +12,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public void FakeObject_should_be_persistent_object()
         {
-            Assert.IsTrue(FakeObject.Instance.GetType().IsAPersistentObject());
+            Assert.IsTrue(FakeObject.Instance.GetType().IsPersistentObject());
         }
         
         [Test]
@@ -20,13 +20,13 @@ namespace SimpleDatastore.Tests
         {
             var list = new List<Widget>();
             var type = list.GetType();
-            Assert.IsTrue(type.IsAPersistentObjectEnumerable());
+            Assert.IsTrue(type.IsPersistentObjectEnumerable());
         }
 
         [Test]
         public void Widget_GetValidProperties_should_not_include_NonPersistedProperty()
         {
-            var properties = FakeObject.Instance.GetType().GetValidProperties().ToList();
+            var properties = FakeObject.Instance.GetType().PersistedProperties().ToList();
             Assert.IsFalse(properties.Exists(pi => pi.Name.Equals("NonPersistedProperty")));
         }
     }

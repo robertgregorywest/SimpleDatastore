@@ -24,21 +24,21 @@ namespace SimpleDatastore
             // Using the activator so the instance can have dependencies
             var instance = activator(t);
 
-            foreach (var property in t.GetValidProperties())
+            foreach (var property in t.PersistedProperties())
             {
                 var propertyElement = element.Elements(property.GetPropertyName()).SingleOrDefault();
 
                 if (propertyElement == null) continue;
 
-                if (property.PropertyType == typeof(string))
+                if (property.PropertyType.IsString())
                 {
                     property.SetValue(instance, propertyElement.Value, null);
                 }
-                else if (property.PropertyType == typeof(Guid))
+                else if (property.PropertyType.IsGuid())
                 {
-                    property.SetValue(instance, new Guid(propertyElement.Value), null);
+                    property.SetValue(instance, propertyElement.Value.ToGuid(), null);
                 }
-                else if (property.PropertyType.IsAPersistentObject())
+                else if (property.PropertyType.IsPersistentObject())
                 {
                     if (persistChildren)
                     {
@@ -55,7 +55,7 @@ namespace SimpleDatastore
                         property.SetValue(instance, persistentObject, null);
                     }
                 }
-                else if (property.PropertyType.IsAPersistentObjectEnumerable())
+                else if (property.PropertyType.IsPersistentObjectEnumerable())
                 {
                     if (persistChildren)
                     {
@@ -102,21 +102,21 @@ namespace SimpleDatastore
             // Using the activator so the instance can have dependencies
             var instance = activator(t);
 
-            foreach (var property in t.GetValidProperties())
+            foreach (var property in t.PersistedProperties())
             {
                 var propertyElement = element.Elements(property.GetPropertyName()).SingleOrDefault();
 
                 if (propertyElement == null) continue;
 
-                if (property.PropertyType == typeof(string))
+                if (property.PropertyType.IsString())
                 {
                     property.SetValue(instance, propertyElement.Value, null);
                 }
-                else if (property.PropertyType == typeof(Guid))
+                else if (property.PropertyType.IsGuid())
                 {
-                    property.SetValue(instance, new Guid(propertyElement.Value), null);
+                    property.SetValue(instance, propertyElement.Value.ToGuid(), null);
                 }
-                else if (property.PropertyType.IsAPersistentObject())
+                else if (property.PropertyType.IsPersistentObject())
                 {
                     if (persistChildren)
                     {
@@ -132,7 +132,7 @@ namespace SimpleDatastore
                         property.SetValue(instance, persistentObject, null);
                     }
                 }
-                else if (property.PropertyType.IsAPersistentObjectEnumerable())
+                else if (property.PropertyType.IsPersistentObjectEnumerable())
                 {
                     if (persistChildren)
                     {

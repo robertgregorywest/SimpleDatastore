@@ -36,12 +36,9 @@ namespace SimpleDatastore
         {
             var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
-            if (doc.Root == null) return new List<T>();
-            
-            var elements = doc.Root.Elements(PersistentObject.DataItemName);
-
-            var tasks = elements.Select(element =>
-                _resolver.GetItemFromNodeAsync(element, _activator, _repoProvider, _persistChildren)).ToList();
+            var tasks = doc.Root?.Elements(PersistentObject.DataItemName)
+                .Select(element => _resolver.GetItemFromNodeAsync(element, _activator, _repoProvider, _persistChildren))
+                .ToList();
 
             return (await tasks.WhenAll().ConfigureAwait(false)).ToList();
         }
@@ -49,14 +46,12 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public IList<T> GetCollection()
         {
-            var xElement = _documentProvider.GetDocument().Root;
+            var doc = _documentProvider.GetDocument();
             
-            if (xElement == null) return new List<T>();
-            
-            var elements = xElement.Elements(PersistentObject.DataItemName);
-
-            return elements.AsParallel().Select(element =>
-                _resolver.GetItemFromNode(element, _activator, _repoProvider, _persistChildren)).ToList();
+            return _documentProvider.GetDocument().Root?.Elements(PersistentObject.DataItemName)
+                .AsParallel()
+                .Select(element => _resolver.GetItemFromNode(element, _activator, _repoProvider, _persistChildren))
+                .ToList();
         }
 
         ///<inheritdoc/>
@@ -88,16 +83,7 @@ namespace SimpleDatastore
 
             var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
-            var existingElement = doc.GetElementById(instance.Id);
-
-            if (existingElement != null)
-            {
-                existingElement.ReplaceWith(element);
-            }
-            else
-            {
-                doc.Root?.Add(element);
-            }
+            doc.AddOrUpdate(instance, element);
 
             await _documentProvider.SaveDocumentAsync(doc).ConfigureAwait(false);
         }
@@ -107,18 +93,7 @@ namespace SimpleDatastore
         {
             var element = Write(instance, _repoProvider, _persistChildren);
 
-            var doc = _documentProvider.GetDocument();
-
-            var existingElement = doc.GetElementById(instance.Id);
-
-            if (existingElement != null)
-            {
-                existingElement.ReplaceWith(element);
-            }
-            else
-            {
-                doc.Root?.Add(element);
-            }
+            var doc = _documentProvider.GetDocument().AddOrUpdate(instance, element);
 
             _documentProvider.SaveDocument(doc);
         }
@@ -127,19 +102,14 @@ namespace SimpleDatastore
         public async Task DeleteObjectAsync(Guid id)
         {
             var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
-
-            doc.GetElementById(id)?.Remove();
-
+            doc.RemoveById(id);
             await _documentProvider.SaveDocumentAsync(doc).ConfigureAwait(false);
         }
 
         ///<inheritdoc/>
         public void DeleteObject(Guid id)
         {
-            var doc = _documentProvider.GetDocument();
-
-            doc.GetElementById(id)?.Remove();
-
+            var doc = _documentProvider.GetDocument().RemoveById(id);
             _documentProvider.SaveDocument(doc);
         }
     }

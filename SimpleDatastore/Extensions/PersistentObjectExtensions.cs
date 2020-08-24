@@ -4,12 +4,14 @@ namespace SimpleDatastore.Extensions
 {
     public static class PersistentObjectExtensions
     {
-        public static void EnsureValidGuid(this PersistentObject persistentObject)
+        public static PersistentObject EnsureValidGuid(this PersistentObject persistentObject)
         {
             if (persistentObject.Id == Guid.Empty)
             {
                 persistentObject.Id = Guid.NewGuid();
             }
+
+            return persistentObject;
         }
     }
 }
