@@ -16,7 +16,7 @@ namespace SimpleDatastore
         private readonly bool _cachingIsDisabled;
         private readonly int _cacheDuration;
         
-        private const string KeyForType = nameof(T);
+        private static readonly string KeyForType = typeof(T).ToString();
 
         private static string KeyForInstance(Guid id) => $"{KeyForType}.{id.ToString()}";
 
