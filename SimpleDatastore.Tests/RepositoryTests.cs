@@ -9,7 +9,7 @@ using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore.Tests
 {
-    public class BaseRepositoryTests
+    public class RepositoryTests
     {
         private IPersistentObjectProvider<FakeObject> _storageHelper;
         private IOptions<SimpleDatastoreOptions> _options;

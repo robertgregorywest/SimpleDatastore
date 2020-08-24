@@ -1,15 +1,39 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <data>
   <dataItem>
+    <name><![CDATA[Some Widget]]></name>
+    <mainPart>
+      <dataItem>
+        <name><![CDATA[Part C]]></name>
+        <id>dd9bec1b-73ed-4ba7-bfde-2de6b2cc8ae0</id>
+      </dataItem>
+    </mainPart>
+    <parts>
+      <dataItem>
+        <name><![CDATA[Part A]]></name>
+        <id>47ee8994-7a72-463f-ad8f-1a4b0f61ae16</id>
+      </dataItem>
+      <dataItem>
+        <name><![CDATA[Part B]]></name>
+        <id>90397722-a7e2-4615-951b-742662630fcf</id>
+      </dataItem>
+    </parts>
     <id>6ea4ad00-08ba-4ac1-8e52-54a890eca0e0</id>
-    <name><![CDATA[Some widget]]></name>
-    <mainPart>dd9bec1b-73ed-4ba7-bfde-2de6b2cc8ae0</mainPart>
-    <parts>47ee8994-7a72-463f-ad8f-1a4b0f61ae16,90397722-a7e2-4615-951b-742662630fcf</parts>
   </dataItem>
   <dataItem>
+    <name><![CDATA[Another Widget]]></name>
+    <mainPart>
+      <dataItem>
+        <name><![CDATA[Part C]]></name>
+        <id>dd9bec1b-73ed-4ba7-bfde-2de6b2cc8ae0</id>
+      </dataItem>
+    </mainPart>
+    <parts>
+      <dataItem>
+        <name><![CDATA[Part C]]></name>
+        <id>dd9bec1b-73ed-4ba7-bfde-2de6b2cc8ae0</id>
+      </dataItem>
+    </parts>
     <id>f0d91008-a34c-48ce-acf6-8f89ff106607</id>
-    <name><![CDATA[Another widget]]></name>
-    <mainPart>dd9bec1b-73ed-4ba7-bfde-2de6b2cc8ae0</mainPart>
-    <parts>dd9bec1b-73ed-4ba7-bfde-2de6b2cc8ae0</parts>
   </dataItem>
 </data>

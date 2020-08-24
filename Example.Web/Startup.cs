@@ -20,7 +20,12 @@ namespace Example.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            services.AddSimpleDatastoreWithJson(options => options.EnableCaching = false);
+            services.AddSimpleDatastore(
+                options =>
+                {
+                    options.EnableCaching = false;
+                    options.PersistChildren = false;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
