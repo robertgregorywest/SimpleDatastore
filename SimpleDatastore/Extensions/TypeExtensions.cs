@@ -8,26 +8,21 @@ namespace SimpleDatastore.Extensions
 {
     internal static class TypeExtensions
     {
-        internal static bool IsAPersistentObject(this Type type)
-        {
-            return typeof(PersistentObject).IsAssignableFrom(type);
-        }
+        internal static bool IsPersistentObject(this Type type) 
+            => typeof(PersistentObject).IsAssignableFrom(type);
 
-        internal static bool IsAPersistentObjectEnumerable(this Type type)
-        {
-            return type.IsGenericType && typeof(IEnumerable<PersistentObject>).IsAssignableFrom(type);
-        }
+        internal static bool IsPersistentObjectEnumerable(this Type type) 
+            => type.IsGenericType && typeof(IEnumerable<PersistentObject>).IsAssignableFrom(type);
 
-        internal static IEnumerable<PropertyInfo> GetValidProperties(this Type type)
-        {
-            return type.GetProperties().Where(p => Attribute.IsDefined(p, typeof(DataMemberAttribute)));
-        }
-        
+        internal static IEnumerable<PropertyInfo> PersistedProperties(this Type type)
+            => type.GetProperties().Where(p => Attribute.IsDefined(p, typeof(DataMemberAttribute)));
+
         internal static string GetPropertyName(this PropertyInfo property)
-        {
-            var attribute = (DataMemberAttribute)Attribute.GetCustomAttribute(property, typeof(DataMemberAttribute));
+            => ((DataMemberAttribute)Attribute.GetCustomAttribute(property, typeof(DataMemberAttribute)))?.Name 
+           ?? property.Name;
 
-            return  attribute.Name ?? string.Empty;
-        }
+        internal static bool IsGuid(this Type type) => type == typeof(Guid);
+
+        internal static bool IsString(this Type type) => type == typeof(string);
     }
 }

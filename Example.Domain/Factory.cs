@@ -10,6 +10,6 @@ namespace Example.Domain
         public string Name { get; set; }
         
         [DataMember(Name = "widgets")]
-        public IList<Widget> Widgets { get; set; }
+        public IList<Widget> Widgets { get; set; } = new List<Widget>();
     }
 }

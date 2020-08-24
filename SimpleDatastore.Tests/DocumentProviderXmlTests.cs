@@ -7,11 +7,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
+using SimpleDatastore.Extensions;
 
 namespace SimpleDatastore.Tests
 {
     [TestFixture]
-    public class DocumentProviderTests
+    public class DocumentProviderXmlTests
     {
         private IOptions<SimpleDatastoreOptions> _options;
         private IHostingEnvironment _hostingEnvironment;
@@ -41,7 +42,7 @@ namespace SimpleDatastore.Tests
         {
             _fileSystem.File.Exists("").ReturnsForAnyArgs(false);
             
-            var provider = new DocumentProvider<FakeObject>(_options, _hostingEnvironment, _fileSystem);
+            var provider = new DocumentProviderXml<FakeObject>(_options, _hostingEnvironment, _fileSystem);
 
             var doc = await provider.GetDocumentAsync();
 
@@ -50,27 +51,15 @@ namespace SimpleDatastore.Tests
         
         public async Task Save_document_with_existing_content_should_replace()
         {
-            var document = Substitute.For<XDocument>();
-
-            await using var stream = GenerateStreamFromString(FakeDocuments.CollectionFakeObjectXDocument.ToString());
+            await using var stream = FakeDocuments.CollectionFakeObjectXDocument.ToString().CreateStream();
             
             _fileSystem.FileStream.Create("", FileMode.Create).ReturnsForAnyArgs(stream);
             
-            var provider = new DocumentProvider<FakeObject>(_options, _hostingEnvironment, _fileSystem);
+            var provider = new DocumentProviderXml<FakeObject>(_options, _hostingEnvironment, _fileSystem);
 
-            await provider.SaveDocumentAsync(document);
+            await provider.SaveDocumentAsync(FakeDocuments.CollectionFakeObjectXDocumentUpdated);
 
             // TODO: verify the correct content was persisted
-        }
-        
-        private static Stream GenerateStreamFromString(string s)
-        {
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream);
-            writer.Write(s);
-            writer.Flush();
-            stream.Position = 0;
-            return stream;
         }
     }
 }

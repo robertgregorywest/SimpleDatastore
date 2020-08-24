@@ -11,6 +11,9 @@ namespace SimpleDatastore
     public abstract class PersistentObject
     {
         internal const string Identifier = "id";
+        internal const string RootElementName = "data";
+        internal const string DataItemName = "dataItem";
+        internal const string DataFolder = "App_Data";
 
         [DataMember(Name = Identifier, IsRequired = true)]
         public Guid Id { get; set; } = Guid.Empty;
