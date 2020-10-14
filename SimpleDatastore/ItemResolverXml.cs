@@ -43,7 +43,7 @@ namespace SimpleDatastore
                     if (persistChildren)
                     {
                         var id = propertyElement.Value.ToGuid();
-                        var repository = CreateRepository(property, repoProvider);
+                        var repository = property.PropertyType.CreateRepository(repoProvider);
                         var persistentObject = await repository.LoadAsync(id).ConfigureAwait(false);
                         property.SetValue(instance, persistentObject, null);
                     }
@@ -60,7 +60,7 @@ namespace SimpleDatastore
                     if (persistChildren)
                     {
                         var persistentObjectIds = propertyElement.Value.Split(',');
-                        var repository = CreateEnumerableRepository(property, repoProvider);
+                        var repository = property.PropertyType.CreateEnumerableRepository(repoProvider);
                         var collection = await repository.LoadCollectionByIdsAsync(persistentObjectIds)
                             .ConfigureAwait(false);
                         property.SetValue(instance, collection, null);
@@ -121,7 +121,7 @@ namespace SimpleDatastore
                     if (persistChildren)
                     {
                         var id = propertyElement.Value.ToGuid();
-                        var repository = CreateRepository(property, repoProvider);
+                        var repository = property.PropertyType.CreateRepository(repoProvider);
                         var persistentObject = repository.Load(id);
                         property.SetValue(instance, persistentObject, null);
                     }
@@ -137,7 +137,7 @@ namespace SimpleDatastore
                     if (persistChildren)
                     {
                         var persistentObjectIds = propertyElement.Value.Split(',');
-                        var repository = CreateEnumerableRepository(property, repoProvider);
+                        var repository = property.PropertyType.CreateEnumerableRepository(repoProvider);
                         var collection = repository.LoadCollectionByIds(persistentObjectIds);
                         property.SetValue(instance, collection, null);
                     }
@@ -163,19 +163,6 @@ namespace SimpleDatastore
             }
 
             return instance;
-        }
-
-        private static dynamic CreateRepository(PropertyInfo property, Func<Type, dynamic> repoProvider)
-        {
-            var repositoryType = typeof(IRepository<>).MakeGenericType(property.PropertyType);
-            return repoProvider(repositoryType);
-        }
-        
-        private static dynamic CreateEnumerableRepository(PropertyInfo property, Func<Type, dynamic> repoProvider)
-        {
-            var elementType = property.PropertyType.GetGenericArguments()[0];
-            var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
-            return repoProvider(repositoryType);
         }
     }
 }

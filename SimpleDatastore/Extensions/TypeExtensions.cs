@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore.Extensions
 {
@@ -24,5 +25,18 @@ namespace SimpleDatastore.Extensions
         internal static bool IsGuid(this Type type) => type == typeof(Guid);
 
         internal static bool IsString(this Type type) => type == typeof(string);
+        
+        internal static dynamic CreateRepository(this Type type, Func<Type, dynamic> repoProvider)
+        {
+            var repositoryType = typeof(IRepository<>).MakeGenericType(type);
+            return repoProvider(repositoryType);
+        }
+        
+        internal static dynamic CreateEnumerableRepository(this Type type, Func<Type, dynamic> repoProvider)
+        {
+            var elementType = type.GetGenericArguments()[0];
+            var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
+            return repoProvider(repositoryType);
+        }
     }
 }
