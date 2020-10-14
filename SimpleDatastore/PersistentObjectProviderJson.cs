@@ -9,9 +9,9 @@ namespace SimpleDatastore
 {
     public class PersistentObjectProviderJson<T> : IPersistentObjectProvider<T> where T : PersistentObject
     {
-        private readonly IDocumentProviderJson<T> _provider;
+        private readonly IDocumentProvider<T, string> _provider;
 
-        public PersistentObjectProviderJson(IDocumentProviderJson<T> provider)
+        public PersistentObjectProviderJson(IDocumentProvider<T, string> provider)
         {
             _provider = provider;
         }

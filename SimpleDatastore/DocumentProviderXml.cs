@@ -11,7 +11,9 @@ using Nito.AsyncEx;
 
 namespace SimpleDatastore
 {
-    public class DocumentProviderXml<T> : IDocumentProviderXml<T> where T : PersistentObject
+    public class DocumentProviderXml<T, TDocument> : IDocumentProvider<T, XDocument> 
+        where T : PersistentObject
+        where TDocument : XDocument
     {
         private readonly IFileSystem _fileSystemAsync;
         private readonly IFileSystem _fileSystem;

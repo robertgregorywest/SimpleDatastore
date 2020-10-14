@@ -35,13 +35,13 @@ namespace SimpleDatastore
             if (useXml)
             {
                 services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderXml<>)); 
-                services.AddSingleton(typeof(IDocumentProviderXml<>), typeof(DocumentProviderXml<>));
-                services.AddSingleton(typeof(IItemResolverXml<>), typeof(ItemResolverXml<>));
+                services.AddSingleton(typeof(IDocumentProvider<,>), typeof(DocumentProviderXml<,>));
+                services.AddSingleton(typeof(IItemResolver<,>), typeof(ItemResolverXml<,>));
             }
             else
             {
                 services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderJson<>)); 
-                services.AddSingleton(typeof(IDocumentProviderJson<>), typeof(DocumentProviderJson<>));
+                services.AddSingleton(typeof(IDocumentProvider<,>), typeof(DocumentProviderJson<,>));
             }
 
             return services;

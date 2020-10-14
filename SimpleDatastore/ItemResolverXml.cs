@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using SimpleDatastore.Interfaces;
@@ -9,7 +8,9 @@ using SimpleDatastore.Extensions;
 
 namespace SimpleDatastore
 {
-    public class ItemResolverXml<T> : IItemResolverXml<T> where T : PersistentObject
+    public class ItemResolverXml<T, TElement> : IItemResolver<T, XElement> 
+        where T : PersistentObject
+        where TElement : XElement
     {
         ///<inheritdoc/>
         public async Task<T> GetItemFromNodeAsync(XElement element, Func<Type, object> activator, Func<Type, dynamic> repoProvider, bool persistChildren)

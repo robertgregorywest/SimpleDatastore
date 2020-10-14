@@ -10,7 +10,7 @@ using Nito.AsyncEx;
 
 namespace SimpleDatastore
 {
-    public class DocumentProviderJson<T> : IDocumentProviderJson<T> where T : PersistentObject
+    public class DocumentProviderJson<T, TDocument> : IDocumentProvider<T, string> where T : PersistentObject
     {
         private readonly IFileSystem _fileSystemAsync;
         private readonly IFileSystem _fileSystem;

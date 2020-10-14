@@ -1,5 +1,5 @@
-using System.Text.Json;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace SimpleDatastore.Interfaces
 {
@@ -7,30 +7,31 @@ namespace SimpleDatastore.Interfaces
     /// Handles retrieval and saving of the storage documents
     /// </summary>
     /// <typeparam name="T">The persistent object type to work with</typeparam>
-    public interface IDocumentProviderJson<T> where T : PersistentObject
+    /// <typeparam name="TDocument">The type of the element returned</typeparam>
+    public interface IDocumentProvider<T, TDocument> where T : PersistentObject
     {
         /// <summary>
         /// Get the document for the type
         /// </summary>
         /// <returns>Document for the persistent object type</returns>
-        Task<string> GetDocumentAsync();
+        Task<TDocument> GetDocumentAsync();
         
         /// <summary>
         /// Get the document for the type
         /// </summary>
         /// <returns>Document for the persistent object type</returns>
-        string GetDocument();
+        TDocument GetDocument();
         
         /// <summary>
         /// Save the storage document for the persistent object type  
         /// </summary>
         /// <param name="document">The document to save</param>
-        Task SaveDocumentAsync(string document);
+        Task SaveDocumentAsync(TDocument document);
         
         /// <summary>
         /// Save the storage document for the persistent object type  
         /// </summary>
         /// <param name="document">The document to save</param>
-        void SaveDocument(string document);
+        void SaveDocument(TDocument document);
     }
 }

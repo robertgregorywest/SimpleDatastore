@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Extensions.Options;
 using SimpleDatastore.Interfaces;
 
@@ -16,7 +17,7 @@ namespace SimpleDatastore.Tests
             Func<Type, object> activator = Activator.CreateInstance;
             dynamic RepoProvider(Type t) => repo;
 
-            var result = await ItemResolverXml<FakeObject>.GetObjectFromNodeAsync(
+            var result = await ItemResolverXml<FakeObject, XElement>.GetObjectFromNodeAsync(
                 FakeDocuments.SingleFakeObjectXElement,
                 typeof(FakeObject),
                 activator,
