@@ -8,6 +8,8 @@ using SimpleDatastore.Extensions;
 
 namespace SimpleDatastore
 {
+    // ReSharper disable once UnusedTypeParameter
+    // Not closing the type so that DI container can resolve correctly
     public class ItemResolverXml<T, TElement> : IItemResolver<T, XElement> 
         where T : PersistentObject
         where TElement : XElement

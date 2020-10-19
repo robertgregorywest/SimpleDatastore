@@ -1,99 +1,200 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Nito.AsyncEx;
 using SimpleDatastore.Extensions;
 using SimpleDatastore.Interfaces;
+using static SimpleDatastore.PersistentObjectJsonSerializer;
 
 namespace SimpleDatastore
 {
     public class PersistentObjectProviderJson<T> : IPersistentObjectProvider<T> where T : PersistentObject
     {
-        private readonly IDocumentProvider<T, string> _provider;
+        private readonly IItemResolver<T, JsonElement> _resolver;
+        private readonly IDocumentProvider<T, JsonDocument> _documentProvider;
+        private readonly bool _persistChildren;
+        private readonly Func<Type, object> _activator;
+        private readonly Func<Type, dynamic> _repoProvider;
 
-        public PersistentObjectProviderJson(IDocumentProvider<T, string> provider)
+        public PersistentObjectProviderJson(IItemResolver<T, JsonElement> resolver,
+            IDocumentProvider<T, JsonDocument> documentProvider,
+            IServiceProvider serviceProvider,
+            IOptions<SimpleDatastoreOptions> options)
         {
-            _provider = provider;
+            _resolver = resolver;
+            _documentProvider = documentProvider;
+            _persistChildren = options.Value.PersistChildren;
+            _activator = t => ActivatorUtilities.CreateInstance(serviceProvider, t);
+            _repoProvider = t => serviceProvider.GetService(t);
         }
-        
+
+        ///<inheritdoc/>
         public async Task<IList<T>> GetCollectionAsync()
         {
-            var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
+            using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
-            var dictionary = JsonSerializer.Deserialize<List<T>>(doc);
+            var tasks = doc.RootElement.EnumerateArray()
+                .Select(element => _resolver.GetItemFromNodeAsync(element, _activator, _repoProvider, _persistChildren))
+                .ToList();
 
-            return dictionary;
+            return (await tasks.WhenAll().ConfigureAwait(false)).ToList();
         }
 
+        ///<inheritdoc/>
         public IList<T> GetCollection()
         {
-            var doc = _provider.GetDocument();
-
-            var dictionary = JsonSerializer.Deserialize<List<T>>(doc);
-
-            return dictionary;
+            using var doc = _documentProvider.GetDocument();
+            
+            return doc.RootElement.EnumerateArray()
+                .AsParallel()
+                .Select(element => _resolver.GetItemFromNode(element, _activator, _repoProvider, _persistChildren))
+                .ToList();
         }
 
+        ///<inheritdoc/>
         public async Task<T> GetObjectAsync(Guid id)
         {
-            var doc = await _provider.GetDocumentAsync().ConfigureAwait(false);
+            using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
+            
+            var element = doc.RootElement.EnumerateArray()
+                .AsParallel()
+                .FirstOrDefault(e => e.IsPersistentObjectMatchById(id));
 
-            var dictionary = JsonSerializer.Deserialize<List<T>>(doc);
-
-            return dictionary.Find(o => o.Id == id);
+            return element.ValueKind == JsonValueKind.Undefined
+                ? null
+                : await _resolver.GetItemFromNodeAsync(element, _activator, _repoProvider, _persistChildren)
+                    .ConfigureAwait(false);
         }
 
+        ///<inheritdoc/>
         public T GetObject(Guid id)
         {
-            var doc = _provider.GetDocument();
+            using var doc = _documentProvider.GetDocument();
 
-            var dictionary = JsonSerializer.Deserialize<List<T>>(doc);
+            var element = doc.RootElement.EnumerateArray()
+                .AsParallel()
+                .FirstOrDefault(e => e.IsPersistentObjectMatchById(id));
 
-            return dictionary.Find(o => o.Id == id);
+            return element.ValueKind == JsonValueKind.Undefined
+                ? null
+                : _resolver.GetItemFromNode(element, _activator, _repoProvider, _persistChildren);
         }
 
+        ///<inheritdoc/>
         public async Task SaveObjectAsync(T instance)
         {
-            var doc = await _provider.GetDocumentAsync();
+            // JsonDocument is currently read only so updating is a bit painful
+            using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
-            var collection = JsonSerializer.Deserialize<List<T>>(doc);
+            await using var stream = new MemoryStream();
+            await using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+            
+            writer.WriteStartArray();
+            
+            // exclude existing version from new document
+            foreach (var element in doc.RootElement.EnumerateArray()
+                .Where(element => !element.IsPersistentObjectMatchById(instance.Id)))
+            {
+                element.WriteTo(writer);
+            }
+            
+            using var token = Write(instance, _repoProvider, _persistChildren);
+            token.RootElement.WriteTo(writer);
+            
+            writer.WriteEndArray();
 
-            collection.AddOrReplace(instance);
+            await writer.FlushAsync();
+            
+            stream.Position = 0;
 
-            await _provider.SaveDocumentAsync(JsonSerializer.Serialize(collection));
+            var updatedDoc = await JsonDocument.ParseAsync(stream);
+            
+            await _documentProvider.SaveDocumentAsync(updatedDoc).ConfigureAwait(false);
         }
 
+        ///<inheritdoc/>
         public void SaveObject(T instance)
         {
-            var doc = _provider.GetDocument();
+            using var doc = _documentProvider.GetDocument();
+            
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream);
+            
+            writer.WriteStartArray();
+            
+            // exclude existing version from new document
+            foreach (var element in doc.RootElement.EnumerateArray()
+                .Where(element => !element.IsPersistentObjectMatchById(instance.Id)))
+            {
+                element.WriteTo(writer);
+            }
+            
+            using var token = Write(instance, _repoProvider, _persistChildren);
+            token.RootElement.WriteTo(writer);
+            
+            writer.WriteEndArray();
 
-            var collection = JsonSerializer.Deserialize<List<T>>(doc);
+            writer.Flush();
+            
+            stream.Position = 0;
 
-            collection.AddOrReplace(instance);
+            var updatedDoc = JsonDocument.Parse(stream);
 
-            _provider.SaveDocument(JsonSerializer.Serialize(collection));
+            _documentProvider.SaveDocument(updatedDoc);
         }
 
+        ///<inheritdoc/>
         public async Task DeleteObjectAsync(Guid id)
         {
-            var doc = await _provider.GetDocumentAsync();
+            using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
-            var collection = await JsonSerializer.DeserializeAsync<List<T>>(doc.CreateStream());
+            await using var stream = new MemoryStream();
+            await using var writer = new Utf8JsonWriter(stream);
+            
+            writer.WriteStartArray();
+            
+            foreach (var element in doc.RootElement.EnumerateArray()
+                .Where(element => !element.IsPersistentObjectMatchById(id)))
+            {
+                element.WriteTo(writer);
+            }
+            
+            writer.WriteEndArray();
 
-            collection.RemoveAll(o => o.Id == id);
+            await writer.FlushAsync();
 
-            await _provider.SaveDocumentAsync(JsonSerializer.Serialize(collection));
+            stream.Position = 0;
+
+            var updatedDoc = await JsonDocument.ParseAsync(stream);
+            
+            await _documentProvider.SaveDocumentAsync(updatedDoc).ConfigureAwait(false);
         }
 
+        ///<inheritdoc/>
         public void DeleteObject(Guid id)
         {
-            var doc = _provider.GetDocument();
+            using var doc = _documentProvider.GetDocument();
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream);
+            
+            foreach (var element in doc.RootElement.EnumerateArray()
+                .Where(element => !element.IsPersistentObjectMatchById(id)))
+            {
+                element.WriteTo(writer);
+            }
 
-            var collection = JsonSerializer.Deserialize<List<T>>(doc);
+            writer.Flush();
 
-            collection.RemoveAll(o => o.Id == id);
+            stream.Position = 0;
 
-            _provider.SaveDocument(JsonSerializer.Serialize(collection));
+            var updatedDoc = JsonDocument.Parse(stream);
+            
+            _documentProvider.SaveDocument(updatedDoc);
         }
     }
 }

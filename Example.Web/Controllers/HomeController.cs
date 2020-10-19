@@ -78,7 +78,7 @@ namespace Example.Web.Controllers
                 MainPart = part3,
                 Parts = new List<Part>{part1, part2}
             };
-            await _widgetRepo.SaveAsync(widget1);
+            _widgetRepo.Save(widget1);
 
             var widget2 = new Widget()
             {
@@ -87,7 +87,7 @@ namespace Example.Web.Controllers
                 MainPart = part3,
                 Parts = new List<Part>{part3}
             };
-            await _widgetRepo.SaveAsync(widget2);
+            _widgetRepo.Save(widget2);
             
             // var widgets = new List<Widget>{widget1, widget2};
             // 

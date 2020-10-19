@@ -47,8 +47,6 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public IList<T> GetCollection()
         {
-            var doc = _documentProvider.GetDocument();
-            
             return _documentProvider.GetDocument().Root?.Elements(PersistentObject.DataItemName)
                 .AsParallel()
                 .Select(element => _resolver.GetItemFromNode(element, _activator, _repoProvider, _persistChildren))

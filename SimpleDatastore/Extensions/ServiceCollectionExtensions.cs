@@ -34,14 +34,15 @@ namespace SimpleDatastore
 
             if (useXml)
             {
-                services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderXml<>)); 
                 services.AddSingleton(typeof(IDocumentProvider<,>), typeof(DocumentProviderXml<,>));
                 services.AddSingleton(typeof(IItemResolver<,>), typeof(ItemResolverXml<,>));
+                services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderXml<>));
             }
             else
             {
-                services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderJson<>)); 
                 services.AddSingleton(typeof(IDocumentProvider<,>), typeof(DocumentProviderJson<,>));
+                services.AddSingleton(typeof(IItemResolver<,>), typeof(ItemResolverJson<,>));
+                services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderJson<>));
             }
 
             return services;

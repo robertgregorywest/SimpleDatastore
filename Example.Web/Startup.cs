@@ -20,7 +20,7 @@ namespace Example.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            services.AddSimpleDatastore(
+            services.AddSimpleDatastoreWithJson(
                 options =>
                 {
                     options.EnableCaching = false;

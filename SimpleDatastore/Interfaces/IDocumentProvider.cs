@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace SimpleDatastore.Interfaces
 {
@@ -7,7 +6,7 @@ namespace SimpleDatastore.Interfaces
     /// Handles retrieval and saving of the storage documents
     /// </summary>
     /// <typeparam name="T">The persistent object type to work with</typeparam>
-    /// <typeparam name="TDocument">The type of the element returned</typeparam>
+    /// <typeparam name="TDocument">The type of the document to return</typeparam>
     public interface IDocumentProvider<T, TDocument> where T : PersistentObject
     {
         /// <summary>

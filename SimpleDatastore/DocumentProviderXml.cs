@@ -11,6 +11,8 @@ using Nito.AsyncEx;
 
 namespace SimpleDatastore
 {
+    // ReSharper disable once UnusedTypeParameter
+    // Not closing the type so that DI container can resolve correctly
     public class DocumentProviderXml<T, TDocument> : IDocumentProvider<T, XDocument> 
         where T : PersistentObject
         where TDocument : XDocument
@@ -27,7 +29,9 @@ namespace SimpleDatastore
         {
             _fileSystemAsync = fileSystem;
             _fileSystem = fileSystem;
-            _documentPath = Path.Combine(environment.ContentRootPath, options.Value.DatastoreLocation,
+            _documentPath = Path.Combine(
+                environment.ContentRootPath, 
+                options.Value.DatastoreLocation,
                 $"{typeof(T)}.xml");
         }
 
