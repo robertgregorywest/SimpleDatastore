@@ -4,7 +4,7 @@ using System.Buffers;
 using System.IO;
 using System.Text.Json;
 
-namespace SimpleDatastore
+namespace SimpleDatastore.Utils
 {
     // https://stackoverflow.com/questions/54983533/parsing-a-json-file-with-net-core-3-0-system-text-json
     // using var stream = new FileStream("LargeData.json", FileMode.Open, FileAccess.Read);

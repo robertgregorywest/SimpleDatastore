@@ -10,7 +10,7 @@ namespace SimpleDatastore
 {
     internal static class PersistentObjectConverterJson
     {
-        internal static JsonDocument Write<T>(T instance, Func<Type, dynamic> repoProvider, bool persistChildren = false)
+        internal static JsonElement Write<T>(T instance, Func<Type, dynamic> repoProvider, bool persistChildren = false)
             where T : PersistentObject
         {
             var serializerOptions = new JsonSerializerOptions
@@ -18,10 +18,10 @@ namespace SimpleDatastore
                 WriteIndented = true
             };
 
-            // This method should not really be called with 
             if (!persistChildren)
             {
-                return JsonDocument.Parse(JsonSerializer.Serialize(instance, serializerOptions));
+                using var doc = JsonDocument.Parse(JsonSerializer.Serialize(instance, serializerOptions));
+                return doc.RootElement.Clone();
             }
 
             var writerOptions = new JsonWriterOptions
@@ -77,7 +77,10 @@ namespace SimpleDatastore
             writer.Flush();
             stream.Position = 0;
 
-            return JsonDocument.Parse(stream);
+            using (var doc = JsonDocument.Parse(stream))
+            {
+                return doc.RootElement.Clone();
+            }
         }
     }
 }

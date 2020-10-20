@@ -99,113 +99,83 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public async Task SaveObjectAsync(T instance)
         {
-            // JsonDocument is currently read only so updating is a bit painful
             using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
-
-            await using var stream = new MemoryStream();
-            await using var writer = new Utf8JsonWriter(stream, _writerOptions);
-            
-            writer.WriteStartArray();
-            
-            // exclude existing version from new document
-            foreach (var element in doc.RootElement.EnumerateArray()
-                .Where(element => !element.IsPersistentObjectMatchById(instance.Id)))
-            {
-                element.WriteTo(writer);
-            }
-            
-            using var token = Write(instance, _repoProvider, _persistChildren);
-            token.RootElement.WriteTo(writer);
-            
-            writer.WriteEndArray();
-
-            await writer.FlushAsync();
-            
-            stream.Position = 0;
-
-            var updatedDoc = await JsonDocument.ParseAsync(stream);
-            
-            await _documentProvider.SaveDocumentAsync(updatedDoc).ConfigureAwait(false);
+            var replacement = Write(instance, _repoProvider, _persistChildren);
+            await UpdateAndSaveDocumentAsync(doc, element => !element.IsPersistentObjectMatchById(instance.Id), replacement);
         }
 
         ///<inheritdoc/>
         public void SaveObject(T instance)
         {
             using var doc = _documentProvider.GetDocument();
-            
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream, _writerOptions);
-            
-            writer.WriteStartArray();
-            
-            // exclude existing version from new document
-            foreach (var element in doc.RootElement.EnumerateArray()
-                .Where(element => !element.IsPersistentObjectMatchById(instance.Id)))
-            {
-                element.WriteTo(writer);
-            }
-            
-            using var token = Write(instance, _repoProvider, _persistChildren);
-            token.RootElement.WriteTo(writer);
-            
-            writer.WriteEndArray();
-
-            writer.Flush();
-            
-            stream.Position = 0;
-
-            var updatedDoc = JsonDocument.Parse(stream);
-
-            _documentProvider.SaveDocument(updatedDoc);
+            var replacement = Write(instance, _repoProvider, _persistChildren);
+            UpdateAndSaveDocument(doc, element => !element.IsPersistentObjectMatchById(instance.Id), replacement);
         }
 
         ///<inheritdoc/>
         public async Task DeleteObjectAsync(Guid id)
         {
             using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
-
-            await using var stream = new MemoryStream();
-            await using var writer = new Utf8JsonWriter(stream, _writerOptions);
-            
-            writer.WriteStartArray();
-            
-            foreach (var element in doc.RootElement.EnumerateArray()
-                .Where(element => !element.IsPersistentObjectMatchById(id)))
-            {
-                element.WriteTo(writer);
-            }
-            
-            writer.WriteEndArray();
-
-            await writer.FlushAsync();
-
-            stream.Position = 0;
-
-            var updatedDoc = await JsonDocument.ParseAsync(stream);
-            
-            await _documentProvider.SaveDocumentAsync(updatedDoc).ConfigureAwait(false);
+            await UpdateAndSaveDocumentAsync(doc, element => !element.IsPersistentObjectMatchById(id));
         }
 
         ///<inheritdoc/>
         public void DeleteObject(Guid id)
         {
             using var doc = _documentProvider.GetDocument();
+            UpdateAndSaveDocument(doc, element => !element.IsPersistentObjectMatchById(id));
+        }
+
+        private void UpdateAndSaveDocument(JsonDocument doc, Func<JsonElement, bool> predicate, JsonElement replacement = default)
+        {
             using var stream = new MemoryStream();
             using var writer = new Utf8JsonWriter(stream, _writerOptions);
             
-            foreach (var element in doc.RootElement.EnumerateArray()
-                .Where(element => !element.IsPersistentObjectMatchById(id)))
+            writer.WriteStartArray();
+            
+            foreach (var element in doc.RootElement.EnumerateArray().Where(predicate))
             {
                 element.WriteTo(writer);
             }
 
-            writer.Flush();
+            if (replacement.ValueKind != JsonValueKind.Undefined)
+            {
+                replacement.WriteTo(writer);
+            }
+            
+            writer.WriteEndArray();
 
+            writer.Flush();
             stream.Position = 0;
 
-            var updatedDoc = JsonDocument.Parse(stream);
-            
+            using var updatedDoc = JsonDocument.Parse(stream);
             _documentProvider.SaveDocument(updatedDoc);
+        }
+        
+        private async Task UpdateAndSaveDocumentAsync(JsonDocument doc, Func<JsonElement, bool> predicate, JsonElement replacement = default)
+        {
+            await using var stream = new MemoryStream();
+            await using var writer = new Utf8JsonWriter(stream, _writerOptions);
+            
+            writer.WriteStartArray();
+            
+            foreach (var element in doc.RootElement.EnumerateArray().Where(predicate))
+            {
+                element.WriteTo(writer);
+            }
+
+            if (replacement.ValueKind != JsonValueKind.Undefined)
+            {
+                replacement.WriteTo(writer);
+            }
+            
+            writer.WriteEndArray();
+
+            await writer.FlushAsync();
+            stream.Position = 0;
+
+            using var updatedDoc = await JsonDocument.ParseAsync(stream);
+            await _documentProvider.SaveDocumentAsync(updatedDoc);
         }
     }
 }

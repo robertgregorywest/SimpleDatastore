@@ -3,7 +3,6 @@ using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.Extensions.Options;
 using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore.Tests

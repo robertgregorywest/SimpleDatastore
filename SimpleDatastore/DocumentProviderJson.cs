@@ -62,7 +62,7 @@ namespace SimpleDatastore
             using (await _lockAsync.WriterLockAsync().ConfigureAwait(false))
             {
                 await using var stream = _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Create);
-                await using var writer = new Utf8JsonWriter(stream);
+                await using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
                 document.WriteTo(writer);
             }
         }
@@ -72,11 +72,13 @@ namespace SimpleDatastore
             lock (_lock)
             {
                 using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Create);
-                using var writer = new Utf8JsonWriter(stream);
+                using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
                 document.WriteTo(writer);
             }
         }
 
-        private static JsonDocument EmptyDocument() => JsonDocument.Parse(JsonSerializer.Serialize(new List<T>()));
+        private static JsonDocument EmptyDocument() =>
+            JsonDocument.Parse(
+                JsonSerializer.Serialize(new List<T>(), new JsonSerializerOptions {WriteIndented = true}));
     }
 }

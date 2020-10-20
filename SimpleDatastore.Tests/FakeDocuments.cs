@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Text.Json;
+using System.Xml.Linq;
 using SimpleDatastore.Tests.Extensions;
 
 namespace SimpleDatastore.Tests
@@ -23,6 +24,15 @@ namespace SimpleDatastore.Tests
         internal static XDocument CollectionFakeObjectXDocument => XDocument.Parse(CollectionDocumentFixture);
         internal static XDocument CollectionFakeObjectXDocumentUpdated => XDocument.Parse(CollectionDocumentFixtureUpdated);
         
-        public const string InstanceJson = "FakeObject.json";
+        internal const string InstanceJson = "FakeObject.json";
+
+        internal static JsonElement InstanceJsonElement
+        {
+            get
+            {
+                using var doc = JsonDocument.Parse(InstanceJson.GetFixtureContent());
+                return doc.RootElement.Clone();
+            }
+        }
     }
 }

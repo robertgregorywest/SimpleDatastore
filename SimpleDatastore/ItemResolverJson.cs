@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SimpleDatastore.Extensions;
@@ -57,7 +58,7 @@ namespace SimpleDatastore
                 {
                     if (persistChildren)
                     {
-                        var persistentObjectIds = propertyElement.GetString().Split(',');
+                        var persistentObjectIds = propertyElement.EnumerateArray().Select(e => e.GetString());
                         var repository = property.PropertyType.CreateEnumerableRepository(repoProvider);
                         var collection = await repository.LoadCollectionByIdsAsync(persistentObjectIds)
                             .ConfigureAwait(false);
@@ -136,7 +137,7 @@ namespace SimpleDatastore
                 {
                     if (persistChildren)
                     {
-                        var persistentObjectIds = propertyElement.GetString().Split(',');
+                        var persistentObjectIds = propertyElement.EnumerateArray().Select(e => e.GetString());
                         var repository = property.PropertyType.CreateEnumerableRepository(repoProvider);
                         var collection = repository.LoadCollectionByIds(persistentObjectIds);
                         property.SetValue(instance, collection, null);

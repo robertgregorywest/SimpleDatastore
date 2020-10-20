@@ -1,5 +1,7 @@
 using System;
+using System.Text.Json;
 using Example.Domain;
+using SimpleDatastore.Tests.Extensions;
 
 namespace SimpleDatastore.Tests
 {
@@ -23,9 +25,18 @@ namespace SimpleDatastore.Tests
 
         public const string WidgetsJson = "Example.Domain.Widget.json";
         public const string WidgetsPersistChildrenJson = "Example.Domain.Widget.PersistChildren.json";
+        public const string SomeWidgetPersistChildrenJson = "Example.Domain.Widget.SomeWidget.PersistChildren.json";
         public const string SomeWidgetXml = "Example.Domain.Widget.SomeWidget.xml";
         public const string SomeWidgetPersistChildrenXml = "Example.Domain.Widget.SomeWidget.PersistChildren.xml";
         public const string SomeWidgetJson = "Example.Domain.Widget.SomeWidget.json";
-        public const string SomeWidgetPersistChildrenJson = "Example.Domain.Widget.SomeWidget.PersistChildren.json";
+        
+        internal static JsonElement SomeWidgetJsonElement
+        {
+            get
+            {
+                using var doc = JsonDocument.Parse(SomeWidgetPersistChildrenJson.GetFixtureContent());
+                return doc.RootElement.Clone();
+            }
+        }
     }
 }
