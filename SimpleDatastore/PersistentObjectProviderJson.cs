@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
 using SimpleDatastore.Extensions;
 using SimpleDatastore.Interfaces;
-using static SimpleDatastore.PersistentObjectJsonSerializer;
+using static SimpleDatastore.PersistentObjectConverterJson;
 
 namespace SimpleDatastore
 {
@@ -20,6 +20,7 @@ namespace SimpleDatastore
         private readonly bool _persistChildren;
         private readonly Func<Type, object> _activator;
         private readonly Func<Type, dynamic> _repoProvider;
+        private readonly JsonWriterOptions _writerOptions = new JsonWriterOptions { Indented = true };
 
         public PersistentObjectProviderJson(IItemResolver<T, JsonElement> resolver,
             IDocumentProvider<T, JsonDocument> documentProvider,
@@ -38,6 +39,11 @@ namespace SimpleDatastore
         {
             using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
+            if (!_persistChildren)
+            {
+                return doc.Deserialize<List<T>>();
+            }
+            
             var tasks = doc.RootElement.EnumerateArray()
                 .Select(element => _resolver.GetItemFromNodeAsync(element, _activator, _repoProvider, _persistChildren))
                 .ToList();
@@ -49,6 +55,11 @@ namespace SimpleDatastore
         public IList<T> GetCollection()
         {
             using var doc = _documentProvider.GetDocument();
+            
+            if (!_persistChildren)
+            {
+                return doc.Deserialize<List<T>>();
+            }
             
             return doc.RootElement.EnumerateArray()
                 .AsParallel()
@@ -92,7 +103,7 @@ namespace SimpleDatastore
             using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
             await using var stream = new MemoryStream();
-            await using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+            await using var writer = new Utf8JsonWriter(stream, _writerOptions);
             
             writer.WriteStartArray();
             
@@ -123,7 +134,7 @@ namespace SimpleDatastore
             using var doc = _documentProvider.GetDocument();
             
             using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream);
+            using var writer = new Utf8JsonWriter(stream, _writerOptions);
             
             writer.WriteStartArray();
             
@@ -154,7 +165,7 @@ namespace SimpleDatastore
             using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
             await using var stream = new MemoryStream();
-            await using var writer = new Utf8JsonWriter(stream);
+            await using var writer = new Utf8JsonWriter(stream, _writerOptions);
             
             writer.WriteStartArray();
             
@@ -180,7 +191,7 @@ namespace SimpleDatastore
         {
             using var doc = _documentProvider.GetDocument();
             using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream);
+            using var writer = new Utf8JsonWriter(stream, _writerOptions);
             
             foreach (var element in doc.RootElement.EnumerateArray()
                 .Where(element => !element.IsPersistentObjectMatchById(id)))

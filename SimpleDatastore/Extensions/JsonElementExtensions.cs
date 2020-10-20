@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace SimpleDatastore.Extensions
 {
@@ -12,7 +13,7 @@ namespace SimpleDatastore.Extensions
                    && idElement.TryGetGuid(out var guid) && guid == id;
         }
         
-        internal static T ToObject<T>(this JsonElement element, JsonSerializerOptions options = null)
+        internal static T Deserialize<T>(this JsonElement element, JsonSerializerOptions options = null)
         {
             var bufferWriter = new ArrayBufferWriter<byte>();
             using (var writer = new Utf8JsonWriter(bufferWriter))
@@ -23,7 +24,7 @@ namespace SimpleDatastore.Extensions
             return JsonSerializer.Deserialize<T>(bufferWriter.WrittenSpan, options);
         }
 
-        internal static object ToObject(this JsonElement element, Type returnType, JsonSerializerOptions options = null)
+        internal static object Deserialize(this JsonElement element, Type returnType, JsonSerializerOptions options = null)
         {
             var bufferWriter = new ArrayBufferWriter<byte>();
             using (var writer = new Utf8JsonWriter(bufferWriter))

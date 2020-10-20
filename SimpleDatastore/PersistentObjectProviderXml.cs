@@ -8,7 +8,7 @@ using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
-using static SimpleDatastore.XmlSerializer;
+using static SimpleDatastore.PersistentObjectConverterXml;
 
 namespace SimpleDatastore
 {

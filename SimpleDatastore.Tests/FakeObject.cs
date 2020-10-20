@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace SimpleDatastore.Tests
 {
@@ -15,11 +16,11 @@ namespace SimpleDatastore.Tests
         public const string NameValue2Updated = "Second FakeObject name updated";
 
         [DataMember(Name = "name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        public bool Equals(FakeObject other) => Id == other.Id;
-        public override bool Equals(object other) => Equals(other as FakeObject);
-        public override int GetHashCode() => Id.GetHashCode();
+        public bool Equals(FakeObject other) => other != null && Id == other.Id;
+
         public override string ToString() => Id.ToString();
         public int CompareTo(FakeObject other) => Id.CompareTo(other.Id);
 

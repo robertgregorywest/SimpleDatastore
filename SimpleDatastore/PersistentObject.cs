@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 [assembly: InternalsVisibleTo("SimpleDatastore.Tests")]
 
@@ -16,6 +17,7 @@ namespace SimpleDatastore
         internal const string DataFolder = "App_Data";
 
         [DataMember(Name = Identifier, IsRequired = true)]
+        [JsonPropertyName(Identifier)]
         public Guid Id { get; set; } = Guid.Empty;
 
         public override string ToString()

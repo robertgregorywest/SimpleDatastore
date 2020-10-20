@@ -67,7 +67,7 @@ namespace SimpleDatastore.Tests
         }
         
         [Test]
-        public void GetCollection_should_return_collection()
+        public void GetCollection_not_persistChildren_should_return_collection()
         {
             var doc = JsonDocument.Parse(Widgets.WidgetsJson.GetFixtureContent());
             _documentProvider.GetDocument().Returns(doc);
@@ -79,7 +79,8 @@ namespace SimpleDatastore.Tests
 
             actual.Should()
                 .NotBeEmpty()
-                .And.HaveCount(c => c == 2);
+                .And.HaveCount(c => c == 2)
+                .And.BeEquivalentTo(Widgets.SomeWidget, Widgets.AnotherWidget);
         }
     }
 }

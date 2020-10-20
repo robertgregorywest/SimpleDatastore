@@ -22,5 +22,7 @@ namespace SimpleDatastore.Tests
         internal static XDocument SingeFakeObjectXDocument => XDocument.Parse(SingleFakeObjectDocumentFixture);
         internal static XDocument CollectionFakeObjectXDocument => XDocument.Parse(CollectionDocumentFixture);
         internal static XDocument CollectionFakeObjectXDocumentUpdated => XDocument.Parse(CollectionDocumentFixtureUpdated);
+        
+        public const string InstanceJson = "FakeObject.json";
     }
 }

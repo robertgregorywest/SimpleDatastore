@@ -40,7 +40,6 @@ namespace SimpleDatastore.Tests
         public async Task GetCollectionAsync_should_return_collection()
         {
             _documentProvider.GetDocumentAsync().Returns(Task.FromResult(FakeDocuments.CollectionFakeObjectXDocument));
-            var serviceProvider = Substitute.For<IServiceProvider>();
             _resolver = new ItemResolverXml<FakeObject, XElement>();
         
             var provider = new PersistentObjectProviderXml<FakeObject>(_resolver, _documentProvider, _serviceProvider, _options);
@@ -50,7 +49,7 @@ namespace SimpleDatastore.Tests
             actual.Should()
                 .NotBeEmpty()
                 .And.HaveCount(c => c == 2)
-                .And.ContainInOrder(FakeObject.SecondInstance, FakeObject.Instance);
+                .And.BeEquivalentTo(FakeObject.SecondInstance, FakeObject.Instance);
         }
         
         [Test]
