@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using SimpleDatastore.Extensions;
 using SimpleDatastore.Interfaces;
+using static SimpleDatastore.SimpleDatastoreOptions;
 
 namespace SimpleDatastore
 {
@@ -34,9 +35,9 @@ namespace SimpleDatastore
 
             writer.WriteStartObject();
             
-            foreach (var property in instance.GetType().PersistedProperties())
+            foreach (var property in instance.GetType().PersistedProperties(StorageModeOptions.Json))
             { 
-                var attributeName = property.GetPropertyName();
+                var attributeName = property.GetPropertyName(StorageModeOptions.Json);
                 var value = property.GetValue(instance, null);
                  
                 if (property.PropertyType.IsPersistentObject() && value is PersistentObject persistentObject)

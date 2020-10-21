@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using SimpleDatastore.Interfaces;
+using static System.Attribute;
 
 namespace SimpleDatastore.Extensions
 {
@@ -15,12 +17,21 @@ namespace SimpleDatastore.Extensions
         internal static bool IsPersistentObjectEnumerable(this Type type) 
             => type.IsGenericType && typeof(IEnumerable<PersistentObject>).IsAssignableFrom(type);
 
-        internal static IEnumerable<PropertyInfo> PersistedProperties(this Type type)
-            => type.GetProperties().Where(p => Attribute.IsDefined(p, typeof(DataMemberAttribute)));
+        internal static IEnumerable<PropertyInfo> PersistedProperties(this Type type,
+            SimpleDatastoreOptions.StorageModeOptions storageMode = SimpleDatastoreOptions.StorageModeOptions.Xml)
+        {
+            return (storageMode == SimpleDatastoreOptions.StorageModeOptions.Xml)
+                ? type.GetProperties().Where(p => IsDefined(p, typeof(DataMemberAttribute)))
+                : type.GetProperties().Where(p => IsDefined(p, typeof(JsonPropertyNameAttribute)));
+        }
 
-        internal static string GetPropertyName(this PropertyInfo property)
-            => ((DataMemberAttribute)Attribute.GetCustomAttribute(property, typeof(DataMemberAttribute)))?.Name 
-           ?? property.Name;
+        internal static string GetPropertyName(this PropertyInfo property,
+            SimpleDatastoreOptions.StorageModeOptions storageMode = SimpleDatastoreOptions.StorageModeOptions.Xml)
+        {
+            return storageMode == SimpleDatastoreOptions.StorageModeOptions.Xml
+                ? ((DataMemberAttribute) GetCustomAttribute(property, typeof(DataMemberAttribute)))?.Name ?? property.Name
+                : ((JsonPropertyNameAttribute) GetCustomAttribute(property, typeof(JsonPropertyNameAttribute)))?.Name ?? property.Name;
+        }
 
         internal static bool IsGuid(this Type type) => type == typeof(Guid);
 

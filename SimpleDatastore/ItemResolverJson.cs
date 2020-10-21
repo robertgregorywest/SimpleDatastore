@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using SimpleDatastore.Extensions;
 using SimpleDatastore.Interfaces;
+using static SimpleDatastore.SimpleDatastoreOptions;
 
 namespace SimpleDatastore
 {
@@ -26,9 +27,9 @@ namespace SimpleDatastore
             // Using the activator so the instance can have dependencies
             var instance = activator(t);
 
-            foreach (var property in t.PersistedProperties())
+            foreach (var property in t.PersistedProperties(StorageModeOptions.Json))
             {
-                if (!element.TryGetProperty(property.GetPropertyName(), out var propertyElement)) continue;
+                if (!element.TryGetProperty(property.GetPropertyName(StorageModeOptions.Json), out var propertyElement)) continue;
                 
                 if (property.PropertyType.IsString())
                 {
@@ -102,9 +103,9 @@ namespace SimpleDatastore
             // Using the activator so the instance can have dependencies
             var instance = activator(t);
 
-            foreach (var property in t.PersistedProperties())
+            foreach (var property in t.PersistedProperties(StorageModeOptions.Json))
             {
-                if (!element.TryGetProperty(property.GetPropertyName(), out var propertyElement)) continue;
+                if (!element.TryGetProperty(property.GetPropertyName(StorageModeOptions.Json), out var propertyElement)) continue;
 
                 if (property.PropertyType.IsString())
                 {
