@@ -1,6 +1,5 @@
 using System.IO;
 using System.IO.Abstractions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
@@ -42,7 +41,7 @@ namespace SimpleDatastore.Tests
         {
             _fileSystem.File.Exists("").ReturnsForAnyArgs(false);
             
-            var provider = new DocumentProviderXml<FakeObject>(_options, _hostingEnvironment, _fileSystem);
+            var provider = new DocumentProviderXml<FakeObject, XDocument>(_options, _hostingEnvironment, _fileSystem);
 
             var doc = await provider.GetDocumentAsync();
 
@@ -55,7 +54,7 @@ namespace SimpleDatastore.Tests
             
             _fileSystem.FileStream.Create("", FileMode.Create).ReturnsForAnyArgs(stream);
             
-            var provider = new DocumentProviderXml<FakeObject>(_options, _hostingEnvironment, _fileSystem);
+            var provider = new DocumentProviderXml<FakeObject, XDocument>(_options, _hostingEnvironment, _fileSystem);
 
             await provider.SaveDocumentAsync(FakeDocuments.CollectionFakeObjectXDocumentUpdated);
 

@@ -10,7 +10,10 @@ using Nito.AsyncEx;
 
 namespace SimpleDatastore
 {
-    public class DocumentProviderJson<T> : IDocumentProviderJson<T> where T : PersistentObject
+    // ReSharper disable once UnusedTypeParameter
+    // Not closing the type so that DI container can resolve correctly
+    public class DocumentProviderJson<T, TDocument> : IDocumentProvider<T, JsonDocument> 
+        where T : PersistentObject
     {
         private readonly IFileSystem _fileSystemAsync;
         private readonly IFileSystem _fileSystem;
@@ -28,7 +31,7 @@ namespace SimpleDatastore
                 $"{typeof(T)}.json");
         }
 
-        public async Task<string> GetDocumentAsync()
+        public async Task<JsonDocument> GetDocumentAsync()
         {
             using (await _lockAsync.ReaderLockAsync().ConfigureAwait(false))
             {
@@ -37,12 +40,11 @@ namespace SimpleDatastore
                 await using var stream =
                     _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                using var reader = new StreamReader(stream);
-                return await reader.ReadToEndAsync();
+                return await JsonDocument.ParseAsync(stream);
             }
         }
 
-        public string GetDocument()
+        public JsonDocument GetDocument()
         {
             lock (_lock)
             {
@@ -50,35 +52,33 @@ namespace SimpleDatastore
 
                 using var stream =
                     _fileSystem.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                
-                using var reader = new StreamReader(stream);
-                return reader.ReadToEnd();
+
+                return JsonDocument.Parse(stream);
             }
         }
 
-        public async Task SaveDocumentAsync(string document)
+        public async Task SaveDocumentAsync(JsonDocument document)
         {
             using (await _lockAsync.WriterLockAsync().ConfigureAwait(false))
             {
                 await using var stream = _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Create);
-                await using var sr = new StreamWriter(stream);
-                await sr.WriteAsync(document);
+                await using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+                document.WriteTo(writer);
             }
         }
 
-        public void SaveDocument(string document)
+        public void SaveDocument(JsonDocument document)
         {
             lock (_lock)
             {
                 using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Create);
-                using var sr = new StreamWriter(stream);
-                sr.Write(document);
+                using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+                document.WriteTo(writer);
             }
         }
 
-        private static string EmptyDocument()
-        {
-            return JsonSerializer.Serialize(new List<T>());
-        }
+        private static JsonDocument EmptyDocument() =>
+            JsonDocument.Parse(
+                JsonSerializer.Serialize(new List<T>(), new JsonSerializerOptions {WriteIndented = true}));
     }
 }

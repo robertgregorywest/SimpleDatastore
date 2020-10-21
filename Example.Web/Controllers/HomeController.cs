@@ -56,19 +56,19 @@ namespace Example.Web.Controllers
             var part1 = new Part
             {
                 Id = Guid.Parse("47ee8994-7a72-463f-ad8f-1a4b0f61ae16"),
-                Name = "Part A"
+                Name = "Some widget part A"
             };
 
             var part2 = new Part
             {
                 Id = Guid.Parse("90397722-a7e2-4615-951b-742662630fcf"),
-                Name = "Part B"
+                Name = "Some widget part B"
             };
 
             var part3 = new Part
             {
                 Id = Guid.Parse("dd9bec1b-73ed-4ba7-bfde-2de6b2cc8ae0"),
-                Name = "Part C"
+                Name = "Another widget part A"
             };
 
             var widget1 = new Widget()
@@ -91,7 +91,7 @@ namespace Example.Web.Controllers
             
             // var widgets = new List<Widget>{widget1, widget2};
             // 
-            // for (var i = 0; i < 1000; i++)
+            // for (var i = 0; i < 100; i++)
             // {
             //     var factory = new Factory() {Name = Helpers.RandomString(8), Widgets = widgets};
             //     await _factoryRepo.SaveAsync(factory);

@@ -4,23 +4,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
-using static SimpleDatastore.XmlSerializer;
+using static SimpleDatastore.PersistentObjectConverterXml;
 
 namespace SimpleDatastore
 {
     public class PersistentObjectProviderXml<T> : IPersistentObjectProvider<T> where T : PersistentObject
     {
-        private readonly IItemResolverXml<T> _resolver;
-        private readonly IDocumentProviderXml<T> _documentProvider;
+        private readonly IItemResolver<T, XElement> _resolver;
+        private readonly IDocumentProvider<T, XDocument> _documentProvider;
         private readonly bool _persistChildren;
         private readonly Func<Type, object> _activator;
         private readonly Func<Type, dynamic> _repoProvider;
 
-        public PersistentObjectProviderXml(IItemResolverXml<T> resolver,
-            IDocumentProviderXml<T> documentProvider,
+        public PersistentObjectProviderXml(IItemResolver<T, XElement> resolver,
+            IDocumentProvider<T, XDocument> documentProvider,
             IServiceProvider serviceProvider,
             IOptions<SimpleDatastoreOptions> options)
         {
@@ -46,8 +47,6 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public IList<T> GetCollection()
         {
-            var doc = _documentProvider.GetDocument();
-            
             return _documentProvider.GetDocument().Root?.Elements(PersistentObject.DataItemName)
                 .AsParallel()
                 .Select(element => _resolver.GetItemFromNode(element, _activator, _repoProvider, _persistChildren))

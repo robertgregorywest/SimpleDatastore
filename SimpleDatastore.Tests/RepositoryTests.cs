@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using NSubstitute.ReceivedExtensions;
 using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore.Tests
@@ -45,17 +46,27 @@ namespace SimpleDatastore.Tests
         }
 
         [Test]
-        public async Task Save_expect_call_StorageHelper_SaveObject()
+        public async Task SaveAsync_expect_call_StorageHelper_SaveObjectAsync()
         {
             var repo = new Repository<FakeObject>(_storageHelper, _cache, _options);
 
             await repo.SaveAsync(FakeObject.Instance);
 
-            await _storageHelper.Received().SaveObjectAsync(FakeObject.Instance);
+            await _storageHelper.Received().SaveObjectAsync(Arg.Is<FakeObject>(f => f.Id == FakeObject.InstanceIdentifier));
+        }
+        
+        [Test]
+        public void Save_expect_call_StorageHelper_SaveObject()
+        {
+            var repo = new Repository<FakeObject>(_storageHelper, _cache, _options);
+
+            repo.Save(FakeObject.Instance);
+
+            _storageHelper.Received().SaveObject(Arg.Is<FakeObject>(f => f.Id == FakeObject.InstanceIdentifier));
         }
 
         [Test]
-        public async Task Save_with_empty_Guid_expect_NewGuid()
+        public async Task SaveAsync_with_empty_Guid_expect_NewGuid()
         {
             var newInstance = new FakeObject();
 
@@ -67,7 +78,7 @@ namespace SimpleDatastore.Tests
         }
 
         [Test]
-        public async Task Delete_expect_call_helper_delete_object()
+        public async Task DeleteAsync_expect_call_helper_delete_object()
         {
             var repo = new Repository<FakeObject>(_storageHelper, _cache, _options);
 
@@ -77,7 +88,7 @@ namespace SimpleDatastore.Tests
         }
 
         [Test]
-        public async Task Delete_expect_cache_purged()
+        public async Task DeleteAsync_expect_cache_purged()
         {
             _options.Value.Returns(new SimpleDatastoreOptions() { EnableCaching = true });
 

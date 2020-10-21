@@ -7,7 +7,7 @@ using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore
 {
-    internal static class XmlSerializer
+    internal static class PersistentObjectConverterXml
     {
         internal static XElement Write(object instance, Func<Type, dynamic> repoProvider, bool persistChildren = false)
         {

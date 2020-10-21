@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace SimpleDatastore.Tests
 {
@@ -15,11 +17,28 @@ namespace SimpleDatastore.Tests
         public const string NameValue2Updated = "Second FakeObject name updated";
 
         [DataMember(Name = "name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        public bool Equals(FakeObject other) => Id == other.Id;
-        public override bool Equals(object other) => Equals(other as FakeObject);
-        public override int GetHashCode() => Id.GetHashCode();
+        public bool Equals(FakeObject other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Id == other.Id && Name == other.Name;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj.GetType() == GetType() && Equals((FakeObject)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Id, Name).GetHashCode();
+        }
+
         public override string ToString() => Id.ToString();
         public int CompareTo(FakeObject other) => Id.CompareTo(other.Id);
 

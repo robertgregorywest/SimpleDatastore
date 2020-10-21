@@ -1,0 +1,18 @@
+{
+  "name": "Some Widget",
+  "mainPart": {
+    "name": "Some widget part A",
+    "id": "47ee8994-7a72-463f-ad8f-1a4b0f61ae16"
+  },
+  "parts": [
+    {
+      "name": "Some widget part A",
+      "id": "47ee8994-7a72-463f-ad8f-1a4b0f61ae16"
+    },
+    {
+      "name": "Some widget part B",
+      "id": "90397722-a7e2-4615-951b-742662630fcf"
+    }
+  ],
+  "id": "6ea4ad00-08ba-4ac1-8e52-54a890eca0e0"
+}
