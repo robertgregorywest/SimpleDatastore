@@ -14,7 +14,7 @@ namespace SimpleDatastore.Tests
         public void Write_persistChildren_false_with_child_objects_should_include_objects()
         {
             var result = PersistentObjectConverterJson.Write(Widgets.SomeWidget, null);
-            Assert.AreEqual(Widgets.SomeWidgetJson.GetFixtureContent(), result.ToString());
+            Assert.AreEqual(Widgets.SomeWidgetObjectJson.GetFixtureContent(), result.ToString());
         }
         
         [Test]

@@ -51,7 +51,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="Fixtures\Example.Domain.Widget.SomeWidget.json">
+    <Content Include="Fixtures\Example.Domain.Widget.SomeWidget.Array.json">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Fixtures\Example.Domain.Widget.SomeWidget.Object.json">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

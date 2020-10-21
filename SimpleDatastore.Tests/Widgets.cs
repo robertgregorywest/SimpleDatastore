@@ -28,7 +28,8 @@ namespace SimpleDatastore.Tests
         public const string SomeWidgetPersistChildrenJson = "Example.Domain.Widget.SomeWidget.PersistChildren.json";
         public const string SomeWidgetXml = "Example.Domain.Widget.SomeWidget.xml";
         public const string SomeWidgetPersistChildrenXml = "Example.Domain.Widget.SomeWidget.PersistChildren.xml";
-        public const string SomeWidgetJson = "Example.Domain.Widget.SomeWidget.json";
+        public const string SomeWidgetObjectJson = "Example.Domain.Widget.SomeWidget.Object.json";
+        public const string SomeWidgetArrayJson = "Example.Domain.Widget.SomeWidget.Array.json";
         
         internal static JsonElement SomeWidgetJsonElement
         {
