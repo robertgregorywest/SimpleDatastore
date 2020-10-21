@@ -1,11 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace SimpleDatastore.Interfaces
 {
     /// <summary>
-    /// Responsible for resolving a PersistentObject from an XElement
+    /// Responsible for resolving a PersistentObject from an TElement
     /// </summary>
     /// <typeparam name="T">PersistentObject type to resolve</typeparam>
     /// <typeparam name="TElement">Type of the element from which to retrieve the item</typeparam>
