@@ -13,7 +13,7 @@ namespace SimpleDatastore
 {
     // ReSharper disable once UnusedTypeParameter
     // Not closing the type so that DI container can resolve correctly
-    public class DocumentProviderXml<T, TDocument> : IDocumentProvider<T, XDocument> 
+    public class DocumentProviderXml<T, TDocument> : IDocumentProvider<T, XDocument>
         where T : PersistentObject
         where TDocument : XDocument
     {
@@ -30,7 +30,7 @@ namespace SimpleDatastore
             _fileSystemAsync = fileSystem;
             _fileSystem = fileSystem;
             _documentPath = Path.Combine(
-                environment.ContentRootPath, 
+                environment.ContentRootPath,
                 options.Value.DatastoreLocation,
                 $"{typeof(T)}.xml");
         }
@@ -39,7 +39,7 @@ namespace SimpleDatastore
         {
             using (await _lockAsync.ReaderLockAsync().ConfigureAwait(false))
             {
-                if (!_fileSystemAsync.File.Exists(_documentPath)) return EmptyDocument();
+                if (!_fileSystemAsync.File.Exists(_documentPath)) return EmptyDocument;
 
                 await using var stream =
                     _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -52,7 +52,7 @@ namespace SimpleDatastore
         {
             lock (_lock)
             {
-                if (!_fileSystem.File.Exists(_documentPath)) return EmptyDocument();
+                if (!_fileSystem.File.Exists(_documentPath)) return EmptyDocument;
 
                 using var stream =
                     _fileSystem.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -75,17 +75,14 @@ namespace SimpleDatastore
             lock (_lock)
             {
                 using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Create);
-                using var writer = XmlWriter.Create(stream, new XmlWriterSettings {Async = true, Indent = true});
+                using var writer = XmlWriter.Create(stream, new XmlWriterSettings {Indent = true});
                 document.Save(writer);
             }
         }
 
-        private static XDocument EmptyDocument()
-        {
-            return new XDocument(
-                new XDeclaration("1.0", "utf-8", null),
-                new XElement(PersistentObject.RootElementName)
-            );
-        }
+        private static XDocument EmptyDocument => new XDocument(
+            new XDeclaration("1.0", "utf-8", null),
+            new XElement(PersistentObject.RootElementName)
+        );
     }
 }

@@ -4,6 +4,7 @@ using NSubstitute;
 using NUnit.Framework;
 using SimpleDatastore.Interfaces;
 using SimpleDatastore.Tests.Extensions;
+using SimpleDatastore.Tests.Utils;
 
 namespace SimpleDatastore.Tests
 {
@@ -13,8 +14,8 @@ namespace SimpleDatastore.Tests
         [Test]
         public void Write_persistChildren_false_with_child_objects_should_include_objects()
         {
-            var result = PersistentObjectConverterJson.Write(Widgets.SomeWidget, null);
-            Assert.AreEqual(Widgets.SomeWidgetObjectJson.GetFixtureContent(), result.ToString());
+            var actual = PersistentObjectConverterJson.Write(Widgets.SomeWidget, null);
+            Assert.AreEqual(Widgets.SomeWidgetObjectJson.GetFixtureContent(), actual.ToString());
         }
         
         [Test]
@@ -23,8 +24,8 @@ namespace SimpleDatastore.Tests
             var repository = Substitute.For<IRepository<Part>>();
             dynamic RepoProvider(Type t) => repository;
             
-            var result = PersistentObjectConverterJson.Write(Widgets.SomeWidget, RepoProvider, true);
-            Assert.AreEqual(Widgets.SomeWidgetPersistChildrenObjectJson.GetFixtureContent(), result.ToString());
+            var actual = PersistentObjectConverterJson.Write(Widgets.SomeWidget, RepoProvider, true);
+            Assert.AreEqual(Widgets.SomeWidgetPersistChildrenObjectJson.GetFixtureContent(), actual.ToString());
         }
         
         [Test]
@@ -47,16 +48,18 @@ namespace SimpleDatastore.Tests
             dynamic RepoProvider(Type t) => repository;
             repository.WhenForAnyArgs(x => x.Save(default)).Do(x => saveCalled = true);
             
-            var result = PersistentObjectConverterJson.Write(Widgets.SomeWidget, RepoProvider, true);
+            var actual = PersistentObjectConverterJson.Write(Widgets.SomeWidget, RepoProvider, true);
             Assert.IsTrue(saveCalled);
-            Assert.AreEqual(Widgets.SomeWidgetPersistChildrenObjectJson.GetFixtureContent(), result.ToString());
+            Assert.AreEqual(Widgets.SomeWidgetPersistChildrenObjectJson.GetFixtureContent(), actual.ToString());
         }
         
         [Test]
         public void Write_fakeObject_persistChildren_true_should_serialize()
         {
-            var result = PersistentObjectConverterJson.Write(FakeObject.Instance, null, true);
-            Assert.AreEqual(FakeDocuments.InstanceJson.GetFixtureContent(), result.ToString());
+            var actual = PersistentObjectConverterJson.Write(FakeObject.Instance, null, true);
+            var expected = FakeDocuments.InstanceJsonElement;
+            var comparer = new JsonElementComparer();
+            Assert.IsTrue(comparer.Equals(expected, actual));
         }
     }
 }
