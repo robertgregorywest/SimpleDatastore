@@ -1,0 +1,20 @@
+﻿<dataItem>
+  <name><![CDATA[Some Widget]]></name>
+  <mainPart>
+    <dataItem>
+      <name><![CDATA[Some widget part A]]></name>
+      <id>47ee8994-7a72-463f-ad8f-1a4b0f61ae16</id>
+    </dataItem>
+  </mainPart>
+  <parts>
+    <dataItem>
+      <name><![CDATA[Some widget part A]]></name>
+      <id>47ee8994-7a72-463f-ad8f-1a4b0f61ae16</id>
+    </dataItem>
+    <dataItem>
+      <name><![CDATA[Some widget part B]]></name>
+      <id>90397722-a7e2-4615-951b-742662630fcf</id>
+    </dataItem>
+  </parts>
+  <id>6ea4ad00-08ba-4ac1-8e52-54a890eca0e0</id>
+</dataItem>

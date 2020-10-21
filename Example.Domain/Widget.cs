@@ -1,24 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using SimpleDatastore;
 
 namespace Example.Domain
 {
-    public class Widget : PersistentObject, IComparable<Widget>
+    public class Widget : PersistentObject
     {
         [DataMember(Name = "name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
         [DataMember(Name = "mainPart")]
+        [JsonPropertyName("mainPart")]
         public Part MainPart { get; set; }
 
         [DataMember(Name = "parts")]
-        public IList<Part> Parts { get; set; }
-
-        public int CompareTo(Widget other)
-        {
-            return string.Compare(Name, other.Name, StringComparison.Ordinal);
-        }
+        [JsonPropertyName("parts")]
+        public IList<Part> Parts { get; set; } = new List<Part>();
+        
+        [JsonIgnore]
+        public Part NonPersistedProperty { get; set; }
     }
 }

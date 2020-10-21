@@ -1,27 +1,28 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 [assembly: InternalsVisibleTo("SimpleDatastore.Tests")]
 
 namespace SimpleDatastore
 {
     [DataContract]
-    public abstract class PersistentObject : IEquatable<PersistentObject>, IComparable<PersistentObject>
+    [Serializable]
+    public abstract class PersistentObject
     {
         internal const string Identifier = "id";
+        internal const string RootElementName = "data";
+        internal const string DataItemName = "dataItem";
+        internal const string DataFolder = "App_Data";
 
         [DataMember(Name = Identifier, IsRequired = true)]
+        [JsonPropertyName(Identifier)]
         public Guid Id { get; set; } = Guid.Empty;
 
-        public bool Equals(PersistentObject other) => other != null && Id.Equals(other.Id);
-
-        public override bool Equals(object other) => Equals(other as PersistentObject);
-
-        public override int GetHashCode() => Id.GetHashCode();
-
-        public override string ToString() => Id.ToString();
-
-        public int CompareTo(PersistentObject other) => Id.CompareTo(other.Id);
+        public override string ToString()
+        {
+            return Id.ToString();
+        }
     }
 }

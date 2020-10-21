@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<data>
+  <dataItem>
+    <name><![CDATA[Some widget]]></name>
+    <mainPart>47ee8994-7a72-463f-ad8f-1a4b0f61ae16</mainPart>
+    <parts>47ee8994-7a72-463f-ad8f-1a4b0f61ae16,90397722-a7e2-4615-951b-742662630fcf</parts>
+    <id>6ea4ad00-08ba-4ac1-8e52-54a890eca0e0</id>
+  </dataItem>
+  <dataItem>
+    <name><![CDATA[Another widget]]></name>
+    <mainPart>dd9bec1b-73ed-4ba7-bfde-2de6b2cc8ae0</mainPart>
+    <parts>dd9bec1b-73ed-4ba7-bfde-2de6b2cc8ae0</parts>
+    <id>f0d91008-a34c-48ce-acf6-8f89ff106607</id>
+  </dataItem>
+</data>

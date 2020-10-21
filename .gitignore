@@ -31,8 +31,8 @@ _ReSharper*/
 *.sdf
 .vs/
 /._README.md
-.idea/
-.vscode/
+.idea
+.DS_Store
 
 #Ignore files added by node
 node_modules/

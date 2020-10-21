@@ -1,0 +1,12 @@
+@model TimingTestModel
+
+@{
+    ViewBag.Title = "Timing Test";
+    Layout = "_Layout";
+}
+
+<h2>Timing Test</h2>
+<p>Async collection test took: @Model.AsyncCollection</p>
+<p>Synchronous collection test took: @Model.SyncCollection</p>
+<p>Async load persistent object test took: @Model.AsyncRunTime</p>
+<p>Synchronous load persistent object test took: @Model.SyncRunTime</p>

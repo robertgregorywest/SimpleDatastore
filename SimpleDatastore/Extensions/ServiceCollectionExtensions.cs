@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using System;
+using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleDatastore.Interfaces;
-using System.IO;
 using JetBrains.Annotations;
 
 // ReSharper disable once CheckNamespace
@@ -10,28 +10,40 @@ namespace SimpleDatastore
     public static class ServiceCollectionExtensions
     {
         [UsedImplicitly]
-        public static IServiceCollection AddSimpleDatastore(this IServiceCollection services)
-        {
-            var contentRootPath = services.BuildServiceProvider().GetService<IHostingEnvironment>().ContentRootPath;
-            var configuration = new Configuration(60, true, Path.Combine(contentRootPath, Constants.DataFolder));
-            return ConfigureSimpleDatastore(services, configuration);
-        }
-
+        public static IServiceCollection AddSimpleDatastore(this IServiceCollection services, Action<SimpleDatastoreOptions> options = null) 
+            => services.AddSimpleDatastore(true, options);
+        
         [UsedImplicitly]
-        public static IServiceCollection AddSimpleDatastore(this IServiceCollection services, IConfiguration configuration)
-        {
-            return ConfigureSimpleDatastore(services, configuration);
-        }
+        public static IServiceCollection AddSimpleDatastoreWithXml(this IServiceCollection services, Action<SimpleDatastoreOptions> options = null) 
+            => services.AddSimpleDatastore(true, options);
+        
+        [UsedImplicitly]
+        public static IServiceCollection AddSimpleDatastoreWithJson(this IServiceCollection services, Action<SimpleDatastoreOptions> options = null) 
+            => services.AddSimpleDatastore(false, options);
 
-        private static IServiceCollection ConfigureSimpleDatastore(IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection AddSimpleDatastore(this IServiceCollection services, bool useXml, Action<SimpleDatastoreOptions> options = null)
         {
-            services.AddSingleton(typeof(IRepository<>), typeof(BaseRepository<>));
-            services.AddSingleton(typeof(IStorageHelper<>), typeof(StorageHelper<>));
-            services.AddSingleton(typeof(IXmlDocumentProvider<>), typeof(XmlDocumentProvider<>));
-            services.AddSingleton(typeof(IXmlResolver<>), typeof(XmlResolver<>));
-            services.AddSingleton(configuration);
+            if (options != null)
+            {
+                services.Configure(options);
+            }
+
+            services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
+            services.AddSingleton<IFileSystem, FileSystem>();
             services.AddMemoryCache();
-            services.AddSingleton<ICache, MemoryCache>();
+
+            if (useXml)
+            {
+                services.AddSingleton(typeof(IDocumentProvider<,>), typeof(DocumentProviderXml<,>));
+                services.AddSingleton(typeof(IItemResolver<,>), typeof(ItemResolverXml<,>));
+                services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderXml<>));
+            }
+            else
+            {
+                services.AddSingleton(typeof(IDocumentProvider<,>), typeof(DocumentProviderJson<,>));
+                services.AddSingleton(typeof(IItemResolver<,>), typeof(ItemResolverJson<,>));
+                services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderJson<>));
+            }
 
             return services;
         }
