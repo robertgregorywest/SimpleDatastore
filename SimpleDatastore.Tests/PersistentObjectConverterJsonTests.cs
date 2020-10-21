@@ -24,7 +24,7 @@ namespace SimpleDatastore.Tests
             dynamic RepoProvider(Type t) => repository;
             
             var result = PersistentObjectConverterJson.Write(Widgets.SomeWidget, RepoProvider, true);
-            Assert.AreEqual(Widgets.SomeWidgetPersistChildrenJson.GetFixtureContent(), result.ToString());
+            Assert.AreEqual(Widgets.SomeWidgetPersistChildrenObjectJson.GetFixtureContent(), result.ToString());
         }
         
         [Test]
@@ -49,7 +49,7 @@ namespace SimpleDatastore.Tests
             
             var result = PersistentObjectConverterJson.Write(Widgets.SomeWidget, RepoProvider, true);
             Assert.IsTrue(saveCalled);
-            Assert.AreEqual(Widgets.SomeWidgetPersistChildrenJson.GetFixtureContent(), result.ToString());
+            Assert.AreEqual(Widgets.SomeWidgetPersistChildrenObjectJson.GetFixtureContent(), result.ToString());
         }
         
         [Test]

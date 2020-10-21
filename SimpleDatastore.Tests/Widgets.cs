@@ -23,21 +23,20 @@ namespace SimpleDatastore.Tests
             Parts = new []{ Parts.AnotherWidgetA }
         };
 
-        public const string WidgetsJson = "Example.Domain.Widget.json";
-        public const string WidgetsPersistChildrenJson = "Example.Domain.Widget.PersistChildren.json";
-        public const string SomeWidgetPersistChildrenJson = "Example.Domain.Widget.SomeWidget.PersistChildren.json";
+        public const string WidgetsArrayJson = "Example.Domain.Widget.Array.json";
+        public const string WidgetsPersistChildrenArrayJson = "Example.Domain.Widget.PersistChildren.Array.json";
+        public const string SomeWidgetPersistChildrenObjectJson = "Example.Domain.Widget.SomeWidget.PersistChildren.Object.json";
         public const string SomeWidgetXml = "Example.Domain.Widget.SomeWidget.xml";
         public const string SomeWidgetPersistChildrenXml = "Example.Domain.Widget.SomeWidget.PersistChildren.xml";
         public const string SomeWidgetObjectJson = "Example.Domain.Widget.SomeWidget.Object.json";
         public const string SomeWidgetArrayJson = "Example.Domain.Widget.SomeWidget.Array.json";
-        
-        internal static JsonElement SomeWidgetJsonElement
+
+        internal static JsonElement GetFixtureAsJsonElement(string fixture)
         {
-            get
-            {
-                using var doc = JsonDocument.Parse(SomeWidgetPersistChildrenJson.GetFixtureContent());
-                return doc.RootElement.Clone();
-            }
+            using var doc = JsonDocument.Parse(fixture.GetFixtureContent());
+            return doc.RootElement.Clone();
         }
+        
+        internal static JsonElement SomeWidgetJsonElement => GetFixtureAsJsonElement(SomeWidgetPersistChildrenObjectJson);
     }
 }

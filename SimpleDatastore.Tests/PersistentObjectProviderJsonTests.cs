@@ -7,6 +7,7 @@ using NSubstitute;
 using NUnit.Framework;
 using SimpleDatastore.Interfaces;
 using SimpleDatastore.Tests.Extensions;
+using SimpleDatastore.Tests.Utils;
 
 namespace SimpleDatastore.Tests
 {
@@ -41,7 +42,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public void GetObject_should_return_object()
         {
-            var doc = JsonDocument.Parse(Widgets.WidgetsJson.GetFixtureContent());
+            using var doc = JsonDocument.Parse(Widgets.WidgetsArrayJson.GetFixtureContent());
             _documentProvider.GetDocument().Returns(doc);
             
             var provider =
@@ -55,7 +56,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public void GetObject_nonexistent_id_should_return_null()
         {
-            var doc = JsonDocument.Parse(Widgets.WidgetsJson.GetFixtureContent());
+            using var doc = JsonDocument.Parse(Widgets.WidgetsArrayJson.GetFixtureContent());
             _documentProvider.GetDocument().Returns(doc);
             
             var provider =
@@ -69,7 +70,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public void GetCollection_not_persistChildren_should_return_collection()
         {
-            var doc = JsonDocument.Parse(Widgets.WidgetsJson.GetFixtureContent());
+            using var doc = JsonDocument.Parse(Widgets.WidgetsArrayJson.GetFixtureContent());
             _documentProvider.GetDocument().Returns(doc);
             
             var provider =
@@ -81,6 +82,30 @@ namespace SimpleDatastore.Tests
                 .NotBeEmpty()
                 .And.HaveCount(c => c == 2)
                 .And.BeEquivalentTo(Widgets.SomeWidget, Widgets.AnotherWidget);
+        }
+
+        [Test]
+        public void DeleteObject_should_remove_object()
+        {
+            using var doc = JsonDocument.Parse(Widgets.WidgetsArrayJson.GetFixtureContent());
+            _documentProvider.GetDocument().Returns(doc);
+
+            JsonElement actual = default;
+
+            _documentProvider
+                .When(dp => dp.SaveDocument(Arg.Any<JsonDocument>()))
+                .Do(y => actual = y.Arg<JsonDocument>().RootElement.Clone());
+            
+            var provider =
+                new PersistentObjectProviderJson<Widget>(_resolver, _documentProvider, _serviceProvider, _options);
+
+            provider.DeleteObject(Widgets.AnotherWidget.Id);
+
+            var comparer = new JsonElementComparer();
+            
+            var expected = Widgets.GetFixtureAsJsonElement(Widgets.SomeWidgetArrayJson);
+    
+            Assert.IsTrue(comparer.Equals(expected, actual));
         }
     }
 }

@@ -36,17 +36,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Fixtures\Example.Domain.Part.json">
+    <Content Include="Fixtures\Example.Domain.Part.Array.json">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="Fixtures\Example.Domain.Widget.json">
+    <Content Include="Fixtures\Example.Domain.Widget.Array.json">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="Fixtures\Example.Domain.Widget.PersistChildren.json">
+    <Content Include="Fixtures\Example.Domain.Widget.PersistChildren.Array.json">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -61,7 +61,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="Fixtures\Example.Domain.Widget.SomeWidget.PersistChildren.json">
+    <Content Include="Fixtures\Example.Domain.Widget.SomeWidget.PersistChildren.Object.json">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
