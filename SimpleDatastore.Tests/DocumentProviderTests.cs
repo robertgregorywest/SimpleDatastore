@@ -1,17 +1,16 @@
-using System.IO;
 using System.IO.Abstractions;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
-using SimpleDatastore.Extensions;
 
 namespace SimpleDatastore.Tests
 {
     [TestFixture]
-    public class DocumentProviderXmlTests
+    public class DocumentProviderTests
     {
         private IOptions<SimpleDatastoreOptions> _options;
         private IHostingEnvironment _hostingEnvironment;
@@ -37,7 +36,7 @@ namespace SimpleDatastore.Tests
         }
         
         [Test]
-        public async Task No_document_should_return_empty_document()
+        public async Task No_document_xml_should_return_empty_xDocument()
         {
             _fileSystem.File.Exists("").ReturnsForAnyArgs(false);
             
@@ -48,17 +47,18 @@ namespace SimpleDatastore.Tests
             Assert.AreEqual(doc.ToString(), FakeDocuments.EmptyXDocument.ToString());
         }
         
-        public async Task Save_document_with_existing_content_should_replace()
+        [Test]
+        public async Task No_document_json_should_return_empty_jsonDocument()
         {
-            await using var stream = FakeDocuments.CollectionFakeObjectXDocument.ToString().CreateStream();
+            _fileSystem.File.Exists("").ReturnsForAnyArgs(false);
             
-            _fileSystem.FileStream.Create("", FileMode.Create).ReturnsForAnyArgs(stream);
-            
-            var provider = new DocumentProviderXml<FakeObject, XDocument>(_options, _hostingEnvironment, _fileSystem);
+            var provider = new DocumentProviderJson<FakeObject, JsonDocument>(_options, _hostingEnvironment, _fileSystem);
 
-            await provider.SaveDocumentAsync(FakeDocuments.CollectionFakeObjectXDocumentUpdated);
+            using var actual = await provider.GetDocumentAsync();
 
-            // TODO: verify the correct content was persisted
+            using var expected = FakeDocuments.EmptyJsonDocument;
+
+            Assert.AreEqual(expected.RootElement.ToString(), actual.RootElement.ToString());
         }
     }
 }

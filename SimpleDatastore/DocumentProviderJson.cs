@@ -20,6 +20,7 @@ namespace SimpleDatastore
         private readonly string _documentPath;
         private readonly AsyncReaderWriterLock _lockAsync = new AsyncReaderWriterLock();
         private readonly object _lock = new object();
+        private readonly JsonWriterOptions _writerOptions = new JsonWriterOptions { Indented = true };
 
         public DocumentProviderJson(IOptions<SimpleDatastoreOptions> options,
             IHostingEnvironment environment,
@@ -35,7 +36,7 @@ namespace SimpleDatastore
         {
             using (await _lockAsync.ReaderLockAsync().ConfigureAwait(false))
             {
-                if (!_fileSystemAsync.File.Exists(_documentPath)) return EmptyDocument();
+                if (!_fileSystemAsync.File.Exists(_documentPath)) return EmptyDocument;
 
                 await using var stream =
                     _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -48,7 +49,7 @@ namespace SimpleDatastore
         {
             lock (_lock)
             {
-                if (!_fileSystem.File.Exists(_documentPath)) return EmptyDocument();
+                if (!_fileSystem.File.Exists(_documentPath)) return EmptyDocument;
 
                 using var stream =
                     _fileSystem.FileStream.Create(_documentPath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -62,7 +63,7 @@ namespace SimpleDatastore
             using (await _lockAsync.WriterLockAsync().ConfigureAwait(false))
             {
                 await using var stream = _fileSystemAsync.FileStream.Create(_documentPath, FileMode.Create);
-                await using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+                await using var writer = new Utf8JsonWriter(stream, _writerOptions);
                 document.WriteTo(writer);
             }
         }
@@ -72,13 +73,11 @@ namespace SimpleDatastore
             lock (_lock)
             {
                 using var stream = _fileSystem.FileStream.Create(_documentPath, FileMode.Create);
-                using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+                using var writer = new Utf8JsonWriter(stream, _writerOptions);
                 document.WriteTo(writer);
             }
         }
 
-        private static JsonDocument EmptyDocument() =>
-            JsonDocument.Parse(
-                JsonSerializer.Serialize(new List<T>(), new JsonSerializerOptions {WriteIndented = true}));
+        private static JsonDocument EmptyDocument => JsonDocument.Parse(JsonSerializer.Serialize(new List<T>()));
     }
 }

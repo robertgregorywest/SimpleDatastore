@@ -89,13 +89,13 @@ namespace Example.Web.Controllers
             };
             await _widgetRepo.SaveAsync(widget2);
             
-            // var widgets = new List<Widget>{widget1, widget2};
-            // 
-            // for (var i = 0; i < 100; i++)
-            // {
-            //     var factory = new Factory() {Name = Helpers.RandomString(8), Widgets = widgets};
-            //     await _factoryRepo.SaveAsync(factory);
-            // }
+            var widgets = new List<Widget>{ widget1, widget2 };
+            
+            for (var i = 0; i < 1000; i++)
+            {
+                var factory = new Factory() {Name = Helpers.RandomString(8), Widgets = widgets};
+                await _factoryRepo.SaveAsync(factory);
+            }
             
             return RedirectToAction("Index");
         }
