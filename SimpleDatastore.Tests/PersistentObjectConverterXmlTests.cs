@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using SimpleDatastore.Tests.Extensions;
 
@@ -9,7 +10,7 @@ namespace SimpleDatastore.Tests
         [Test]
         public void Write_persistChildren_false_with_child_objects_should_include_objects()
         {
-            var result = PersistentObjectConverterXml.Write(Widgets.SomeWidget, null);
+            var result = PersistentObjectConverterXml.Write<Guid>(Widgets.SomeWidget, null);
             Assert.AreEqual(Widgets.SomeWidgetXml.GetFixtureContent(), result.ToString());
         }
     }

@@ -1,4 +1,3 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -6,10 +5,13 @@ using JetBrains.Annotations;
 namespace SimpleDatastore.Interfaces
 {
     /// <summary>
-    /// Legacy interface for <see cref="PersistentObject{Guid}"/> standard implementation
+    /// Interface for reading persistent objects
     /// </summary>
     /// <typeparam name="T">PersistentObject type to work with</typeparam>
-    public interface IRepository<T> where T : PersistentObject<Guid> 
+    /// <typeparam name="TKey">Type of the identifier</typeparam>
+    public interface IReadRepository<T, in TKey> 
+        where T : PersistentObject<TKey> 
+        where TKey : struct
     {
         /// <summary>
         /// Get a single persistent object
@@ -17,7 +19,7 @@ namespace SimpleDatastore.Interfaces
         /// <param name="id">Identifier for the persistent object</param>
         /// <returns>Persistent object</returns>
         [UsedImplicitly]
-        Task<T> LoadAsync(Guid id);
+        Task<T> LoadAsync(TKey id);
         
         /// <summary>
         /// Get a single persistent object
@@ -25,8 +27,8 @@ namespace SimpleDatastore.Interfaces
         /// <param name="id">Identifier for the persistent object</param>
         /// <returns>Persistent object</returns>
         [UsedImplicitly]
-        T Load(Guid id);
-        
+        T Load(TKey id);
+
         /// <summary>
         /// Get all persistent objects of generic type in the order they are stored in the storage document
         /// </summary>
@@ -42,31 +44,19 @@ namespace SimpleDatastore.Interfaces
         IList<T> LoadCollection();
         
         /// <summary>
-        /// Save a persistent object to the storage document
+        /// Get persistent objects based on provided identifiers
         /// </summary>
-        /// <param name="instance">Instance to save</param>
+        /// <param name="persistentObjectIds">The array of persistent object identifiers to retrieve</param>
+        /// <returns>List of persistent objects</returns>
         [UsedImplicitly]
-        Task SaveAsync(T instance);
-
-        /// <summary>
-        /// Save a persistent object to the storage document
-        /// </summary>
-        /// <param name="instance">Instance to save</param>
-        [UsedImplicitly]
-        void Save(T instance);
+        Task<IList<T>> LoadCollectionByIdsAsync(IEnumerable<string> persistentObjectIds);
         
         /// <summary>
-        /// Delete a persistent object from the storage document
+        /// Get persistent objects based on provided identifiers
         /// </summary>
-        /// <param name="id">Identifier to delete</param>
+        /// <param name="persistentObjectIds">The array of persistent object identifiers to retrieve</param>
+        /// <returns>List of persistent objects</returns>
         [UsedImplicitly]
-        Task DeleteAsync(Guid id);
-
-        /// <summary>
-        /// Delete a persistent object from the storage document
-        /// </summary>
-        /// <param name="id">Identifier to delete</param>
-        [UsedImplicitly]
-        void Delete(Guid id);
+        IList<T> LoadCollectionByIds(IEnumerable<string> persistentObjectIds);
     }
 }

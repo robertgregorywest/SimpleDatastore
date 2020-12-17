@@ -14,16 +14,16 @@ namespace SimpleDatastore.Tests
     [TestFixture]
     public class PersistentObjectProviderJsonTests
     {
-        private IItemResolver<Widget, JsonElement> _resolver;
-        private IDocumentProvider<Widget, JsonDocument> _documentProvider;
+        private IItemResolver<Widget, Guid, JsonElement> _resolver;
+        private IDocumentProvider<Widget, Guid, JsonDocument> _documentProvider;
         private IServiceProvider _serviceProvider;
         private IOptions<SimpleDatastoreOptions> _options;
 
         [SetUp]
         public void Setup()
         {
-            _resolver = new ItemResolverJson<Widget, JsonElement>();
-            _documentProvider = Substitute.For<IDocumentProvider<Widget, JsonDocument>>();
+            _resolver = new ItemResolverJson<Widget, Guid, JsonElement>();
+            _documentProvider = Substitute.For<IDocumentProvider<Widget, Guid, JsonDocument>>();
             _serviceProvider = Substitute.For<IServiceProvider>();
             _options = Substitute.For<IOptions<SimpleDatastoreOptions>>();
 
@@ -46,7 +46,7 @@ namespace SimpleDatastore.Tests
             _documentProvider.GetDocument().Returns(doc);
             
             var provider =
-                new PersistentObjectProviderJson<Widget>(_resolver, _documentProvider, _serviceProvider, _options);
+                new PersistentObjectProviderJson<Widget, Guid>(_resolver, _documentProvider, _serviceProvider, _options);
 
             var actual = provider.GetObject(Widgets.SomeWidget.Id);
             
@@ -60,7 +60,7 @@ namespace SimpleDatastore.Tests
             _documentProvider.GetDocument().Returns(doc);
             
             var provider =
-                new PersistentObjectProviderJson<Widget>(_resolver, _documentProvider, _serviceProvider, _options);
+                new PersistentObjectProviderJson<Widget, Guid>(_resolver, _documentProvider, _serviceProvider, _options);
 
             var actual = provider.GetObject(Guid.Empty);
             
@@ -74,7 +74,7 @@ namespace SimpleDatastore.Tests
             _documentProvider.GetDocument().Returns(doc);
             
             var provider =
-                new PersistentObjectProviderJson<Widget>(_resolver, _documentProvider, _serviceProvider, _options);
+                new PersistentObjectProviderJson<Widget, Guid>(_resolver, _documentProvider, _serviceProvider, _options);
 
             var actual = provider.GetCollection();
 
@@ -97,7 +97,7 @@ namespace SimpleDatastore.Tests
                 .Do(y => actual = y.Arg<JsonDocument>().RootElement.Clone());
             
             var provider =
-                new PersistentObjectProviderJson<Widget>(_resolver, _documentProvider, _serviceProvider, _options);
+                new PersistentObjectProviderJson<Widget, Guid>(_resolver, _documentProvider, _serviceProvider, _options);
 
             provider.DeleteObject(Widgets.AnotherWidget.Id);
 

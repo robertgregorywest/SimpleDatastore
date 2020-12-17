@@ -13,8 +13,9 @@ namespace SimpleDatastore
 {
     // ReSharper disable once UnusedTypeParameter
     // Not closing the type so that DI container can resolve correctly
-    public class DocumentProviderXml<T, TDocument> : IDocumentProvider<T, XDocument>
-        where T : PersistentObject
+    public class DocumentProviderXml<T, TKey, TDocument> : IDocumentProvider<T, TKey, XDocument>
+        where T : PersistentObject<TKey>
+        where TKey : struct
         where TDocument : XDocument
     {
         private readonly IFileSystem _fileSystemAsync;

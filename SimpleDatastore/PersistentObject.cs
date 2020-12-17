@@ -9,20 +9,23 @@ namespace SimpleDatastore
 {
     [DataContract]
     [Serializable]
-    public abstract class PersistentObject
+    public abstract class PersistentObject<TKey> where TKey : struct
     {
-        internal const string Identifier = "id";
-        internal const string RootElementName = "data";
-        internal const string DataItemName = "dataItem";
-        internal const string DataFolder = "App_Data";
-
-        [DataMember(Name = Identifier, IsRequired = true)]
-        [JsonPropertyName(Identifier)]
-        public Guid Id { get; set; } = Guid.Empty;
+        [DataMember(Name = PersistentObject.Identifier, IsRequired = true)]
+        [JsonPropertyName(PersistentObject.Identifier)]
+        public TKey Id { get; set; }
 
         public override string ToString()
         {
             return Id.ToString();
         }
+    }
+
+    public static class PersistentObject
+    {
+        internal const string Identifier = "id";
+        internal const string RootElementName = "data";
+        internal const string DataItemName = "dataItem";
+        internal const string DataFolder = "App_Data";
     }
 }

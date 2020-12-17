@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace SimpleDatastore.Tests
 {
-    public class FakeObject : PersistentObject, IEquatable<FakeObject>, IComparable<FakeObject>
+    public class FakeObject : PersistentObject<Guid>, IEquatable<FakeObject>, IComparable<FakeObject>
     {
         public const string IdentifierValue = "675b689d-db4e-43ed-94dd-591f73a0fc74";
         public const string NameValue = "FakeObject name";

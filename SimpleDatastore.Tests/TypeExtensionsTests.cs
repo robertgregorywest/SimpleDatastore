@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Example.Domain;
@@ -9,6 +10,18 @@ namespace SimpleDatastore.Tests
     [TestFixture]
     public class TypeExtensionsTests
     {
+        [Test]
+        public void Widget_should_be_PersistentObject()
+        {
+            Assert.IsTrue(typeof(Widget).IsPersistentObject());
+        }
+        
+        [Test]
+        public void NullableInt_should_not_be_PersistentObject()
+        {
+            Assert.IsFalse(typeof(int?).IsPersistentObject());
+        }
+        
         [Test]
         public void FakeObject_should_be_persistent_object()
         {
@@ -24,7 +37,7 @@ namespace SimpleDatastore.Tests
         }
 
         [Test]
-        public void Widget_GetValidProperties_should_not_include_NonPersistedProperty()
+        public void FakeObject_GetValidProperties_should_not_include_NonPersistedProperty()
         {
             var properties = FakeObject.Instance.GetType().PersistedProperties().ToList();
             Assert.IsFalse(properties.Exists(pi => pi.Name.Equals("NonPersistedProperty")));

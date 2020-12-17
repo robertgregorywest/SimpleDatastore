@@ -10,9 +10,10 @@ namespace SimpleDatastore
 {
     // ReSharper disable once UnusedTypeParameter
     // Not closing the type so that DI container can resolve correctly
-    public class ItemResolverXml<T, TElement> : IItemResolver<T, XElement> 
-        where T : PersistentObject
+    public class ItemResolverXml<T, TKey, TElement> : IItemResolver<T, TKey, XElement> 
+        where T : PersistentObject<TKey>
         where TElement : XElement
+        where TKey : struct
     {
         ///<inheritdoc/>
         public async Task<T> GetItemFromNodeAsync(XElement element, Func<Type, object> activator, Func<Type, dynamic> repoProvider, bool persistChildren)

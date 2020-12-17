@@ -13,17 +13,19 @@ using static SimpleDatastore.PersistentObjectConverterJson;
 
 namespace SimpleDatastore
 {
-    public class PersistentObjectProviderJson<T> : IPersistentObjectProvider<T> where T : PersistentObject
+    public class PersistentObjectProviderJson<T, TKey> : IPersistentObjectProvider<T, TKey> 
+        where T : PersistentObject<TKey> 
+        where TKey : struct
     {
-        private readonly IItemResolver<T, JsonElement> _resolver;
-        private readonly IDocumentProvider<T, JsonDocument> _documentProvider;
+        private readonly IItemResolver<T, TKey, JsonElement> _resolver;
+        private readonly IDocumentProvider<T, TKey, JsonDocument> _documentProvider;
         private readonly bool _persistChildren;
         private readonly Func<Type, object> _activator;
         private readonly Func<Type, dynamic> _repoProvider;
         private readonly JsonWriterOptions _writerOptions = new JsonWriterOptions { Indented = true };
 
-        public PersistentObjectProviderJson(IItemResolver<T, JsonElement> resolver,
-            IDocumentProvider<T, JsonDocument> documentProvider,
+        public PersistentObjectProviderJson(IItemResolver<T, TKey, JsonElement> resolver,
+            IDocumentProvider<T, TKey, JsonDocument> documentProvider,
             IServiceProvider serviceProvider,
             IOptions<SimpleDatastoreOptions> options)
         {
@@ -68,7 +70,7 @@ namespace SimpleDatastore
         }
 
         ///<inheritdoc/>
-        public async Task<T> GetObjectAsync(Guid id)
+        public async Task<T> GetObjectAsync(TKey id)
         {
             using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
             
@@ -83,7 +85,7 @@ namespace SimpleDatastore
         }
 
         ///<inheritdoc/>
-        public T GetObject(Guid id)
+        public T GetObject(TKey id)
         {
             using var doc = _documentProvider.GetDocument();
 
@@ -100,7 +102,7 @@ namespace SimpleDatastore
         public async Task SaveObjectAsync(T instance)
         {
             using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
-            var replacement = Write(instance, _repoProvider, _persistChildren);
+            var replacement = Write<T, TKey>(instance, _repoProvider, _persistChildren);
             await UpdateAndSaveDocumentAsync(doc, element => !element.IsPersistentObjectMatchById(instance.Id), replacement);
         }
 
@@ -108,19 +110,19 @@ namespace SimpleDatastore
         public void SaveObject(T instance)
         {
             using var doc = _documentProvider.GetDocument();
-            var replacement = Write(instance, _repoProvider, _persistChildren);
+            var replacement = Write<T, TKey>(instance, _repoProvider, _persistChildren);
             UpdateAndSaveDocument(doc, element => !element.IsPersistentObjectMatchById(instance.Id), replacement);
         }
 
         ///<inheritdoc/>
-        public async Task DeleteObjectAsync(Guid id)
+        public async Task DeleteObjectAsync(TKey id)
         {
             using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
             await UpdateAndSaveDocumentAsync(doc, element => !element.IsPersistentObjectMatchById(id));
         }
 
         ///<inheritdoc/>
-        public void DeleteObject(Guid id)
+        public void DeleteObject(TKey id)
         {
             using var doc = _documentProvider.GetDocument();
             UpdateAndSaveDocument(doc, element => !element.IsPersistentObjectMatchById(id));

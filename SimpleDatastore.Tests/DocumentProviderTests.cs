@@ -1,3 +1,4 @@
+using System;
 using System.IO.Abstractions;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace SimpleDatastore.Tests
         {
             _fileSystem.File.Exists("").ReturnsForAnyArgs(false);
             
-            var provider = new DocumentProviderXml<FakeObject, XDocument>(_options, _hostingEnvironment, _fileSystem);
+            var provider = new DocumentProviderXml<FakeObject, Guid, XDocument>(_options, _hostingEnvironment, _fileSystem);
 
             var doc = await provider.GetDocumentAsync();
 
@@ -52,7 +53,7 @@ namespace SimpleDatastore.Tests
         {
             _fileSystem.File.Exists("").ReturnsForAnyArgs(false);
             
-            var provider = new DocumentProviderJson<FakeObject, JsonDocument>(_options, _hostingEnvironment, _fileSystem);
+            var provider = new DocumentProviderJson<FakeObject, Guid, JsonDocument>(_options, _hostingEnvironment, _fileSystem);
 
             using var actual = await provider.GetDocumentAsync();
 

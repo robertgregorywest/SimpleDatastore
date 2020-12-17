@@ -13,10 +13,13 @@ namespace Example.Web.Controllers
     {
         private readonly IRepository<Widget> _widgetRepo;
         private readonly IRepository<Factory> _factoryRepo;
+        private readonly IReadRepository<Widget, Guid> _readWidgetRepository;
         
-        public HomeController(IRepository<Widget> widgetRepo, IRepository<Factory> factoryRepo)
+        public HomeController(IRepository<Widget> widgetRepo,
+            IRepository<Factory> factoryRepo,
+            IReadRepository<Widget, Guid> readWidgetRepository)
         {
-            (_widgetRepo, _factoryRepo) = (widgetRepo, factoryRepo);
+            (_widgetRepo, _factoryRepo, _readWidgetRepository) = (widgetRepo, factoryRepo, readWidgetRepository);
         }
 
         public async Task<IActionResult> Index()
@@ -36,6 +39,25 @@ namespace Example.Web.Controllers
             }
 
             return View(model);
+        }
+        
+        public async Task<IActionResult> ReadWidgets()
+        {
+            var widgets = await _readWidgetRepository.LoadCollectionAsync();
+
+            var model = new List<WidgetModel>();
+
+            foreach (var widget in widgets)
+            {
+                var widgetModel = new WidgetModel() { Name = widget.Name, MainPart = widget.MainPart.Name };
+                foreach (var p in widget.Parts)
+                {
+                    widgetModel.Parts.Add(p.Name);
+                }
+                model.Add(widgetModel);
+            }
+
+            return View("Index", model);
         }
 
         public async Task<IActionResult> CreateFactory([FromQuery]string name)
@@ -183,7 +205,7 @@ namespace Example.Web.Controllers
                 itemsAsync.Add(await _factoryRepo.LoadAsync(factory.Id));
             }
             
-            var model = new StressTestAsyncModel
+            var model = new StressTestModel
             {
                 Factories = itemsAsync
             };
@@ -191,7 +213,7 @@ namespace Example.Web.Controllers
             return View(model);
         }
         
-        public IActionResult StressTestSync()
+        public IActionResult StressTest()
         {
             var factories = _factoryRepo.LoadCollection();
             
@@ -200,18 +222,18 @@ namespace Example.Web.Controllers
             
             var items = new List<Factory>();
             
-            for (var i = 0; i < numberOfBatches; i++)
-            {
-                //var currentIds = userIds.Skip(i * batchSize).Take(batchSize);
-                
-            }
+            // for (var i = 0; i < numberOfBatches; i++)
+            // {
+            //     //var currentIds = userIds.Skip(i * batchSize).Take(batchSize);
+            //     
+            // }
 
             foreach (var factory in factories)
             {
                 items.Add(_factoryRepo.Load(factory.Id));
             }
             
-            var model = new StressTestSyncModel
+            var model = new StressTestModel
             {
                 Factories = items
             };

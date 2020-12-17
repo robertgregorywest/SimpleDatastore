@@ -7,7 +7,10 @@ namespace SimpleDatastore.Interfaces
     /// </summary>
     /// <typeparam name="T">The persistent object type to work with</typeparam>
     /// <typeparam name="TDocument">The type of the document to return</typeparam>
-    public interface IDocumentProvider<T, TDocument> where T : PersistentObject
+    /// <typeparam name="TKey">The type of the identifier</typeparam>
+    public interface IDocumentProvider<T, TKey, TDocument> 
+        where T : PersistentObject<TKey> 
+        where TKey : struct
     {
         /// <summary>
         /// Get the document for the type
