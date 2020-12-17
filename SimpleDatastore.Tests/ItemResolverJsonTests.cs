@@ -16,11 +16,11 @@ namespace SimpleDatastore.Tests
         [Test]
         public async Task GetObjectFromNodeAsync_Should_Return_Object()
         {
-            var repo = Substitute.For<IRepository<FakeObject>>();
+            var repo = Substitute.For<IReadRepository<FakeObject, Guid>>();
             Func<Type, object> activator = Activator.CreateInstance;
             dynamic RepoProvider(Type t) => repo;
 
-            var result = await ItemResolverJson<FakeObject, JsonElement>.GetObjectFromNodeAsync(
+            var result = await ItemResolverJson<FakeObject, Guid, JsonElement>.GetObjectFromNodeAsync(
                 FakeDocuments.InstanceJsonElement,
                 typeof(FakeObject),
                 activator,
@@ -33,14 +33,14 @@ namespace SimpleDatastore.Tests
         [Test]
         public async Task GetObjectFromNodeAsync_persistChildren_true_should_load_children()
         {
-            var repo = Substitute.For<IRepository<Part>>();
+            var repo = Substitute.For<IReadRepository<Part, Guid>>();
             repo.LoadAsync(Parts.SomeWidgetA.Id).Returns(Parts.SomeWidgetA);
             repo.LoadCollectionByIdsAsync(Enumerable.Empty<string>()).ReturnsForAnyArgs(Widgets.SomeWidget.Parts);
             
             Func<Type, object> activator = Activator.CreateInstance;
             dynamic RepoProvider(Type t) => repo;
 
-            var result = await ItemResolverJson<Widget, JsonElement>.GetObjectFromNodeAsync(
+            var result = await ItemResolverJson<Widget, Guid, JsonElement>.GetObjectFromNodeAsync(
                 Widgets.SomeWidgetJsonElement,
                 typeof(Widget),
                 activator,

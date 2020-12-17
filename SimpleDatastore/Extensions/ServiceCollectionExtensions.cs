@@ -28,21 +28,23 @@ namespace SimpleDatastore
                 services.Configure(options);
             }
 
-            services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
+            services.AddSingleton(typeof(IRepository<>), typeof(GuidRepository<>));
+            services.AddSingleton(typeof(IReadRepository<,>), typeof(Repository<,>));
+            services.AddSingleton(typeof(IWriteRepository<,>), typeof(Repository<,>));
             services.AddSingleton<IFileSystem, FileSystem>();
             services.AddMemoryCache();
 
             if (useXml)
             {
-                services.AddSingleton(typeof(IDocumentProvider<,>), typeof(DocumentProviderXml<,>));
-                services.AddSingleton(typeof(IItemResolver<,>), typeof(ItemResolverXml<,>));
-                services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderXml<>));
+                services.AddSingleton(typeof(IDocumentProvider<,,>), typeof(DocumentProviderXml<,,>));
+                services.AddSingleton(typeof(IItemResolver<,,>), typeof(ItemResolverXml<,,>));
+                services.AddSingleton(typeof(IPersistentObjectProvider<,>), typeof(PersistentObjectProviderXml<,>));
             }
             else
             {
-                services.AddSingleton(typeof(IDocumentProvider<,>), typeof(DocumentProviderJson<,>));
-                services.AddSingleton(typeof(IItemResolver<,>), typeof(ItemResolverJson<,>));
-                services.AddSingleton(typeof(IPersistentObjectProvider<>), typeof(PersistentObjectProviderJson<>));
+                services.AddSingleton(typeof(IDocumentProvider<,,>), typeof(DocumentProviderJson<,,>));
+                services.AddSingleton(typeof(IItemResolver<,,>), typeof(ItemResolverJson<,,>));
+                services.AddSingleton(typeof(IPersistentObjectProvider<,>), typeof(PersistentObjectProviderJson<,>));
             }
 
             return services;

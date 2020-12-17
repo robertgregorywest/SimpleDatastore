@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SimpleDatastore.Interfaces
@@ -8,7 +7,10 @@ namespace SimpleDatastore.Interfaces
     /// Retrieves and creates XML for persistent objects
     /// </summary>
     /// <typeparam name="T">PersistentObject type to work with</typeparam>
-    public interface IPersistentObjectProvider<T> where T : PersistentObject
+    /// <typeparam name="TKey">The type of the identifier</typeparam>
+    public interface IPersistentObjectProvider<T, in TKey> 
+        where T : PersistentObject<TKey> 
+        where TKey : struct
     {
         /// <summary>
         /// Gets all persistent objects from the XML document
@@ -27,14 +29,14 @@ namespace SimpleDatastore.Interfaces
         /// </summary>
         /// <param name="id">The identifier of the persistent object to retrieve</param>
         /// <returns>Persistent object</returns>
-        Task<T> GetObjectAsync(Guid id);
+        Task<T> GetObjectAsync(TKey id);
         
         /// <summary>
         /// Gets a single persistent object based on the identifier from the XML document
         /// </summary>
         /// <param name="id">The identifier of the persistent object to retrieve</param>
         /// <returns>Persistent object</returns>
-        T GetObject(Guid id);
+        T GetObject(TKey id);
         
         /// <summary>
         /// Update the XML document with the persistent object data
@@ -52,12 +54,12 @@ namespace SimpleDatastore.Interfaces
         /// Delete a persistent object from the XML document based on the identifier
         /// </summary>
         /// <param name="id">The identifier of the persistent object to delete</param>
-        Task DeleteObjectAsync(Guid id);
+        Task DeleteObjectAsync(TKey id);
         
         /// <summary>
         /// Delete a persistent object from the XML document based on the identifier
         /// </summary>
         /// <param name="id">The identifier of the persistent object to delete</param>
-        void DeleteObject(Guid id);
+        void DeleteObject(TKey id);
     }
 }

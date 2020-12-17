@@ -9,7 +9,8 @@ namespace SimpleDatastore
 {
     internal static class PersistentObjectConverterXml
     {
-        internal static XElement Write(object instance, Func<Type, dynamic> repoProvider, bool persistChildren = false)
+        internal static XElement Write<TKey>(object instance, Func<Type, dynamic> repoProvider, bool persistChildren = false) 
+            where TKey : struct
         {
             var element = new XElement(PersistentObject.DataItemName);
 
@@ -24,31 +25,31 @@ namespace SimpleDatastore
                     continue;
                 }
 
-                if (property.PropertyType.IsPersistentObject() && value is PersistentObject persistentObject)
+                if (property.PropertyType.IsPersistentObject() && value is PersistentObject<TKey> persistentObject)
                 {
                     if (persistChildren)
                     {
-                        var repositoryType = typeof(IRepository<>).MakeGenericType(property.PropertyType);
+                        var repositoryType = typeof(IWriteRepository<,>).MakeGenericType(property.PropertyType);
                         var repository = repoProvider(repositoryType);
                         repository.Save((dynamic) persistentObject);
                         element.Add(new XElement(attributeName, persistentObject.Id.ToString()));
                     }
                     else
                     {
-                     element.Add(new XElement(attributeName, Write(persistentObject, repoProvider)));   
+                     element.Add(new XElement(attributeName, Write<TKey>(persistentObject, repoProvider)));   
                     }
                     continue;
                 }
 
                 if (property.PropertyType.IsPersistentObjectEnumerable() &&
-                    value is IEnumerable<PersistentObject> persistentObjectEnumerable)
+                    value is IEnumerable<PersistentObject<TKey>> persistentObjectEnumerable)
                 {
                     var list = persistentObjectEnumerable.ToList();
 
                     if (persistChildren)
                     {
                         var elementType = property.PropertyType.GetGenericArguments()[0];
-                        var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
+                        var repositoryType = typeof(IWriteRepository<,>).MakeGenericType(elementType);
                         var repository = repoProvider(repositoryType);
 
                         foreach (var item in list)
@@ -60,7 +61,7 @@ namespace SimpleDatastore
                     }
                     else
                     {
-                        element.Add(new XElement(attributeName, list.Select(o => Write(o, repoProvider)).ToList()));
+                        element.Add(new XElement(attributeName, list.Select(o => Write<TKey>(o, repoProvider)).ToList()));
                     }
                     continue;
                 }

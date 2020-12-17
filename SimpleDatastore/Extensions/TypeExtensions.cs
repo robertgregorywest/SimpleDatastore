@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -11,11 +12,38 @@ namespace SimpleDatastore.Extensions
 {
     internal static class TypeExtensions
     {
-        internal static bool IsPersistentObject(this Type type) 
-            => typeof(PersistentObject).IsAssignableFrom(type);
+        internal static bool IsPersistentObject(this Type type)
+        {
+            return IsAssignableToGenericType(type, typeof(PersistentObject<>));
+        }
+        
+        private static bool IsAssignableToGenericType(Type givenType, Type genericType)
+        {
+            var interfaceTypes = givenType.GetInterfaces();
 
-        internal static bool IsPersistentObjectEnumerable(this Type type) 
-            => type.IsGenericType && typeof(IEnumerable<PersistentObject>).IsAssignableFrom(type);
+            if (interfaceTypes.Any(it => it.IsGenericType && it.GetGenericTypeDefinition() == genericType))
+                return true;
+
+            if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
+                return true;
+
+            var baseType = givenType.BaseType;
+            return baseType != null && IsAssignableToGenericType(baseType, genericType);
+        }
+
+        internal static bool IsPersistentObjectEnumerable(this Type type)
+        {
+            if (!type.IsConstructedGenericType && !typeof(IEnumerable).IsAssignableFrom(type))
+            {
+                return false;
+            }
+            
+            var typeParams = type.GetGenericArguments();
+
+            return typeParams.Length == 1 && typeParams[0].IsPersistentObject();
+            
+            //type.IsGenericType && typeof(IEnumerable<PersistentObject<>>).IsAssignableFrom(type);
+        }
 
         internal static IEnumerable<PropertyInfo> PersistedProperties(this Type type,
             SimpleDatastoreOptions.StorageModeOptions storageMode = SimpleDatastoreOptions.StorageModeOptions.Xml)
@@ -39,15 +67,17 @@ namespace SimpleDatastore.Extensions
         
         internal static dynamic CreateRepository(this Type type, Func<Type, dynamic> repoProvider)
         {
-            var repositoryType = typeof(IRepository<>).MakeGenericType(type);
+            var repositoryType = typeof(IReadRepository<,>).MakeGenericType(type, type.GetKeyType());
             return repoProvider(repositoryType);
         }
         
         internal static dynamic CreateEnumerableRepository(this Type type, Func<Type, dynamic> repoProvider)
         {
             var elementType = type.GetGenericArguments()[0];
-            var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
+            var repositoryType = typeof(IReadRepository<,>).MakeGenericType(elementType, elementType.GetKeyType());
             return repoProvider(repositoryType);
         }
+        
+        internal static Type GetKeyType(this Type type) => type.BaseType?.GetGenericArguments()[0];
     }
 }

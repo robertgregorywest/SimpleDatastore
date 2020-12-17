@@ -11,8 +11,9 @@ namespace SimpleDatastore
 {
     internal static class PersistentObjectConverterJson
     {
-        internal static JsonElement Write<T>(T instance, Func<Type, dynamic> repoProvider, bool persistChildren = false)
-            where T : PersistentObject
+        internal static JsonElement Write<T, TKey>(T instance, Func<Type, dynamic> repoProvider, bool persistChildren = false)
+            where T : PersistentObject<TKey> 
+            where TKey : struct
         {
             var serializerOptions = new JsonSerializerOptions
             {
@@ -40,22 +41,22 @@ namespace SimpleDatastore
                 var attributeName = property.GetPropertyName(StorageModeOptions.Json);
                 var value = property.GetValue(instance, null);
                  
-                if (property.PropertyType.IsPersistentObject() && value is PersistentObject persistentObject)
+                if (property.PropertyType.IsPersistentObject())
                 {
-                    var repositoryType = typeof(IRepository<>).MakeGenericType(property.PropertyType);
+                    var repositoryType = typeof(IWriteRepository<,>)
+                        .MakeGenericType(property.PropertyType, property.PropertyType.GetKeyType());
                     var repository = repoProvider(repositoryType);
-                    repository.Save((dynamic) persistentObject);
-                    writer.WriteString(attributeName, persistentObject.Id.ToString());
+                    repository.Save((dynamic) value);
+                    writer.WriteString(attributeName, value.ToString());
                     continue;
                 }
                 
-                if (property.PropertyType.IsPersistentObjectEnumerable() &&
-                    value is IEnumerable<PersistentObject> persistentObjectEnumerable)
+                if (property.PropertyType.IsPersistentObjectEnumerable() && value is IEnumerable<object> persistentObjectEnumerable)
                 {
                     var list = persistentObjectEnumerable.ToList();
 
                     var elementType = property.PropertyType.GetGenericArguments()[0];
-                    var repositoryType = typeof(IRepository<>).MakeGenericType(elementType);
+                    var repositoryType = typeof(IWriteRepository<,>).MakeGenericType(elementType, elementType.GetKeyType());
                     var repository = repoProvider(repositoryType);
 
                     foreach (var item in list)
@@ -64,7 +65,7 @@ namespace SimpleDatastore
                     }
 
                     writer.WritePropertyName(attributeName);
-                    JsonSerializer.Serialize(writer, list.Select(p => p.Id), serializerOptions);
+                    JsonSerializer.Serialize(writer, list.Select(p => p.ToString()), serializerOptions);
                     
                     continue;
                 }

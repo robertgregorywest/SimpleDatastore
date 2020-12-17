@@ -12,16 +12,16 @@ using static SimpleDatastore.PersistentObjectConverterXml;
 
 namespace SimpleDatastore
 {
-    public class PersistentObjectProviderXml<T> : IPersistentObjectProvider<T> where T : PersistentObject
+    public class PersistentObjectProviderXml<T, TKey> : IPersistentObjectProvider<T, TKey> where T : PersistentObject<TKey> where TKey : struct
     {
-        private readonly IItemResolver<T, XElement> _resolver;
-        private readonly IDocumentProvider<T, XDocument> _documentProvider;
+        private readonly IItemResolver<T, TKey, XElement> _resolver;
+        private readonly IDocumentProvider<T, TKey, XDocument> _documentProvider;
         private readonly bool _persistChildren;
         private readonly Func<Type, object> _activator;
         private readonly Func<Type, dynamic> _repoProvider;
 
-        public PersistentObjectProviderXml(IItemResolver<T, XElement> resolver,
-            IDocumentProvider<T, XDocument> documentProvider,
+        public PersistentObjectProviderXml(IItemResolver<T, TKey, XElement> resolver,
+            IDocumentProvider<T, TKey,XDocument> documentProvider,
             IServiceProvider serviceProvider,
             IOptions<SimpleDatastoreOptions> options)
         {
@@ -54,7 +54,7 @@ namespace SimpleDatastore
         }
 
         ///<inheritdoc/>
-        public async Task<T> GetObjectAsync(Guid id)
+        public async Task<T> GetObjectAsync(TKey id)
         {
             var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
@@ -67,7 +67,7 @@ namespace SimpleDatastore
         }
 
         ///<inheritdoc/>
-        public T GetObject(Guid id)
+        public T GetObject(TKey id)
         {
             var element = _documentProvider.GetDocument().GetElementById(id);
             return element == null
@@ -78,11 +78,11 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public async Task SaveObjectAsync(T instance)
         {
-            var element = Write(instance, _repoProvider, _persistChildren);
+            var element = Write<TKey>(instance, _repoProvider, _persistChildren);
 
             var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
-            doc.AddOrUpdate(instance, element);
+            doc.AddOrUpdate<T,TKey>(instance, element);
 
             await _documentProvider.SaveDocumentAsync(doc).ConfigureAwait(false);
         }
@@ -90,15 +90,15 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public void SaveObject(T instance)
         {
-            var element = Write(instance, _repoProvider, _persistChildren);
+            var element = Write<TKey>(instance, _repoProvider, _persistChildren);
 
-            var doc = _documentProvider.GetDocument().AddOrUpdate(instance, element);
+            var doc = _documentProvider.GetDocument().AddOrUpdate<T,TKey>(instance, element);
 
             _documentProvider.SaveDocument(doc);
         }
 
         ///<inheritdoc/>
-        public async Task DeleteObjectAsync(Guid id)
+        public async Task DeleteObjectAsync(TKey id)
         {
             var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
             doc.RemoveById(id);
@@ -106,7 +106,7 @@ namespace SimpleDatastore
         }
 
         ///<inheritdoc/>
-        public void DeleteObject(Guid id)
+        public void DeleteObject(TKey id)
         {
             var doc = _documentProvider.GetDocument().RemoveById(id);
             _documentProvider.SaveDocument(doc);

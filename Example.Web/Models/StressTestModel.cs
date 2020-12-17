@@ -3,7 +3,7 @@ using Example.Domain;
 
 namespace Example.Web.Models
 {
-    public class StressTestSyncModel
+    public class StressTestModel
     {
         public List<Factory> Factories { get; set; }
     }

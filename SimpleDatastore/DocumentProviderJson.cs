@@ -12,8 +12,9 @@ namespace SimpleDatastore
 {
     // ReSharper disable once UnusedTypeParameter
     // Not closing the type so that DI container can resolve correctly
-    public class DocumentProviderJson<T, TDocument> : IDocumentProvider<T, JsonDocument> 
-        where T : PersistentObject
+    public class DocumentProviderJson<T, TKey, TDocument> : IDocumentProvider<T, TKey, JsonDocument> 
+        where T : PersistentObject<TKey> 
+        where TKey : struct
     {
         private readonly IFileSystem _fileSystemAsync;
         private readonly IFileSystem _fileSystem;

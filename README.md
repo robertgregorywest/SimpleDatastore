@@ -4,27 +4,26 @@
 
 A simple .NET persistence library which uses either XML or JSON file storage.
 
-## What's New in 3.0
-
-This project has now been updated to use .NET standard 2.1 and the built-in 
+This project uses .NET standard 2.1 and the built-in 
 dependency resolution framework so it is super easy to implement.
 
-The library is now async enabled, with new suffix methods for 
-backwards compatibility.
-
-Support for JSON has been added, built on the new `System.Text.Json` framework.
-
-You can now chose to store child `PersistentObject` entities embedded in the parent
-using the new `PersistChildren` option set to `false`.
+## What's New in 3.1
+The `PersistentObject` base type now uses a generic parameter to
+determine the type of the identifier, so you are not limited to 
+using Guids. You can continue to use the library in the same way
+using the `IRepository` interface which will assume Guid 
+identifiers. If you do not use Guid identifiers then you should use the
+`IReadRepository<T, TKey>` and `IWriteRepository<T, TKey>`
+interfaces. The `TKey` type must be a struct.
 
 ## How To Use
-
-All of the entities that you wish to persist need to inherit from `PersistentObject` 
+All of the entities that you wish to persist need to inherit from `PersistentObject<TKey>` 
 and attributes are used to determine which fields to persist. The library stores 
 each class in its own storage document.
 
 Simply register SimpleDatastore in your `Startup.cs` and 
-then add a dependency of `IRepository<>` on your types:
+then add a dependency of `IRepository<>` on your types (assuming
+are implementing PersistentObject<Guid>):
 
 **Startup.cs**
 
@@ -48,8 +47,6 @@ public class HomeController
 	}
 }
 ```
-
-
 
 ## Storage As XML or JSON
 The default storage type is XML, if you wish to use JSON you can do so
@@ -89,8 +86,13 @@ public string NotPersisted { get; set; }
 Objects are instantiated using the service provider so they can have 
 dependencies of their own. 
 
-## Child Objects
+## Non-Guid Identifiers
+If you do not use Guid identifiers then you should use the 
+`IReadRepository<T, TKey>` and `IWriteRepository<T, TKey>` 
+interfaces. The interfaces are split along read/write lines
+to better follow SOLID principles.
 
+## Child Objects
 You can have properties which are also persisted objects.
 You can choose to store child persistent objects either embedded in the parent
 or in the relevant storage document for that type (with the `Id` stored as the key
@@ -105,7 +107,6 @@ used. This will enable you to control the serialization with your own
 convertors (applied using attributes) should you wish to.
 
 ## Configuration
-
 The default configuration uses the ASP.NET `IMemoryCache` but you can implement your own 
 version. The `SimpleDatastoreOptions` class provides the following settings:
 * enabling caching using the `IMemoryCache` implementation (default is true)

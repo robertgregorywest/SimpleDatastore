@@ -12,11 +12,11 @@ namespace SimpleDatastore.Tests
         [Test]
         public async Task GetItemFromNode_Should_Return_Object()
         {
-            var repo = Substitute.For<IRepository<FakeObject>>();
+            var repo = Substitute.For<IReadRepository<FakeObject, Guid>>();
             Func<Type, object> activator = Activator.CreateInstance;
             dynamic RepoProvider(Type t) => repo;
 
-            var result = await ItemResolverXml<FakeObject, XElement>.GetObjectFromNodeAsync(
+            var result = await ItemResolverXml<FakeObject, Guid, XElement>.GetObjectFromNodeAsync(
                 FakeDocuments.SingleFakeObjectXElement,
                 typeof(FakeObject),
                 activator,

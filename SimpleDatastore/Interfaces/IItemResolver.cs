@@ -8,7 +8,10 @@ namespace SimpleDatastore.Interfaces
     /// </summary>
     /// <typeparam name="T">PersistentObject type to resolve</typeparam>
     /// <typeparam name="TElement">Type of the element from which to retrieve the item</typeparam>
-    public interface IItemResolver<T, in TElement> where T : PersistentObject
+    /// <typeparam name="TKey">The type of the identifier</typeparam>
+    public interface IItemResolver<T, TKey, in TElement> 
+        where T : PersistentObject<TKey> 
+        where TKey : struct
     {
         /// <summary>
         /// Creates an instance of <typeparamref name="T"/> from the <typeparamref name="TElement"/>

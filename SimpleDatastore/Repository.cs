@@ -9,18 +9,19 @@ using SimpleDatastore.Interfaces;
 
 namespace SimpleDatastore
 {
-    public class Repository<T> : IRepository<T> where T : PersistentObject
+    public class Repository<T, TKey> : IReadRepository<T, TKey>, IWriteRepository<T, TKey> 
+        where T : PersistentObject<TKey> where TKey : struct
     {
-        private readonly IPersistentObjectProvider<T> _persistentObjectProvider;
+        private readonly IPersistentObjectProvider<T, TKey> _persistentObjectProvider;
         private readonly IMemoryCache _memoryCache;
         private readonly bool _cachingIsDisabled;
         private readonly int _cacheDuration;
         
         private static readonly string KeyForType = typeof(T).ToString();
 
-        private static string KeyForInstance(Guid id) => $"{KeyForType}.{id.ToString()}";
+        private static string KeyForInstance(TKey id) => $"{KeyForType}.{id.ToString()}";
 
-        public Repository(IPersistentObjectProvider<T> persistentObjectProvider,
+        public Repository(IPersistentObjectProvider<T, TKey> persistentObjectProvider,
             IMemoryCache memoryCache, IOptions<SimpleDatastoreOptions> options)
         {
             _persistentObjectProvider = persistentObjectProvider;
@@ -30,7 +31,7 @@ namespace SimpleDatastore
         }
 
         ///<inheritdoc/>
-        public async Task<T> LoadAsync(Guid id)
+        public async Task<T> LoadAsync(TKey id)
         {
             if (_cachingIsDisabled)
             {
@@ -45,7 +46,7 @@ namespace SimpleDatastore
         }
         
         ///<inheritdoc/>
-        public T Load(Guid id)
+        public T Load(TKey id)
         {
             if (_cachingIsDisabled)
             {
@@ -95,7 +96,7 @@ namespace SimpleDatastore
             var items = new List<T>();
             foreach (var id in persistentObjectIds)
             {
-                var item = await LoadAsync(id.ToGuid()).ConfigureAwait(false);
+                var item = await LoadAsync(id.GetKeyFromString<TKey>()).ConfigureAwait(false);
                 if (item != null)
                 {
                     items.Add(item);
@@ -107,13 +108,12 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public IList<T> LoadCollectionByIds(IEnumerable<string> persistentObjectIds)
         {
-            return persistentObjectIds.Select(id => Load(id.ToGuid())).Where(item => item != null).ToList();
+            return persistentObjectIds.Select(id => Load(id.GetKeyFromString<TKey>())).Where(item => item != null).ToList();
         }
 
         ///<inheritdoc/>
         public async Task SaveAsync(T instance)
         {
-            instance.EnsureValidGuid();
             await _persistentObjectProvider.SaveObjectAsync(instance).ConfigureAwait(false);
             PurgeCache(instance.Id);
         }
@@ -121,26 +121,25 @@ namespace SimpleDatastore
         ///<inheritdoc/>
         public void Save(T instance)
         {
-            instance.EnsureValidGuid();
             _persistentObjectProvider.SaveObject(instance);
             PurgeCache(instance.Id);
         }
 
         ///<inheritdoc/>
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(TKey id)
         {
             await _persistentObjectProvider.DeleteObjectAsync(id).ConfigureAwait(false);
             PurgeCache(id);
         }
         
         ///<inheritdoc/>
-        public void Delete(Guid id)
+        public void Delete(TKey id)
         {
             _persistentObjectProvider.DeleteObject(id);
             PurgeCache(id);
         }
 
-        private void PurgeCache(Guid id)
+        private void PurgeCache(TKey id)
         {
             if (_cachingIsDisabled) return;
             

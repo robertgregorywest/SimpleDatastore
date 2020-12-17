@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 
 namespace SimpleDatastore.Extensions
@@ -25,6 +26,12 @@ namespace SimpleDatastore.Extensions
             writer.Flush();
             stream.Position = 0;
             return stream;
+        }
+        
+        internal static T GetKeyFromString<T>(this string source)
+        {
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+            return (T)converter.ConvertFromInvariantString(source);
         }
     }
 }
