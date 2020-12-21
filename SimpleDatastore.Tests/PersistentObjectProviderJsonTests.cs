@@ -103,7 +103,7 @@ namespace SimpleDatastore.Tests
 
             var comparer = new JsonElementComparer();
             
-            var expected = Widgets.GetFixtureAsJsonElement(Widgets.SomeWidgetArrayJson);
+            var expected = Widgets.SomeWidgetArrayJson.GetFixtureAsJsonElement();
     
             Assert.IsTrue(comparer.Equals(expected, actual));
         }

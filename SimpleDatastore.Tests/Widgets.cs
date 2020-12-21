@@ -31,12 +31,6 @@ namespace SimpleDatastore.Tests
         public const string SomeWidgetObjectJson = "Example.Domain.Widget.SomeWidget.Object.json";
         public const string SomeWidgetArrayJson = "Example.Domain.Widget.SomeWidget.Array.json";
 
-        internal static JsonElement GetFixtureAsJsonElement(string fixture)
-        {
-            using var doc = JsonDocument.Parse(fixture.GetFixtureContent());
-            return doc.RootElement.Clone();
-        }
-        
-        internal static JsonElement SomeWidgetJsonElement => GetFixtureAsJsonElement(SomeWidgetPersistChildrenObjectJson);
+        internal static JsonElement SomeWidgetJsonElement => SomeWidgetPersistChildrenObjectJson.GetFixtureAsJsonElement();
     }
 }

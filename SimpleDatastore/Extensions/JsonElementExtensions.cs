@@ -8,8 +8,19 @@ namespace SimpleDatastore.Extensions
     {
         internal static bool IsPersistentObjectMatchById<TKey>(this JsonElement element, TKey id) where TKey : struct
         {
-            return element.TryGetProperty(PersistentObject.Identifier, out var idElement)
-                   && idElement.ValueEquals(id.ToString());
+            if (!element.TryGetProperty(PersistentObject.Identifier, out var idElement))
+            {
+                return false;
+            }
+
+            try
+            {
+                return Deserialize(idElement, typeof(TKey)).Equals(id);
+            }
+            catch
+            {
+                return false;
+            }
         }
         
         internal static T Deserialize<T>(this JsonElement element, JsonSerializerOptions options = null)
