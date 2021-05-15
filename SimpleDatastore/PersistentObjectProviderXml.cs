@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using LanguageExt;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
@@ -54,24 +55,24 @@ namespace SimpleDatastore
         }
 
         ///<inheritdoc/>
-        public async Task<T> GetObjectAsync(TKey id)
+        public async Task<Option<T>> GetObjectAsync(TKey id)
         {
             var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
 
             var element = doc.GetElementById(id);
 
             return element == null
-                ? null
+                ? Option<T>.None
                 : await _resolver.GetItemFromNodeAsync(element, _activator, _repoProvider, _persistChildren)
                     .ConfigureAwait(false);
         }
 
         ///<inheritdoc/>
-        public T GetObject(TKey id)
+        public Option<T> GetObject(TKey id)
         {
             var element = _documentProvider.GetDocument().GetElementById(id);
             return element == null
-                ? null
+                ? Option<T>.None
                 : _resolver.GetItemFromNode(element, _activator, _repoProvider, _persistChildren);
         }
 

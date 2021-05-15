@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using LanguageExt;
 
 namespace SimpleDatastore.Interfaces
 {
@@ -22,12 +23,28 @@ namespace SimpleDatastore.Interfaces
         Task<T> LoadAsync(TKey id);
         
         /// <summary>
+        /// Get a single persistent object Option
+        /// </summary>
+        /// <param name="id">Identifier for the persistent object</param>
+        /// <returns>Option of persistent object</returns>
+        [UsedImplicitly]
+        Task<Option<T>> LoadOptionAsync(TKey id);
+        
+        /// <summary>
         /// Get a single persistent object
         /// </summary>
         /// <param name="id">Identifier for the persistent object</param>
         /// <returns>Persistent object</returns>
         [UsedImplicitly]
         T Load(TKey id);
+        
+        /// <summary>
+        /// Get a single persistent object Option
+        /// </summary>
+        /// <param name="id">Identifier for the persistent object</param>
+        /// <returns>Option of persistent object</returns>
+        [UsedImplicitly]
+        Option<T> LoadOption(TKey id);
 
         /// <summary>
         /// Get all persistent objects of generic type in the order they are stored in the storage document

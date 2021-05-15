@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using Example.Domain;
 using SimpleDatastore.Tests.Extensions;
@@ -32,5 +33,7 @@ namespace SimpleDatastore.Tests
         public const string SomeWidgetArrayJson = "Example.Domain.Widget.SomeWidget.Array.json";
 
         internal static JsonElement SomeWidgetJsonElement => SomeWidgetPersistChildrenObjectJson.GetFixtureAsJsonElement();
+        
+        internal static JsonDocument EmptyDocument => JsonDocument.Parse(JsonSerializer.Serialize(new List<Widget>()));
     }
 }

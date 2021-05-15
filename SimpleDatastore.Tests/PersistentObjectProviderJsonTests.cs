@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using Example.Domain;
 using FluentAssertions;
+using LanguageExt;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
@@ -49,12 +50,12 @@ namespace SimpleDatastore.Tests
                 new PersistentObjectProviderJson<Widget, Guid>(_resolver, _documentProvider, _serviceProvider, _options);
 
             var actual = provider.GetObject(Widgets.SomeWidget.Id);
-            
-            Assert.AreEqual(Widgets.SomeWidget.Id, actual.Id);
+
+            actual.Match(widget => Assert.AreEqual(Widgets.SomeWidget.Id, widget.Id), Assert.Fail);
         }
         
         [Test]
-        public void GetObject_nonexistent_id_should_return_null()
+        public void GetObject_nonexistent_id_should_return_none()
         {
             using var doc = JsonDocument.Parse(Widgets.WidgetsArrayJson.GetFixtureContent());
             _documentProvider.GetDocument().Returns(doc);
@@ -63,8 +64,22 @@ namespace SimpleDatastore.Tests
                 new PersistentObjectProviderJson<Widget, Guid>(_resolver, _documentProvider, _serviceProvider, _options);
 
             var actual = provider.GetObject(Guid.Empty);
+
+            Assert.IsTrue(actual.IsNone);
+        }
+        
+        [Test]
+        public void GetCollection_empty_should_return_empty_collection()
+        {
+            using var doc = Widgets.EmptyDocument;
+            _documentProvider.GetDocument().Returns(doc);
             
-            Assert.IsNull(actual);
+            var provider =
+                new PersistentObjectProviderJson<Widget, Guid>(_resolver, _documentProvider, _serviceProvider, _options);
+
+            var actual = provider.GetCollection();
+
+            actual.Should().NotBeNull();
         }
         
         [Test]

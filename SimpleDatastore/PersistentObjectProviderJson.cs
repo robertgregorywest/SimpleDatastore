@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using LanguageExt;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Nito.AsyncEx;
@@ -22,7 +23,7 @@ namespace SimpleDatastore
         private readonly bool _persistChildren;
         private readonly Func<Type, object> _activator;
         private readonly Func<Type, dynamic> _repoProvider;
-        private readonly JsonWriterOptions _writerOptions = new JsonWriterOptions { Indented = true };
+        private readonly JsonWriterOptions _writerOptions = new() { Indented = true };
 
         public PersistentObjectProviderJson(IItemResolver<T, TKey, JsonElement> resolver,
             IDocumentProvider<T, TKey, JsonDocument> documentProvider,
@@ -70,7 +71,7 @@ namespace SimpleDatastore
         }
 
         ///<inheritdoc/>
-        public async Task<T> GetObjectAsync(TKey id)
+        public async Task<Option<T>> GetObjectAsync(TKey id)
         {
             using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
             
@@ -79,13 +80,13 @@ namespace SimpleDatastore
                 .FirstOrDefault(e => e.IsPersistentObjectMatchById(id));
 
             return element.ValueKind == JsonValueKind.Undefined
-                ? null
+                ? Option<T>.None
                 : await _resolver.GetItemFromNodeAsync(element, _activator, _repoProvider, _persistChildren)
                     .ConfigureAwait(false);
         }
 
         ///<inheritdoc/>
-        public T GetObject(TKey id)
+        public Option<T> GetObject(TKey id)
         {
             using var doc = _documentProvider.GetDocument();
 
@@ -94,7 +95,7 @@ namespace SimpleDatastore
                 .FirstOrDefault(e => e.IsPersistentObjectMatchById(id));
 
             return element.ValueKind == JsonValueKind.Undefined
-                ? null
+                ? Option<T>.None
                 : _resolver.GetItemFromNode(element, _activator, _repoProvider, _persistChildren);
         }
 

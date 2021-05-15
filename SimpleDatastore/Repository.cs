@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LanguageExt;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using SimpleDatastore.Extensions;
@@ -15,7 +16,7 @@ namespace SimpleDatastore
         private readonly IPersistentObjectProvider<T, TKey> _persistentObjectProvider;
         private readonly IMemoryCache _memoryCache;
         private readonly bool _cachingIsDisabled;
-        private readonly int _cacheDuration;
+        private readonly TimeSpan _timeSpan;
         
         private static readonly string KeyForType = typeof(T).ToString();
 
@@ -27,35 +28,50 @@ namespace SimpleDatastore
             _persistentObjectProvider = persistentObjectProvider;
             _memoryCache = memoryCache;
             _cachingIsDisabled = !options.Value.EnableCaching;
-            _cacheDuration = options.Value.CacheDuration;
+            _timeSpan = TimeSpan.FromMinutes(options.Value.CacheDuration);
         }
 
         ///<inheritdoc/>
         public async Task<T> LoadAsync(TKey id)
         {
+            var option = await LoadOptionAsync(id);
+            return option.Match(t => t, () => default);
+        }
+        
+        ///<inheritdoc/>
+        public async Task<Option<T>> LoadOptionAsync(TKey id)
+        {
             if (_cachingIsDisabled)
             {
-                return await _persistentObjectProvider.GetObjectAsync(id).ConfigureAwait(false);
+                var option = await _persistentObjectProvider.GetObjectAsync(id).ConfigureAwait(false);
+                return option.Match((t => t), (T) null);
             }
+            
             return await _memoryCache.GetOrCreateAsync(KeyForInstance(id),
                 async (cacheEntry) =>
                 {
-                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_cacheDuration));
-                    return await _persistentObjectProvider.GetObjectAsync(id);
+                    cacheEntry.SetAbsoluteExpiration(_timeSpan);
+                    
+                    var option = await _persistentObjectProvider.GetObjectAsync(id);
+                    return option.Match((t => t), (T) default);
                 }).ConfigureAwait(false);
         }
         
         ///<inheritdoc/>
-        public T Load(TKey id)
+        public T Load(TKey id) => LoadOption(id).Match((t => t), () => default);
+
+        ///<inheritdoc/>
+        public Option<T> LoadOption(TKey id)
         {
             if (_cachingIsDisabled)
             {
                 return _persistentObjectProvider.GetObject(id);
             }
+            
             return _memoryCache.GetOrCreate(KeyForInstance(id),
                 (cacheEntry) =>
                 {
-                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_cacheDuration));
+                    cacheEntry.SetAbsoluteExpiration(_timeSpan);
                     return _persistentObjectProvider.GetObject(id);
                 });
         }
@@ -67,10 +83,11 @@ namespace SimpleDatastore
             {
                 return await _persistentObjectProvider.GetCollectionAsync().ConfigureAwait(false);
             }
+            
             return await _memoryCache.GetOrCreateAsync(KeyForType,
                 async (cacheEntry) =>
                 {
-                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_cacheDuration));
+                    cacheEntry.SetAbsoluteExpiration(_timeSpan);
                     return await _persistentObjectProvider.GetCollectionAsync();
                 }).ConfigureAwait(false);
         }
@@ -82,10 +99,11 @@ namespace SimpleDatastore
             {
                 return _persistentObjectProvider.GetCollection();
             }
+            
             return _memoryCache.GetOrCreate(KeyForType,
                  (cacheEntry) =>
                 {
-                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(_cacheDuration));
+                    cacheEntry.SetAbsoluteExpiration(_timeSpan);
                     return _persistentObjectProvider.GetCollection();
                 });
         }
