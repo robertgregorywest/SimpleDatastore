@@ -41,7 +41,7 @@ namespace SimpleDatastore
         public async Task<IList<T>> GetCollectionAsync()
         {
             using var doc = await _documentProvider.GetDocumentAsync().ConfigureAwait(false);
-
+            
             if (!_persistChildren)
             {
                 return doc.Deserialize<List<T>>();
@@ -134,19 +134,7 @@ namespace SimpleDatastore
             using var stream = new MemoryStream();
             using var writer = new Utf8JsonWriter(stream, _writerOptions);
             
-            writer.WriteStartArray();
-            
-            foreach (var element in doc.RootElement.EnumerateArray().Where(predicate))
-            {
-                element.WriteTo(writer);
-            }
-
-            if (replacement.ValueKind != JsonValueKind.Undefined)
-            {
-                replacement.WriteTo(writer);
-            }
-            
-            writer.WriteEndArray();
+            writer.WriteUpdate(doc, predicate, replacement);
 
             writer.Flush();
             stream.Position = 0;
@@ -159,20 +147,8 @@ namespace SimpleDatastore
         {
             await using var stream = new MemoryStream();
             await using var writer = new Utf8JsonWriter(stream, _writerOptions);
-            
-            writer.WriteStartArray();
-            
-            foreach (var element in doc.RootElement.EnumerateArray().Where(predicate))
-            {
-                element.WriteTo(writer);
-            }
 
-            if (replacement.ValueKind != JsonValueKind.Undefined)
-            {
-                replacement.WriteTo(writer);
-            }
-            
-            writer.WriteEndArray();
+            writer.WriteUpdate(doc, predicate, replacement);
 
             await writer.FlushAsync();
             stream.Position = 0;
